@@ -1,0 +1,30 @@
+{
+  "name": "videoplayer",
+  "version": "1.0.0",
+  "description": "A Video Player",
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "brfs": "^2.0.2",
+    "browserify-fs": "^1.0.0",
+    "cookie-parser": "^1.4.5",
+    "express": "^4.17.1",
+    "mime-types": "^2.1.27",
+    "path-browserify": "^1.0.1",
+    "videojs-chromecast": "^2.0.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnAppleforlife/VideoPlayer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AnAppleforlife/VideoPlayer/issues"
+  },
+  "homepage": "https://github.com/AnAppleforlife/VideoPlayer#readme"
+}

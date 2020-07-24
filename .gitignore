@@ -1,4 +1,5 @@
 node_modules
 start.bat
 test.js
+package-lock.json
 data
