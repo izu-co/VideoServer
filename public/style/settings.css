@@ -1,0 +1,53 @@
+* {
+    background-color: darkslategrey;
+}
+
+b {
+    padding: 1px;
+    border-style: solid;
+    background-color: gray;
+    height: 20px;
+    border-width: 1px;
+    height: 20px;
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin: 5px;
+    margin-left: 0px;
+    width: 30px;
+}
+
+button {
+    background: none;
+    height: 23px;
+    border-width: 1px;
+    border-color: black;
+    background-color: gray;
+}
+
+div.category {
+    margin: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+input {
+    padding: 0px;
+    padding-top: 1px;
+    padding-left: 2px;
+    border-style: solid;
+    background-color: gray;
+    border-width: 1px;
+    border-color: black;
+    height: 20px;
+}
+
+input::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+#container {
+    margin: 10px;
+}

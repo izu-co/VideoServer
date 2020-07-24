@@ -1,0 +1,14 @@
+{
+    "default": {
+        "volume": 30
+    },
+    "Leonard": {
+        "volume": "60"
+    },
+    "Konsta": {
+        "volume": "75"
+    },
+    "Konno": {
+        "volume": "20"
+    }
+}

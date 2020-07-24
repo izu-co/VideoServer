@@ -1,0 +1,48 @@
+* {
+    background-color: darkslategray;
+}
+
+b {
+    margin-top: 5px;
+    text-align: center;
+}
+
+.showItem {
+    margin: 5px;
+    margin-left: 15px;
+    margin-right: 15px;
+    display: inline-block;
+}
+
+.tumb {
+    max-width: 100%;
+    margin: auto;
+}
+
+.fortschritt {
+    background-color: aqua;
+    height: 3px;
+    transform: translateY(-3px);
+}
+
+.Item {
+    display: grid;
+    grid-column-start: 2;
+    grid-column-end: five;
+    grid-row-start: row1-start;
+    grid-row-end: 3;
+}
+
+#container {
+    background-color: darkslategray;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0px 0px;
+    width: 100%;
+}
+
+.text {
+    color: white;
+    background-color: transparent;
+}
