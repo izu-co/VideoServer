@@ -15,6 +15,7 @@ const fileStuff = require("./public/backend/fileStuff.js");
 
 exports.path = __dirname;
 exports.VideoPath = VideoPath;
+exports.VideoNameExtensions = ["mp4"]
 
 app.use(express.json())
 app.use(cookieParser())
@@ -155,6 +156,10 @@ app.post("/backend/deleteToken/", checkTokenPost, function(req, res) {
 
 app.post('/log/', checkTokenPost, function(req, res) {
     console.log(req.body.message)
+})
+
+app.use(function(req, res) {
+    res.sendFile(path.join(__dirname, "videoPlayer", "notFound.html"))
 })
 
 var listener = app.listen(3000, "0.0.0.0", function() {

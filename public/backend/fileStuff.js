@@ -46,8 +46,10 @@ module.exports = {
                 console.log( "Jemand hat versucht unerlaubt Datein zu durchsuchen!" )
                 return;
             }
-            if (file.endsWith(".jpg"))
-                return;
+            if (fs.lstatSync(path + Path.sep + file).isFile())
+                if (!index.VideoNameExtensions.includes(file.split(".")[file.split(".").length - 1]))
+                    return;
+            
             if (fs.lstatSync(path + Path.sep + file).isDirectory())
                 if (!fs.existsSync(path + Path.sep + file + ".jpg"))
                     return;
