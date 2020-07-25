@@ -14,7 +14,10 @@ module.exports = {
      * @param {boolean} writeOutput
      */
     createImages : function(path, override, maxRamInt, minRamInt, writeOutput) {
+        console.log("Startet creating of Images!")
+        
         var proc = child_process.spawn("java", ["-Xmx" + maxRamInt + "G", "-Xms" + minRamInt + "G", "-jar", "./java/images.jar",  path, override])
+
         proc.stdout.on('data', (data) => {
             if (writeOutput || !data.includes("skiped"))
                 process.stdout.write(`${data}`);
@@ -28,6 +31,7 @@ module.exports = {
         proc.on('close', (code) => {
             console.log(`Done with code ${code}`);
         });
+        return {"status" : true}
     },
 
     /**
