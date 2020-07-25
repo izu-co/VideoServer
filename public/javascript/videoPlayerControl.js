@@ -252,13 +252,23 @@ video.addEventListener('timeupdate', function() {
 
 var timeout = function () {
     controls.className = "hide";
+    controls.style.cursor = "none";
+    video.style.cursor = "none";
 }
+
 timer = setTimeout(timeout, WaitToHideTime);
-container.onmousemove = function() {
+
+function Move() {
     clearTimeout(timer);
     timer = setTimeout(timeout, WaitToHideTime);
     controls.className = "show";
-};
+    controls.style.cursor = "auto";
+    video.style.cursor = "auto";
+}
+
+container.onmousemove = Move;
+container.onclick = Move;
+
 
 fullScreenButton.addEventListener("click", function() {
     togglefullScreen()    
