@@ -1,9 +1,12 @@
+body {
+    margin: 0;
+}
+
 .container {
     display: flex;
     background: #ccc;
     justify-content: center;
     align-items: center;
-    height: 100vh;
 }
 
 .video {
@@ -11,7 +14,8 @@
 }
 
 #c-video {
-    width: 100%;
+    width: 100vw;
+    height: 100vh;
     position: relative;
     overflow: hidden;
 }
