@@ -41,6 +41,9 @@ module.exports = {
      */
     getFiles : function(path, token, ip) {
         var retarr = [];
+        if (!path.startsWith(index.VideoPath))
+            path = index.VideoPath + Path.sep + path;
+
         fs.readdirSync(path).forEach(file => {
             if (!path.startsWith(index.VideoPath)) {
                 console.log( "Jemand hat versucht unerlaubt Datein zu durchsuchen!" )
@@ -54,11 +57,10 @@ module.exports = {
                 if (!fs.existsSync(path + Path.sep + file + ".jpg"))
                     return;
             var split = file.split(".");
-            var pa = (path + Path.sep).replace(index.VideoPath, "");
+            var pa = path.replace(index.VideoPath, "") + Path.sep;
             var push = {
                 "name" : file,
-                "fullPath" : path + Path.sep + file,
-                "relativPath": pa + file,
+                "Path" : pa + file,
                 "type" : fs.lstatSync(path + Path.sep + file).isDirectory() ? "folder" : "video",
                 "image" : fs.lstatSync(path + Path.sep + file).isDirectory() ? pa + file + ".jpg" : pa + file.replace(split[split.length - 1], "jpg")
             }
@@ -196,7 +198,14 @@ module.exports = {
 }
 
 function loadSettings() {
-    return JSON.parse(fs.readFileSync(Path.join(index.path, "data", "settings.json")))
+    try {
+        return JSON.parse(fs.readFileSync(Path.join(index.path, "data", "settings.json")))
+    } catch (err) {
+        if (index.test) {
+            return {}
+        } else 
+            throw err;
+    }
 }
 
 function saveSettings(settings) {
@@ -204,19 +213,47 @@ function saveSettings(settings) {
 }
 
 function getData() {
-    return JSON.parse(fs.readFileSync(index.path + "/data/status.json"));
+    try {
+        return JSON.parse(fs.readFileSync(index.path + "/data/status.json"));
+    } catch (err) {
+        if (index.test) {
+            return {}
+        } else 
+            throw err;
+    }
 }
 
 function saveData(data) {
-    fs.writeFileSync(index.path + "/data/status.json", JSON.stringify(data, null, 4))
+    try {
+        fs.writeFileSync(index.path + "/data/status.json", JSON.stringify(data, null, 4))
+    } catch (err) {
+        if (index.test) {
+            return {}
+        } else 
+            throw err;
+    }
 }
 
 function loadData() {
-    return JSON.parse(fs.readFileSync(index.path + "/data/logins.json"))["logins"];
+    try {
+        return JSON.parse(fs.readFileSync(index.path + "/data/logins.json"))["logins"];
+    } catch (err) {
+        if (index.test) {
+            return {}
+        } else 
+            throw err;
+    }
 }
 
 function loadSkips() {
-    return JSON.parse(fs.readFileSync(index.path + "/data/intros.json"));
+    try {
+        return JSON.parse(fs.readFileSync(index.path + "/data/intros.json"));
+    } catch (err) {
+        if (index.test) {
+            return {}
+        } else 
+            throw err;
+    }
 }
 
 function isEmptyObject(obj) {

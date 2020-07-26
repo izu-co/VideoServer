@@ -16,6 +16,7 @@ const fileStuff = require("./public/backend/fileStuff.js");
 exports.path = __dirname;
 exports.VideoPath = VideoPath;
 exports.VideoNameExtensions = ["mp4"]
+exports.test = true;
 
 app.use(express.json())
 app.use(cookieParser())

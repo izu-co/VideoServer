@@ -57,11 +57,11 @@ function loadData(data) {
 
         div.addEventListener("click", function() {
             if (file["type"] === "folder") {
-                urlParams.set('path', file["fullPath"])
+                urlParams.set('path', file["Path"])
                 location.href = location.pathname + "?" + urlParams.toString();
             } else {
-                urlParams.set('path', file["relativPath"])
-                location.href = location.origin + "/player/player.html?" +urlParams.toString();
+                urlParams.set('path', file["Path"])
+                location.href = location.origin + "/player/player.html?" + urlParams.toString();
             }
         })
 
