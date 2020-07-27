@@ -51,7 +51,7 @@ app.get("/login/", function(req, res) {
 });
 
 app.get("/chooser/", [checkTokenGet], function(req, res) {
-    res.redirect("/player/videoShow.html?path=" + VideoPath);
+    res.redirect("/player/videoShow.html?path=");
 })
 
 app.get("/shutdown/", [checkTokenGet], function(req, res) {
@@ -61,7 +61,7 @@ app.get("/shutdown/", [checkTokenGet], function(req, res) {
 })
 
 app.get("/", [checkTokenGet], function(req, res) {
-    res.redirect("/player/videoShow.html?path=" + VideoPath)
+    res.redirect("/player/videoShow.html?path=")
 })
 
 app.get("/settings.html", [checkTokenGet], function(req, res) {
