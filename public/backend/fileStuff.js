@@ -58,8 +58,9 @@ module.exports = {
                     return;
             var split = file.split(".");
             var pa = path.replace(index.VideoPath, "") + Path.sep;
+            var name = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace("[1080p]", "")
             var push = {
-                "name" : file,
+                "name" : name,
                 "Path" : pa + file,
                 "type" : fs.lstatSync(path + Path.sep + file).isDirectory() ? "folder" : "video",
                 "image" : fs.lstatSync(path + Path.sep + file).isDirectory() ? pa + file + ".jpg" : pa + file.replace(split[split.length - 1], "jpg")
@@ -103,7 +104,8 @@ module.exports = {
      * @param {number} percent 
      */
     saveTime : function (path, token, percent, ip) {
-        path = index.VideoPath + path;
+        if (!path.startsWith(index.VideoPath))
+            path = index.VideoPath + path;
         var data = getData()
         var user = this.getUserFromToken(token, ip)
         if (!data.hasOwnProperty(user["username"])) 

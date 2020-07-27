@@ -5,10 +5,10 @@ var path = require('path');
 var app = express();
 var jsonParser = bodyParser.json()
 var cookieParser = require('cookie-parser')
-var VideoPath = "C:" + path.sep + "VideoTest"
+var VideoPath = "Z:" + path.sep + "Anime"
 
 if (!fs.existsSync(VideoPath))
-    VideoPath = "Z:" + path.sep + "Anime"
+    VideoPath = "C:" + path.sep + "VideoTest"
 
 var loginBackend = require('./public/backend/loginBackend.js');
 const fileStuff = require("./public/backend/fileStuff.js");
@@ -17,16 +17,6 @@ exports.path = __dirname;
 exports.VideoPath = VideoPath;
 exports.VideoNameExtensions = ["mp4"]
 exports.test = false
-
-app.use(express.json())
-app.use(cookieParser())
-app.use(jsonParser)
-app.use('/video', express.static(VideoPath))
-app.use('/js', express.static(path.join(__dirname, "public/javascript")))
-app.use('/style', express.static(path.join(__dirname, "public/style")))
-app.use('/player', express.static(path.join(__dirname, "videoPlayer")))
-app.use("/favicon.ico", express.static(path.join(__dirname, "favicon.ico")))
-
 
 var checkTokenPost = function (req, res, next) {
     if (loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)["status"]) {
@@ -40,17 +30,28 @@ var checkTokenGet = function (req, res, next) {
         if (loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)["status"]) {
             next();
         } else
-            res.redirect("../login/")
+            res.redirect("/login/")
     }
     else 
-        res.redirect("../login/")
+        res.redirect("/login/")
 }
+
+app.use(express.json())
+app.use(cookieParser())
+app.use(jsonParser)
+
+app.use('/video', checkTokenGet, express.static(VideoPath))
+app.use('/js', express.static(path.join(__dirname, "public/javascript")))
+app.use('/style', express.static(path.join(__dirname, "public/style")))
+app.use('/player',express.static(path.join(__dirname, "videoPlayer")))
+app.use("/favicon.ico", express.static(path.join(__dirname, "favicon.ico")))
+
 
 app.get("/login/", function(req, res) {
     res.sendFile(__dirname + "/login.html")
 });
 
-app.get("/chooser/", [checkTokenGet], function(req, res) {
+app.get("/chooser/",  [checkTokenGet], function(req, res) {
     res.redirect("/player/videoShow.html?path=");
 })
 
@@ -159,7 +160,7 @@ app.post('/log/', checkTokenPost, function(req, res) {
     console.log(req.body.message)
 })
 
-app.use(function(req, res) {
+app.use(checkTokenGet, function(req, res) {
     res.sendFile(path.join(__dirname, "videoPlayer", "notFound.html"))
 })
 
