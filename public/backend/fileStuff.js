@@ -58,7 +58,8 @@ module.exports = {
                     return;
             var split = file.split(".");
             var pa = path.replace(index.VideoPath, "") + Path.sep;
-            var name = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace("[1080p]", "")
+            var name = index.VideoNameExtensions.includes(split[split.length - 1]) ? name = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace(" [1080p]", "") : file;
+
             var push = {
                 "name" : name,
                 "Path" : pa + file,
