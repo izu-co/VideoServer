@@ -136,7 +136,7 @@ module.exports = {
      */
     getFileData : function(path) {
 
-        path = path.substring(3, path.length - 3)
+        path = path.substring(3, path.length)
 
         if (!path.startsWith(index.VideoPath))
             path = index.VideoPath + Path.sep + path
