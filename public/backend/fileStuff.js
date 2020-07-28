@@ -83,6 +83,7 @@ module.exports = {
 
         if (!path.startsWith(index.VideoPath))
             path = index.VideoPath + path
+        console.log(path)
         var user = this.getUserFromToken(token, ip);
         var data = getData();
         if (user === null)
