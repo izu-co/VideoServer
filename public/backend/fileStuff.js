@@ -83,11 +83,11 @@ module.exports = {
 
         if (!path.startsWith(index.VideoPath))
             path = index.VideoPath + path
-        console.log(path)
         var user = this.getUserFromToken(token, ip);
         var data = getData();
         if (user === null)
             return -1
+        console.log({"data" : data, "user" : user})
         if (data.hasOwnProperty(user["username"])) {
             if (data[user["username"]].hasOwnProperty(path)) {
                 return data[user["username"]][path];
