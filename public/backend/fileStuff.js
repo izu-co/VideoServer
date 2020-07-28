@@ -88,14 +88,13 @@ module.exports = {
         if (user === null)
             return -1
         if (data.hasOwnProperty(user["username"])) {
+            console.log(data[user["username"]][path])
             if (data[user["username"]].hasOwnProperty(path)) {
                 return data[user["username"]][path];
             } else {
-                console.log("here")
                 return 0 
             }
         } else {
-            console.log("here1")
             return 0
         }
 
