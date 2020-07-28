@@ -136,8 +136,11 @@ module.exports = {
      */
     getFileData : function(path) {
 
+        path = path.substring(3, path.length - 3)
+
         if (!path.startsWith(index.VideoPath))
-            path = index.VideoPath + path
+            path = index.VideoPath + Path.sep + path
+        console.log(path)
         var ret = {}
 
         var skips = loadSkips();
