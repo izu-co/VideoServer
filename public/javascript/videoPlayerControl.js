@@ -102,11 +102,11 @@ document.body.onkeyup = function(e){
     } else if (e.keyCode == 122) {
         togglefullScreen()
     } else if (e.keyCode === 39) {
-        video.currentTime = (video.currentTime + 10 > video.duration) ? video.duration : video.currentTime + 10;
         Move()
+        video.currentTime = (video.currentTime + 10 > video.duration) ? video.duration : video.currentTime + 10;
     } else if (e.keyCode == 37) {
-        video.currentTime = (video.currentTime - 10 < 0) ? 0 : video.currentTime - 10;
         Move();
+        video.currentTime = (video.currentTime - 10 < 0) ? 0 : video.currentTime - 10;
     }
 }
 
