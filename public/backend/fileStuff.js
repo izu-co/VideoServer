@@ -211,9 +211,6 @@ async function YouTubeDownload() {
     var FolderPath = Path.join(index.path, "java", "YouTubeDownloader")
 
     var proc = child_process.spawn("java", ["-jar", Path.join(FolderPath, "YTDownload.jar"),  Path.join(FolderPath, "abos.xml"), Path.join(index.VideoPath, "YouTube"), Path.join(FolderPath, "youtube-dl.exe")])
-        proc.stdout.on('data', (data) => {
-            process.stdout.write(`${data}`);
-        });
         proc.stderr.on('data', (data) => {
             process.stdout.write(`${data}`);
         });
