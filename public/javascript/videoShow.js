@@ -46,7 +46,7 @@ function loadData(data) {
 
     data.sort(function(a, b) {
         if (a["type"] === "video" && b["type"] === "video")
-            if(a["name"].match(/\d+/g).length > 0 && b["name"].match(/\d+/g).length > 0)
+            if(a["name"].match(/\d+/g) != null && b["name"].match(/\d+/g) != null)
                 return a["name"].match(/\d+/g)[0] - b["name"].match(/\d+/g)[0];
             else 
                 a["name"].localeCompare(b["name"]);
