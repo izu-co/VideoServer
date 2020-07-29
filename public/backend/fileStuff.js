@@ -2,7 +2,6 @@ var child_process = require("child_process")
 const fs = require("fs")
 const Path = require("path")
 const index = require("../../index")
-const { isNumber } = require("util")
 const loginBackend = require("./loginBackend")
 
 module.exports = {
@@ -140,7 +139,6 @@ module.exports = {
 
         if (!path.startsWith(index.VideoPath))
             path = index.VideoPath + Path.sep + path
-        console.log(path)
         var ret = {}
 
         var skips = loadSkips();
@@ -200,7 +198,29 @@ module.exports = {
 
     shutdown: function() {
         process.exit(0)
+    },
+
+    startYouTubeDownloader: function() {
+        YouTubeDownload();
     }
+}
+
+async function YouTubeDownload() {
+    setTimeout(() => { YouTubeDownload() }, (1000 * 60 * 60 * 24));
+    console.log("Started YouTube Download")
+    var FolderPath = Path.join(index.path, "java", "YouTubeDownloader")
+
+    var proc = child_process.spawn("java", ["-jar", Path.join(FolderPath, "YTDownload.jar"),  Path.join(FolderPath, "abos.xml"), Path.join(index.VideoPath, "YouTube"), Path.join(FolderPath, "youtube-dl.exe")])
+        proc.stdout.on('data', (data) => {
+            process.stdout.write(`${data}`);
+        });
+        proc.stderr.on('data', (data) => {
+            process.stdout.write(`${data}`);
+        });
+          
+        proc.on('close', (code) => {
+            console.log(`YouTube Download Finished!`);
+        });
 }
 
 function loadSettings() {

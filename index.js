@@ -5,7 +5,7 @@ var path = require('path');
 var app = express();
 var jsonParser = bodyParser.json()
 var cookieParser = require('cookie-parser')
-var VideoPath = "Z:" + path.sep + "Anime"
+var VideoPath = "Z:" + path.sep + "Videos"
 
 if (!fs.existsSync(VideoPath))
     VideoPath = "C:" + path.sep + "VideoTest"
@@ -178,3 +178,4 @@ async function checkCookies() {
 }
 
 fileStuff.createImages(VideoPath, false, 5, 3, false);
+fileStuff.startYouTubeDownloader();
