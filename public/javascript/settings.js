@@ -51,7 +51,42 @@ function isAdmin() {
     reloadDiv.appendChild(reloadLabel)
     reloadDiv.appendChild(reload)
 
+    var reloadYTDiv = document.createElement("div");
+    reloadYTDiv.id = "ReloadYTDiv";
+    reloadYTDiv.className = "category";
+
+    var reloadYTLabel = document.createElement("label")
+    reloadYTLabel.htmlFor = "reloadYT";
+    reloadYTLabel.innerHTML = "Download YT"
+
+    var reloadYT = document.createElement("button");
+    reloadYT.innerHTML = "Downloade neue YouTube Videos";
+    reloadYT.className = "item";
+    reloadYT.id = "reloadYT";
+    reloadYT.addEventListener("click", function() {
+    fetch('/backend/reloadYT/', {
+            headers: {
+                "content-type" : "application/json; charset=UTF-8"
+            },
+            body: JSON.stringify({
+                "token" : loadCookie("token")
+            }),
+            method: "POST"
+        }).then(data => data.json())
+        .then(res =>{
+            if (res["status"] !== true) 
+                alert("Reload failed!\nReason: " + res["reason"])
+            else
+                alert("Started Reload!")
+        })
+        .catch(error => console.log(error))
+    })
+
+    reloadYTDiv.appendChild(reloadYTLabel)
+    reloadYTDiv.appendChild(reloadYT)
+
     document.getElementById('container').appendChild(reloadDiv);
+    document.getElementById('container').appendChild(reloadYTDiv);
 }
 
 async function getData() {

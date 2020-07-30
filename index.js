@@ -127,6 +127,16 @@ app.post("/backend/reload/", checkTokenPost, function(req, res) {
         res.send({"status" : false, "reason" : "User is not an Admin!"})
 })
 
+app.post("/backend/reloadYT/", checkTokenPost, function(req, res) {
+    var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
+    if (user === null)
+        res.send({"status" : false, "reason" : "User not found!"})
+    if (user["user"]["perm"] === "Admin")
+        res.send(fileStuff.startYouTubeDownloader(VideoPath, false, 5, 3, false))
+    else 
+        res.send({"status" : false, "reason" : "User is not an Admin!"})
+})
+
 app.post('/backend/setTime/', checkTokenPost, function(req, res) {
     fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress);
     res.send({"status" : true}); 
@@ -170,12 +180,19 @@ var listener = app.listen(3000, "0.0.0.0", function() {
     console.log('App listening at http://%s:%s', host, port);
 })
 
-checkCookies();
 
 async function checkCookies() {
     setTimeout(() => { checkCookies() }, (1000 * 60));
     loginBackend.checkTokenForValid();
 }
 
+async function youtube() {
+    setTimeout(() => { youtube() }, (1000 * 60 * 60 * 12));
+
+    fileStuff.startYouTubeDownloader();
+}
+
+checkCookies();
+youtube();
+
 fileStuff.createImages(VideoPath, false, 5, 3, false);
-fileStuff.startYouTubeDownloader();

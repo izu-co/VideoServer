@@ -201,27 +201,23 @@ module.exports = {
     },
 
     startYouTubeDownloader: function() {
-        YouTubeDownload();
-    }
-}
-
-async function YouTubeDownload() {
-    setTimeout(() => { YouTubeDownload() }, (1000 * 60 * 60 * 12));
-    console.log("Started YouTube Download")
-    var FolderPath = Path.join(index.path, "java", "YouTubeDownloader")
-
-    var proc = child_process.spawn("java", ["-jar", Path.join(FolderPath, "YTDownload.jar"),  Path.join(FolderPath, "abos.xml"), Path.join(index.VideoPath, "YouTube"), Path.join(FolderPath, "youtube-dl.exe"), Path.join(FolderPath, "output")])
-    proc.stdout.on('data', (data) => {
-        process.stdout.write(`${data}`);
-    });    
+        console.log("Started YouTube Download")
+        var FolderPath = Path.join(index.path, "java", "YouTubeDownloader")
     
-    proc.stderr.on('data', (data) => {
-        process.stdout.write(`${data}`);
-    });
-          
-    proc.on('close', (code) => {
-        console.log(`YouTube Download Finished!`);
-    });
+        var proc = child_process.spawn("java", ["-jar", Path.join(FolderPath, "YTDownload.jar"),  Path.join(FolderPath, "abos.xml"), Path.join(index.VideoPath, "YouTube"), Path.join(FolderPath, "youtube-dl.exe"), Path.join(FolderPath, "output")])
+        proc.stdout.on('data', (data) => {
+            process.stdout.write(`${data}`);
+        });    
+        
+        proc.stderr.on('data', (data) => {
+            process.stdout.write(`${data}`);
+        });
+              
+        proc.on('close', (code) => {
+            console.log(`YouTube Download Finished!`);
+        });
+        return {"status" : true}
+    }
 }
 
 function loadSettings() {
