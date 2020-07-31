@@ -19,16 +19,16 @@ module.exports = {
 
         proc.stdout.on('data', (data) => {
             if (writeOutput || !data.includes("skiped"))
-                process.stdout.write(`${data}`);
+                console.log(data.toString())
         });
           
         proc.stderr.on('data', (data) => {
             if (writeOutput || !data.includes("skiped"))
-                process.stdout.write(`${data}`);
+                console.log(data.toString())
         });
           
         proc.on('close', (code) => {
-            console.log(`Done with code ${code}`);
+            console.log(`Image Creation done with code ${code}`);
         });
         return {"status" : true}
     },
@@ -206,15 +206,32 @@ module.exports = {
     
         var proc = child_process.spawn("java", ["-jar", Path.join(FolderPath, "YTDownload.jar"),  Path.join(FolderPath, "abos.xml"), Path.join(index.VideoPath, "YouTube"), Path.join(FolderPath, "youtube-dl.exe"), Path.join(FolderPath, "output")])
         proc.stdout.on('data', (data) => {
-            process.stdout.write(`${data}`);
+            console.log(data.toString())
         });    
         
         proc.stderr.on('data', (data) => {
-            process.stdout.write(`${data}`);
+            console.error(data.toString())
         });
               
         proc.on('close', (code) => {
             console.log(`YouTube Download Finished!`);
+        });
+        return {"status" : true}
+    },
+
+    downloadYoutTube : function(URL) {
+        var FolderPath = Path.join(index.path, "java", "YouTubeDownloader")
+        var proc = child_process.spawn(Path.join(FolderPath, "youtube-dl.exe"), ["-o", Path.join(index.VideoPath, "YouTube", "%(uploader)s - %(title)s.%(ext)s"), "-f", "(\"bestvideo[width=1920,vbr<3000,ext!=webm]\")+bestaudio[ext!=webm]/best[ext!=webm]", "--continue", URL]);
+        proc.stderr.on('data', (data) => {
+            console.error(data.toString());
+        });
+
+        proc.stdout.on("data", (data) => {
+            console.log(data.toString());
+        })
+
+        proc.on('close', (code) => {
+            console.log(`YouTube Download Finished with Code ` + code);
         });
         return {"status" : true}
     }
