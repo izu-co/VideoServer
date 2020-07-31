@@ -16,7 +16,15 @@ const fileStuff = require("./public/backend/fileStuff.js");
 exports.path = __dirname;
 exports.VideoPath = VideoPath;
 exports.VideoNameExtensions = ["mp4"]
-exports.test = false
+exports.test = process.argv.length > 2 ? process.argv[2] === "debug" : false;
+exports.logs = [];
+
+console.stdlog = console.log.bind(console);
+console.log = function(){
+    exports.logs.push(Array.from(arguments));
+    console.stdlog.apply(console, arguments);
+}
+
 
 var checkTokenPost = function (req, res, next) {
     if (loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)["status"]) {
@@ -194,5 +202,10 @@ async function youtube() {
 
 checkCookies();
 youtube();
+
+if (exports.test)
+    setTimeout(() => {
+        process.exit(0)
+    }, 5 * 1000);
 
 fileStuff.createImages(VideoPath, false, 5, 3, false);
