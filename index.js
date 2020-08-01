@@ -220,7 +220,7 @@ async function checkCookies() {
 }
 
 async function youtube() {
-    setTimeout(() => { youtube() }, (1000 * 60 * 60 * 12));
+    setTimeout(() => { youtube() }, (1000 * 60 * 60 * 36));
 
     fileStuff.startYouTubeDownloader();
 }
