@@ -15,7 +15,8 @@ if (!fs.existsSync(VideoPath))
 exports.path = __dirname;
 exports.VideoPath = VideoPath;
 exports.VideoNameExtensions = ["mp4"]
-exports.test = process.argv.length > 2 ? process.argv[2] === "debug" : false;
+exports.test = process.argv.length > 2 ? process.argv[2] === "test" : false;
+exports.debug = process.argv.length > 3 ? process.argv[2] === "debug" : false;
 exports.logs = [];
 
 console.stdlog = console.log.bind(console);
@@ -46,16 +47,27 @@ var checkTokenGet = function (req, res, next) {
 app.use(express.json())
 app.use(cookieParser())
 app.use(jsonParser)
-
-app.use('/video', checkTokenGet, express.static(VideoPath))
-app.use('/js', express.static(path.join(__dirname, "public/javascript")))
-app.use('/style', express.static(path.join(__dirname, "public/style")))
-app.use('/player', checkTokenGet, express.static(path.join(__dirname, "videoPlayer")))
 app.use("/favicon.ico", express.static(path.join(__dirname, "favicon.ico")))
+
+/**
+ * Public Uses
+ */
+app.use('/public/js', express.static(path.join(__dirname, "public/javascript")))
+app.use('/public/style', express.static(path.join(__dirname, "public/style")))
+
+/**
+ * Private Uses
+ */
+
+app.use('/private/js', checkTokenGet, express.static(path.join(__dirname, "private", "javascript")))
+app.use('/video', checkTokenGet, express.static(VideoPath))
+app.use('/private/style', checkTokenGet, express.static(path.join(__dirname, "private", "style")))
+app.use('/player', checkTokenGet, express.static(path.join(__dirname, path.join("private", "html"))))
+
 
 
 app.get("/login/", function(req, res) {
-    res.sendFile(__dirname + "/login.html")
+    res.sendFile(path.join(__dirname, "public", "html", "login.html"))
 });
 
 app.get("/chooser/",  [checkTokenGet], function(req, res) {
@@ -73,27 +85,18 @@ app.get("/", [checkTokenGet], function(req, res) {
 })
 
 app.get("/settings.html", [checkTokenGet], function(req, res) {
-    res.sendFile(path.join(__dirname, "videoPlayer", "settings.html"))
+    res.sendFile(path.join(__dirname, "private", "html", "settings.html"))
 })
-
-app.get("/download/:url/", checkTokenGet, function(req, res) {
-    var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
-    if (user["user"]["perm"] === "Admin")
-        res.send(fileStuff.downloadYoutTube(req.params["url"]))
-    else 
-        res.send("You dont have Permission to access that!")
-})
-
 app.get("/admin.html", [checkTokenGet], function(req, res) {
     var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
     if (user["user"]["perm"] === "Admin")
-        res.sendFile(path.join(__dirname, "videoPlayer", "admin.html"))
+        res.sendFile(path.join(__dirname, "private", "html", "admin.html"))
     else 
         res.send("You dont have Permission to access that!")
 })
 
 app.get("/logs.html", checkTokenGet, function(req, res) {
-    res.sendFile(path.join(__dirname, "videoPlayer", "logs.html"))
+    res.sendFile(path.join(__dirname, "private", "html", "logs.html"))
 })
 
 /**
@@ -204,7 +207,7 @@ app.post("/backend/clearLogs/", checkTokenPost, function(req, res) {
 })
 
 app.use(checkTokenGet, function(req, res) {
-    res.sendFile(path.join(__dirname, "videoPlayer", "notFound.html"))
+    res.sendFile(path.join(__dirname, "public", "html", "notFound.html"))
 })
 
 var listener = app.listen(3000, "0.0.0.0", function() {
@@ -219,19 +222,7 @@ async function checkCookies() {
     loginBackend.checkTokenForValid();
 }
 
-async function youtube() {
-    setTimeout(() => { youtube() }, (1000 * 60 * 60 * 36));
-
-    fileStuff.startYouTubeDownloader();
-}
-
 checkCookies();
+
 if (!exports.test)
-    youtube();
-
-if (exports.test)
-    setTimeout(() => {
-        process.exit(0)
-    }, 5 * 1000);
-
-fileStuff.createImages(VideoPath, false, 5, 3, false);
+    fileStuff.createImages(VideoPath, false, 5, 3, exports.debug);

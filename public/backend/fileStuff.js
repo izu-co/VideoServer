@@ -198,42 +198,6 @@ module.exports = {
 
     shutdown: function() {
         process.exit(0)
-    },
-
-    startYouTubeDownloader: function() {
-        console.log("Started YouTube Download")
-        var FolderPath = Path.join(index.path, "java", "YouTubeDownloader")
-    
-        var proc = child_process.spawn("java", ["-jar", Path.join(FolderPath, "YTDownload.jar"),  Path.join(FolderPath, "abos.xml"), Path.join(index.VideoPath, "YouTube"), Path.join(FolderPath, "youtube-dl.exe"), Path.join(FolderPath, "output")])
-        proc.stdout.on('data', (data) => {
-            console.log(data.toString())
-        });    
-        
-        proc.stderr.on('data', (data) => {
-            console.error(data.toString())
-        });
-              
-        proc.on('close', (code) => {
-            console.log(`YouTube Download Finished!`);
-        });
-        return {"status" : true}
-    },
-
-    downloadYoutTube : function(URL) {
-        var FolderPath = Path.join(index.path, "java", "YouTubeDownloader")
-        var proc = child_process.spawn(Path.join(FolderPath, "youtube-dl.exe"), ["-o", Path.join(index.VideoPath, "YouTube", "%(uploader)s - %(title)s.%(ext)s"), "-f", "(\"bestvideo[width=1920,vbr<3000,ext!=webm]\")+bestaudio[ext!=webm]/best[ext!=webm]", "--continue", URL]);
-        proc.stderr.on('data', (data) => {
-            console.error(data.toString());
-        });
-
-        proc.stdout.on("data", (data) => {
-            console.log(data.toString());
-        })
-
-        proc.on('close', (code) => {
-            console.log(`YouTube Download Finished with Code ` + code);
-        });
-        return {"status" : true}
     }
 }
 

@@ -1,0 +1,314 @@
+body {
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    background: #ccc;
+    justify-content: center;
+    align-items: center;
+}
+
+.video {
+    width: 100%;
+}
+
+#c-video {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+#controls.show {
+    transform: translateY(0);
+}
+
+#controls.hide {
+    transform: translateY(100%);
+}
+
+#controls {
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 45px;
+    flex-wrap: wrap;
+    background-color: rgba(0, 0, 0, 0.7);
+    transform: translateY(100%);
+    transition: all .2s;
+}
+.button-container #play-pause {
+    background: none;
+    border: 0;
+    outline: 0;
+    cursor: pointer;
+}
+
+.buttons #play-pause.play:before {
+    content: '\f144';
+}
+
+.buttons #play-pause.pause:before {
+    content: '\f28b';
+}
+
+.buttons {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+
+.buttons #play-pause:before {
+    content: '\f144';
+    font-family: 'Font Awesome 5 Free';
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    font-size: 22px;
+    color: white;
+    -webkit-font-smoothing: antialiased;
+}
+
+.orange-bar {
+    top: 0;
+    left: 0;
+    height: 7px;
+    width: 100%;
+    background-color: black;
+}
+
+.orange-juice {
+    height: 7px;
+    width: 0%;
+    background-color: orangered;
+}
+
+.buttons #volume{
+    background: none;
+    border: 0;
+    outline: 0;
+    cursor: pointer;
+}
+
+
+
+.buttons #volume:before {
+    content: '\f028';
+    font-family: 'Font Awesome 5 Free';
+    width: 15px;
+    height: 15px;
+    font-weight: 900;
+    display: inline-block;
+    font-size: 22px;
+    color: white;
+    -webkit-font-smoothing: antialiased;
+}
+
+
+.buttons #volume.unmuted:before {
+    content: '\f028';
+}
+
+.buttons #volume.muted:before {
+    content: '\f6a9';
+}
+
+.buttons #slider {
+    display: inline-block;
+    cursor: pointer;
+    outline: 0;
+    background: transparent;
+    line-height: 7px;
+    direction: 1tr;
+    width: 15px;
+    height: 15px;
+}
+
+.button-container:hover .volumeSliderDiv {
+    opacity: 1;
+}
+
+.button-container {
+    padding-bottom: 5px;
+    width: 100%;
+}
+
+.slider {
+    -webkit-appearance: none; 
+    appearance: none;
+    height: 15px;
+    width: 100%; 
+    display: inline-block;
+    cursor: pointer;
+    background: rgba(192, 192, 192, 0.5);
+    border-radius: 5px; 
+    outline: none; 
+}
+
+.volumeSliderDiv {
+
+    width: 10%;
+    padding-left: 3px;
+    display: inline-block;
+    opacity: 0;
+    transition: all .2s;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%; 
+    background: orangered;
+    cursor: pointer;
+}
+.time {
+    display: inline-block;
+    color: white;
+    height: 50%;
+    font-size: 25px;
+}
+
+.HoverText {
+    opacity: 0;
+    display: none;
+}
+
+
+.time #timeText {
+    color: white;
+    height: 50%;
+    font-family: 'Rubik', sans-serif;
+    font-size: 20px;
+}
+
+.TimeBar .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: rgba(136, 136, 136, 0.6);
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+  
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  
+  /* Show the tooltip text when you mouse over the tooltip container */
+.TimeBar:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+.skip {
+    position: absolute;
+    right: 50px;
+    bottom: 100px;
+}
+
+#SkipButton {
+    font-size: 50px;
+    size: 50px;
+    background: rgba(136, 136, 136, 0.4);
+    border: none;
+    display: none;
+}
+
+#SkipButton.allowed {
+    font-size: 50px;
+    size: 50px;
+    background: rgba(136, 136, 136, 0.4);
+    border: none;
+    display: inline;
+}
+
+#SkipButton.denied {
+    font-size: 50px;
+    size: 50px;
+    background: rgba(136, 136, 136, 0.4);
+    border: none;
+    display: none;
+}
+
+#fullscreen {
+    background: none;
+    border: 0;
+    outline: 0;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+}
+
+#fullscreen::before {
+    content: '\f31e';
+    font-family: 'Font Awesome 5 Free';
+    width: 15px;
+    height: 15px;
+    font-weight: 900;
+    display: inline-block;
+    font-size: 22px;
+    color: white;
+    -webkit-font-smoothing: antialiased;
+}
+
+#fullscreen.is::before {
+    content: '\f422';
+    font-family: 'Font Awesome 5 Free';
+    width: 15px;
+    height: 15px;
+    font-weight: 900;
+    display: inline-block;
+    font-size: 22px;
+    color: white;
+    -webkit-font-smoothing: antialiased;
+}
+
+#fullscreen.isnot::before {
+    content: '\f31e';
+    font-family: 'Font Awesome 5 Free';
+    width: 15px;
+    height: 15px;
+    font-weight: 900;
+    display: inline-block;
+    font-size: 22px;
+    color: white;
+    -webkit-font-smoothing: antialiased;
+}
+
+#next {
+    background: none;
+    border: 0;
+    outline: 0;
+    position: absolute;
+    right: 40px;
+    top: 10px;
+    cursor: pointer;
+}
+
+#next::before {
+    content: '\f101';
+    font-family: 'Font Awesome 5 Free';
+    width: 15px;
+    height: 15px;
+    font-weight: 900;
+    display: inline-block;
+    font-size: 22px;
+    color: white;
+    -webkit-font-smoothing: antialiased;
+}
