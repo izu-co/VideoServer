@@ -41,13 +41,9 @@ getUsers().then(users => {
 
 
         var password = document.createElement("b")
-        var passText = "";
-        for (var a = 0; a < user["password"].length; a++) {
-            passText += "*"
-        }
 
         password.className = "Password"
-        password.innerHTML = passText
+        password.innerHTML = user["password"]
         password.style.width = "80px"
         password.style.display = "inline-block"
 

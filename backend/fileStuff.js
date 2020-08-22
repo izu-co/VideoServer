@@ -1,7 +1,7 @@
 var child_process = require("child_process")
 const fs = require("fs")
 const Path = require("path")
-const index = require("../../index")
+const index = require("../index")
 const loginBackend = require("./loginBackend")
 
 module.exports = {

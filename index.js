@@ -1,22 +1,22 @@
 const express = require("express")
 const fs = require("fs")
 const bodyParser =  require('body-parser');
-var path = require('path');
-var app = express();
-var jsonParser = bodyParser.json()
-var cookieParser = require('cookie-parser')
-var loginBackend = require('./public/backend/loginBackend.js');
-const fileStuff = require("./public/backend/fileStuff.js");
-var VideoPath = "Z:" + path.sep + "Videos"
+const path = require('path');
+const app = express();
+const jsonParser = bodyParser.json()
+const cookieParser = require('cookie-parser')
+const loginBackend = require('./backend/loginBackend.js');
+const fileStuff = require("./backend/fileStuff.js");
+const VideoPath = "Z:" + path.sep + "Videos"
 
 if (!fs.existsSync(VideoPath))
-    VideoPath = "C:" + path.sep + "VideoTest"
+VideoPath = "C:" + path.sep + "VideoTest"
 
 exports.path = __dirname;
 exports.VideoPath = VideoPath;
 exports.VideoNameExtensions = ["mp4"]
 exports.test = process.argv.length > 2 ? process.argv[2] === "test" : false;
-exports.debug = process.argv.length > 3 ? process.argv[2] === "debug" : false;
+exports.debug = process.argv.length > 2 ? process.argv[2] === "debug" : false;
 exports.logs = [];
 
 console.stdlog = console.log.bind(console);
@@ -25,6 +25,9 @@ console.log = function(){
     console.stdlog.apply(console, arguments);
 }
 
+require("./backend/UserMangement.js").deleteToken("3d6b5661-903e-4b3d-97f8-b57988b40d92", "aasd", "1").then(token => {
+    console.log(token)
+})
 
 var checkTokenPost = function (req, res, next) {
     if (loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)["status"]) {
@@ -222,7 +225,7 @@ async function checkCookies() {
     loginBackend.checkTokenForValid();
 }
 
-checkCookies();
+//checkCookies();
 
 if (!exports.test)
     fileStuff.createImages(VideoPath, false, 5, 3, exports.debug);
