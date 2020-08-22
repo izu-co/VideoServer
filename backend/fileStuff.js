@@ -108,7 +108,7 @@ module.exports = {
     saveTime : function (path, token, percent, ip) {
         if (!path.startsWith(index.VideoPath))
             path = index.VideoPath + path;
-        oginBackend.getUserFromToken(token, ip).then(user => {
+        loginBackend.getUserFromToken(token, ip).then(user => {
             if (!data.hasOwnProperty(user["username"])) 
                 data[user["username"]] = {};
             data[user["username"]][path] = percent
