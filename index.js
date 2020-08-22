@@ -68,6 +68,7 @@ app.use('/video', checkTokenGet, express.static(VideoPath))
 app.use('/private/style', checkTokenGet, express.static(path.join(__dirname, "private", "style")))
 app.use('/private/html', checkTokenGet, express.static(path.join(__dirname, path.join("private", "html"))))
 app.use("/player/player.html", checkTokenGet, express.static(path.join(__dirname, "private", "html", "player.html")))
+app.use("/player/videoShow.html", checkTokenGet, express.static(path.join(__dirname, "private", "html", "videoShow.html")))
 
 
 
