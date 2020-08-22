@@ -18,7 +18,8 @@ exports.debug = process.argv.length > 2 ? process.argv[2] === "debug" : false;
 exports.logs = [];
 
 const fileStuff = require("./backend/fileStuff.js");
-const loginBackend = require("./backend/UserMangement")
+const loginBackend = require("./backend/UserMangement");
+const { response } = require("express");
 
 console.stdlog = console.log.bind(console);
 console.log = function(){
@@ -111,6 +112,20 @@ app.get("/logs.html", checkTokenGet, function(req, res) {
  * Post
  */
 
+app.post('/backend/addUser', checkTokenPost, function(req, res) {
+    loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
+        if (!user["status"])
+            res.send(user)
+        if (user["user"]["perm"] === "Admin")
+            loginBackend.addNewUser(req.body.username, req.body.password, req.body.perm).then(response => {
+                res.send(response)
+            });
+        else 
+            res.send({"status" : false, "reason": "No Permission"})
+        
+    })
+})
+
 app.post("/backend/getUsers/", checkTokenPost, function(req, res) {
     loginBackend.loadUsers(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
         res.send(response);
@@ -184,7 +199,7 @@ app.post("/backend/changeActive/", checkTokenPost, function(req, res) {
         if (!user["status"])
             res.send(user)
         if (user["user"]["perm"] === "Admin")
-            loginBackend.changeActiveState(req.body.state, req.body.username).then(response => {
+            loginBackend.changeActiveState(req.body.state, req.body.uuid, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
                 res.send(response);
             })
         else 

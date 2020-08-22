@@ -43,7 +43,6 @@ module.exports = {
             if (username === data[keys[a]]["username"])
                 return { "status" : false, "reason" : "Der Username exestiert bereits!" }
         }
-
         let uuid = uuidv4();
         while (data.hasOwnProperty(uuid)) {
             uuid = uuidv4();
@@ -128,6 +127,7 @@ module.exports = {
                 let keys = Object.keys(users);
                 for (let i = 0; i < keys.length; i++) {
                     let AddUser = users[keys[i]];
+                    AddUser["uuid"] = keys[i];
                     var passText = "";
                     for (var a = 0; a < AddUser["password"].length; a++) {
                         passText += "*"

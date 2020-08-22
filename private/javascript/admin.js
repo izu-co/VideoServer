@@ -18,7 +18,6 @@ async function getUsers() {
     .catch(error => console.log(error))
 }
 
-
 getUsers().then(users => {
     users.forEach(user => {
         var userContainer = document.createElement("div")
@@ -74,11 +73,6 @@ getUsers().then(users => {
         /**
          * End Perm 
          * Start Active
-         * 
-        <label class="switch">
-        <input type="checkbox">
-        <span class="slider round"></span>
-      </label>
          */
 
         var activeDiv = document.createElement('div')
@@ -95,7 +89,6 @@ getUsers().then(users => {
         checkavtive.type = "checkbox";
         checkavtive.checked = user["active"]
 
-
         checkavtive.addEventListener("change", function() {
             fetch('/backend/changeActive/', {
                 headers: {
@@ -104,7 +97,7 @@ getUsers().then(users => {
                 body: JSON.stringify({
                     "token" : loadCookie("token"),
                     "state" : checkavtive.checked,
-                    "username" : user["username"]
+                    "uuid" : user["uuid"]
                 }),
                 method: "POST"
             }).then(data => data.json())
@@ -180,6 +173,41 @@ getUsers().then(users => {
         container.appendChild(userContainer)
     })
 })
+
+document.getElementById("submit").addEventListener("click", function() {
+    let username = document.getElementById('Name').value
+    let pass = document.getElementById('Pass').value
+    let passCon = document.getElementById('ConPass').value
+    let perm = document.getElementById('perm').options[document.getElementById('perm').selectedIndex].value
+    if (username === "") 
+        alert("Please enter a username!")
+    else if (pass === "")
+        alert("Please enter a password!")
+    else if (passCon === "")
+        alert("Please confirm the password!")
+    else if (pass !== passCon)
+        alert("The passwords are not the same!")
+    return fetch('/backend/addUser/', {
+        headers: {
+            "content-type" : "application/json; charset=UTF-8"
+        },
+        body: JSON.stringify({
+            "token" : loadCookie("token"),
+            "username" : username,
+            "password": pass,
+            "perm": perm
+        }),
+        method: "POST"
+    }).then(data => data.json())
+    .then(res =>{
+        if (res["status"] !== true) 
+            alert(res["reason"])
+        else location.reload();
+    })
+    .catch(error => console.log(error))
+
+})
+
 /**
  * @param {Boolean} is 
  */

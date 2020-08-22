@@ -75,3 +75,26 @@ label {
   .slider.round:before {
     border-radius: 50%;
   }
+
+#newUser input {
+  border: black;
+  border-style: inset;
+  border-width: 1px;
+}
+
+
+#permLabel {
+  display: inline;
+  font-weight: bolder;
+}
+
+#FormLabel {
+  display: inline;
+  margin: 10px;
+}
+
+#newUser {
+  margin: 10px;
+  margin-top: 0;
+  display: block;
+}
