@@ -2,7 +2,7 @@ var child_process = require("child_process")
 const fs = require("fs")
 const Path = require("path")
 const index = require("../index")
-const loginBackend = require("./loginBackend")
+const loginBackend = require("./UserMangement")
 
 module.exports = {
     /**
@@ -82,19 +82,21 @@ module.exports = {
 
         if (!path.startsWith(index.VideoPath))
             path = index.VideoPath + path
-        var user = this.getUserFromToken(token, ip);
-        var data = getData();
-        if (user === null)
-            return -1
-        if (data.hasOwnProperty(user["username"])) {
-            if (data[user["username"]].hasOwnProperty(path)) {
-                return data[user["username"]][path];
+        loginBackend.getUserFromToken(token, ip).then(user => {
+            var data = getData();
+            if (!user["status"])
+                return -1
+            user = user["user"];
+            if (data.hasOwnProperty(user["username"])) {
+                if (data[user["username"]].hasOwnProperty(path)) {
+                    return data[user["username"]][path];
+                } else {
+                    return 0 
+                }
             } else {
-                return 0 
+                return 0
             }
-        } else {
-            return 0
-        }
+        })
 
     },
     /**
@@ -112,22 +114,6 @@ module.exports = {
             data[user["username"]] = {};
         data[user["username"]][path] = percent
         saveData(data)
-    },
-
-    getUserFromToken : function(token, ip) {
-        var data = loadData();
-        for (var i = 0; i < data.length; i++) {
-            var item = data[i];
-            if (item.token !== null) {
-                var items = item["token"]
-                for (let i = 0; i < items.length; i++) {
-                    const Tokenitem = items[i];
-                    if (Tokenitem["token"] === token && ip === Tokenitem["ip"])
-                        return item;
-                }
-            }
-        }
-        return null;
     },
 
     /**
@@ -173,27 +159,33 @@ module.exports = {
     },
 
     getUserData: function(token, ip) {
-        var user = loginBackend.checkTokenReturnEveryThing(token, ip);
-        var settings = loadSettings()
-        var ret = {};
-
-        if (user !== null && settings.hasOwnProperty(user["user"]["username"])) {
-            ret["volume"] = settings[user["user"]["username"]]["volume"]
-        } else {
-            ret["volume"] = settings["default"]["volume"];
-        }
-
-        return {"status" : true, "data" : ret};
+        loginBackend.getUserFromToken(token, ip).then(user => {
+            console.log(user)
+            if (!user["status"])
+                return user;
+            user = user["user"]
+            var settings = loadSettings()
+            var ret = {};
+    
+            if (user !== null && settings.hasOwnProperty(user["username"])) {
+                ret["volume"] = settings[user["username"]]["volume"]
+            } else {
+                ret["volume"] = settings["default"]["volume"];
+            }
+    
+            return {"status" : true, "data" : ret};
+        })
     },
 
     saveUserData: function(token, ip, data) {
-        var user = loginBackend.checkTokenReturnEveryThing(token, ip)
-        var settings = loadSettings();
-
-        settings[user["user"]["username"]] = data;
-
-        saveSettings(settings);
-        return {"status" : true}
+        loginBackend.getUserFromToken(token, ip).then(user => {
+            var settings = loadSettings();
+    
+            settings[user["user"]["username"]] = data;
+    
+            saveSettings(settings);
+            return {"status" : true}
+        })
     },
 
     shutdown: function() {
@@ -237,18 +229,6 @@ function saveData(data) {
             throw err;
     }
 }
-
-function loadData() {
-    try {
-        return JSON.parse(fs.readFileSync(index.path + "/data/logins.json"))["logins"];
-    } catch (err) {
-        if (index.test) {
-            return {}
-        } else 
-            throw err;
-    }
-}
-
 function loadSkips() {
     try {
         return JSON.parse(fs.readFileSync(index.path + "/data/intros.json"));

@@ -3,8 +3,7 @@ const index = require("../index.js")
 const fs = require("fs")
 const PermissionLevel = ["User", "Admin"];
 const length = 20;
-
-const loginFilePath= path.join(index.path, "data", "logins.json")
+const loginFilePath = path.join(index.path, "data", "logins.json")
 module.exports = {
     /**
      * @param {string} token 
@@ -72,14 +71,14 @@ module.exports = {
      * @param {string} ip Die IP des Nutzers
      */
     GenerateUserToken: async function(username, password, ip) {
-        var data = await loadData();
+        var data = await readLogins();
         let keys = Object.keys(data);
         for (let i = 0; i < keys.length; i++) {
             var user = data[keys[i]];
             if (user["username"] === username && user["password"] === password) {
                 if (!user["active"])
                     return {"status" : false, "reason" : "Der account ist deaktiviert!"}
-                var rohtoken = generateToken();
+                var rohtoken = await generateToken();
                 var token = {
                     "when" : Date.now(),
                     "to" : new Date(Date.now() + (1000 * 60 * 60 * 24)).getTime(),
@@ -91,7 +90,7 @@ module.exports = {
                 user["token"] = tokens;
                 data[keys[i]] = user;
 
-                return {"status": await saveData(data), "token" : rohtoken};
+                return {"status": await writeLogins(data), "token" : rohtoken};
             }
         }
         return {"status" : false, "reason" : "Der Benutzername oder das Passwort ist falsch"};
@@ -168,6 +167,58 @@ module.exports = {
             return {"status": false, "reson": "User not Found!"}
         } else {
             return {"status": false, "reason": "Permission denied!"}
+        }
+    },
+
+    changeActiveState: async function(state, uuid, token, ip) {
+        var user = await this.getUserFromToken(token, ip);
+        if (!user["status"])
+            return user;
+        
+        let data = await readLogins();
+        let keys = Object.keys(data);
+        for (let i = 0; i < keys.length; i++) {
+            if (keys[i] === uuid) {
+                let user = data[keys[i]];
+                user["active"] = state;
+                data[keys[i]] = user;
+                return {"status": await writeLogins(data)};
+            }
+        }
+        return {"status" : false, "reason": "UUID User not found"}
+    },
+    
+    
+    changePassword: async function(token, ip, oldPass, newPass) {
+        var user = await this.getUserFromToken(token, ip);
+        if (!user["status"])
+            return user;
+        
+        let data = await readLogins();
+        if (data.hasOwnProperty(user["user"]["uuid"])) {
+            if (user["user"]["password"] === oldPass) {
+                let uuid = user["user"]["uuid"];
+                user["user"]["password"] = newPass;
+                delete user["user"]["uuid"]
+                data[uuid] = user["user"];
+                return {"status": await writeLogins(data)};
+            } else {
+                return {"status" : false, "reason": "The old password is wrong!"}
+            }
+        } else {
+            return {"status" : false, "reason": "Something went wrong in the backend!"}
+        }
+    }, 
+
+    checkTokenForValid: async function () {
+        let data = await readLogins();
+        let keys = Object.keys(data);
+        for (let i = 0; i < keys.length; i++) {
+            let user = data[keys[i]];
+            for (let a = 0; a < user["token"].length; a++) {
+                let token = user["token"][a];
+                
+            }
         }
     }
 }
