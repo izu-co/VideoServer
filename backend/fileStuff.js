@@ -38,16 +38,11 @@ module.exports = {
      * @param {string} path 
      * @param {string} token
      */
-    getFiles : function(path, token, ip) {
+    getFiles : async function(path, token, ip) {
         var retarr = [];
         if (!path.startsWith(index.VideoPath))
-            path = index.VideoPath + Path.sep + path;
-
-        fs.readdirSync(path).forEach(file => {
-            if (!path.startsWith(index.VideoPath)) {
-                console.log( "Jemand hat versucht unerlaubt Datein zu durchsuchen!" )
-                return;
-            }
+            path = Path.join(index.VideoPath, path);
+        return await readdir(path).then(data => data.forEach(async file => { 
             if (fs.lstatSync(path + Path.sep + file).isFile())
                 if (!index.VideoNameExtensions.includes(file.split(".")[file.split(".").length - 1]))
                     return;
@@ -56,33 +51,37 @@ module.exports = {
                 if (!fs.existsSync(path + Path.sep + file + ".jpg"))
                     return;
             var split = file.split(".");
-            var pa = path.replace(index.VideoPath, "") + Path.sep;
             var name = index.VideoNameExtensions.includes(split[split.length - 1]) ? name = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace(" [1080p]", "") : file;
-
             var push = {
                 "name" : name,
-                "Path" : pa + file,
+                "Path" : Path.join(path.replace(index.VideoPath, ""), file),
                 "type" : fs.lstatSync(path + Path.sep + file).isDirectory() ? "folder" : "video",
-                "image" : fs.lstatSync(path + Path.sep + file).isDirectory() ? pa + file + ".jpg" : pa + file.replace(split[split.length - 1], "jpg")
+                "image" : fs.lstatSync(path + Path.sep + file).isDirectory() ? Path.join(path.replace(index.VideoPath, ""), file + ".jpg") : Path.join(path.replace(index.VideoPath, ""), file.replace(split[split.length - 1], "jpg"))
             }
-
             if (push["type"] === "video") 
-                push["timeStemp"] = this.loadTime(path + Path.sep + file, token, ip)
-
+                push["timeStemp"] = this.loadTime(path + Path.sep + file, token, ip)          
             retarr.push(push);
+            
+        })).then(() => {
+            let promisses = []
+            for(let i = 0; i < retarr.length; i++) 
+                promisses.push(retarr[i]["timeStemp"])
+            return Promise.all(promisses).then((data) => {
+                for(let i = 0; i<data.length; i++)
+                    retarr[i]["timeStemp"] = data[i]
+                return retarr
+            })
         })
-        return retarr;
     },
 
     /**
      * @param {string} path 
      * @param {string} token 
      */
-    loadTime : function(path, token, ip) {
-
+    loadTime : async function(path, token, ip) {
         if (!path.startsWith(index.VideoPath))
             path = index.VideoPath + path
-        loginBackend.getUserFromToken(token, ip).then(user => {
+        return loginBackend.getUserFromToken(token, ip).then(user => {
             var data = getData();
             if (!user["status"])
                 return -1
@@ -91,7 +90,7 @@ module.exports = {
                 if (data[user["username"]].hasOwnProperty(path)) {
                     return data[user["username"]][path];
                 } else {
-                    return 0 
+                    return 0
                 }
             } else {
                 return 0
@@ -105,14 +104,19 @@ module.exports = {
      * @param {string} token 
      * @param {number} percent 
      */
-    saveTime : function (path, token, percent, ip) {
+    saveTime : async function (path, token, percent, ip) {
         if (!path.startsWith(index.VideoPath))
             path = index.VideoPath + path;
-        oginBackend.getUserFromToken(token, ip).then(user => {
+        return loginBackend.getUserFromToken(token, ip).then(user => {
+            if (!user["status"])
+                return false;
+            user = user["user"]
+            let data = getData();
             if (!data.hasOwnProperty(user["username"])) 
                 data[user["username"]] = {};
             data[user["username"]][path] = percent
             saveData(data)
+            return true;
         })
     },
 
@@ -120,11 +124,8 @@ module.exports = {
      * @param {string} path 
      */
     getFileData : function(path) {
-
-        path = path.substring(3, path.length)
-
         if (!path.startsWith(index.VideoPath))
-            path = index.VideoPath + Path.sep + path
+            path = Path.join(index.VideoPath, path);
         var ret = {}
 
         var skips = loadSkips();
@@ -138,6 +139,7 @@ module.exports = {
 
         var split = path.split("\\");
         var string = split[split.length - 1].substring((split[split.length - 1].indexOf("-") + 2));
+        console.log(split)
         var number
 
         if (string.substring(0, 3).match("^[0-9]+$"))
@@ -149,18 +151,19 @@ module.exports = {
             number = "0" + number
         if (newNumber < 10)
             newNumber = "0" + newNumber;
+        console.log(split)
         split[split.length - 1] = split[split.length - 1].replace(number, newNumber)
         if (fs.existsSync(split.join("\\")))
             ret["next"] = split.join("\\").replace(index.VideoPath, "")
+        console.log(ret)
         if (!isEmptyObject(ret))
             return ret;
         else 
             return null;
     },
 
-    getUserData: function(token, ip) {
-        loginBackend.getUserFromToken(token, ip).then(user => {
-            console.log(user)
+    getUserData: async function(token, ip) {
+        return await loginBackend.getUserFromToken(token, ip).then(user => {
             if (!user["status"])
                 return user;
             user = user["user"]
@@ -238,6 +241,28 @@ function loadSkips() {
         } else 
             throw err;
     }
+}
+
+async function readdir(path) {
+    return new Promise(function (resolve, reject) {
+        fs.readdir(path, 'utf8', function (err, data) {
+            if (err)
+                reject(err);
+            else
+                resolve(data);
+        });
+    });
+}
+
+async function readFile(path) {
+    return new Promise(function (resolve, reject) {
+        fs.readFile(path, 'utf8', function (err, data) {
+            if (err)
+                reject(err);
+            else
+                resolve(JSON.parse(data));
+        });
+    });
 }
 
 function isEmptyObject(obj) {

@@ -140,7 +140,9 @@ app.post("/backend/changePass/", checkTokenPost, function(req, res) {
 })
 
 app.post('/backend/getUserData/', checkTokenPost, function(req,res) {
-    res.send(fileStuff.getUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress))
+    fileStuff.getUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
+        res.send(answer)
+    })
 })
 
 app.post('/backend/setUserData/', checkTokenPost, function(req, res) {
@@ -160,15 +162,18 @@ app.post('/backend/checkToken/', function(req, res) {
 })
 
 app.post('/backend/getFiles/', checkTokenPost, function(req, res) {
-    res.send({"status" : true, "files" : fileStuff.getFiles(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)});
+    fileStuff.getFiles(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(files => {
+        res.send({"status" : true, "files" : files});
+    })
 })
 
 app.post('/backend/getTime/', checkTokenPost, function(req, res) {
-    var answer = fileStuff.loadTime(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress);
-    if (answer !== -1)
-        res.send({"status" : true, "time" : answer});
-    else
-        res.send({"status" : false})
+    fileStuff.loadTime(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
+        if (answer !== -1)
+            res.send({"status" : true, "time" : answer});
+        else
+            res.send({"status" : false})
+    })
 })
 
 app.post("/backend/reload/", checkTokenPost, function(req, res) {
@@ -183,8 +188,9 @@ app.post("/backend/reload/", checkTokenPost, function(req, res) {
 })
 
 app.post('/backend/setTime/', checkTokenPost, function(req, res) {
-    fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress);
-    res.send({"status" : true}); 
+    fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
+        res.send({"status" : answer}); 
+    })
 })
 
 app.post('/backend/FileData/', checkTokenPost, function(req, res) {
