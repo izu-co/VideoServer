@@ -147,7 +147,7 @@ getUsers().then(users => {
                     },
                     body: JSON.stringify({
                         "token" : loadCookie("token"),
-                        "username" : user["username"]
+                        "uuid" : user["uuid"]
                     }),
                     method: "POST"
                 }).then(data => data.json())

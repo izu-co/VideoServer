@@ -1,8 +1,8 @@
 const express = require("express")
 const fs = require("fs")
-const bodyParser =  require('body-parser');
 const path = require('path');
 const app = express();
+const bodyParser =  require('body-parser');
 const jsonParser = bodyParser.json()
 const cookieParser = require('cookie-parser')
 const VideoPath = "Z:" + path.sep + "Videos"
@@ -19,7 +19,6 @@ exports.logs = [];
 
 const fileStuff = require("./backend/fileStuff.js");
 const loginBackend = require("./backend/UserMangement");
-const { response } = require("express");
 
 console.stdlog = console.log.bind(console);
 console.log = function(){
@@ -214,43 +213,12 @@ app.post("/backend/changeActive/", checkTokenPost, function(req, res) {
     })
 })
 
-app.post("/backend/deleteToken/", checkTokenPost, function(req, res) {
-    loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
-        if (!user["status"])
-            res.send(user)
-        if (user["user"]["perm"] === "Admin")
-            loginBackend.deleteToken(req.body.uuid, req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
-                res.send(response);
-            })
-        else 
-            res.send({"status" : false})
-    })
-})
-
-app.post('/backend/logs/', checkTokenPost, function(req, res) {
-    res.send({"status" : true, "data" : exports.logs})
-})
-
-app.post('/log/', checkTokenPost, function(req, res) {
-    console.log(req.body.message)
-})
-
-app.post("/backend/clearLogs/", checkTokenPost, function(req, res) {
-    loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
-        if (user["status"])
-            return user;
-        if (user["user"]["perm"] === "Admin") {
-            exports.logs = [];
-            console.clear();
-            res.send({"status" : true})
-        } else 
-            res.send({"status" : false})
-    })
-})
+app.use("/", require("./routes/index"))
 
 app.use(checkTokenGet, function(req, res) {
     res.sendFile(path.join(__dirname, "public", "html", "notFound.html"))
 })
+
 
 var listener = app.listen(3000, "0.0.0.0", function() {
     var host = listener.address().address;

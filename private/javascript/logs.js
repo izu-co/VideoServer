@@ -13,7 +13,7 @@ fetch('/backend/checkToken/', {
 })
 .catch(error => console.log(error))
 
-fetch("/backend/logs", {
+fetch("/backend/getLogs", {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
