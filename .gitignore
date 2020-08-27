@@ -1,10 +1,11 @@
 node_modules
 start.bat
 test.js
-package-lock.json
 data
 backup
 README.md
 done.txt
 java/YouTubeDownloader/output/error.txt
 java/YouTubeDownloader/output/output.txt
+*.log
+todo.txt

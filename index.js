@@ -1,13 +1,11 @@
 const express = require("express")
 const fs = require("fs")
+const path = require('path');
+const app = express();
 const bodyParser =  require('body-parser');
-var path = require('path');
-var app = express();
-var jsonParser = bodyParser.json()
-var cookieParser = require('cookie-parser')
-var loginBackend = require('./public/backend/loginBackend.js');
-const fileStuff = require("./public/backend/fileStuff.js");
-var VideoPath = "Z:" + path.sep + "Videos"
+const jsonParser = bodyParser.json()
+const cookieParser = require('cookie-parser')
+const VideoPath = "Z:" + path.sep + "Videos"
 
 if (!fs.existsSync(VideoPath))
     VideoPath = "C:" + path.sep + "VideoTest"
@@ -15,8 +13,12 @@ if (!fs.existsSync(VideoPath))
 exports.path = __dirname;
 exports.VideoPath = VideoPath;
 exports.VideoNameExtensions = ["mp4"]
-exports.test = false
+exports.test = process.argv.length > 2 ? process.argv[2] === "test" : false;
+exports.debug = process.argv.length > 2 ? process.argv[2] === "debug" : false;
 exports.logs = [];
+
+const fileStuff = require("./backend/fileStuff.js");
+const loginBackend = require("./backend/UserMangement");
 
 console.stdlog = console.log.bind(console);
 console.log = function(){
@@ -24,38 +26,53 @@ console.log = function(){
     console.stdlog.apply(console, arguments);
 }
 
-
 var checkTokenPost = function (req, res, next) {
-    if (loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)["status"]) {
-        next();
-    } else
-        res.send({"status" : false, "reason" : "Permission denied!"})
+    loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
+        if (user["status"]) {
+            next();
+        } else
+            res.send({"status" : false, "reason" : "Permission denied!"})
+    })
 }
 
 var checkTokenGet = function (req, res, next) {
     if (req["cookies"]["token"]) {
-        if (loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)["status"]) {
-            next();
-        } else
-            res.redirect("/login/")
-    }
-    else 
+        loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
+            if (user["status"]) {
+                next();
+            } else
+                res.redirect("/login/")
+        })
+    } else 
         res.redirect("/login/")
 }
 
 app.use(express.json())
 app.use(cookieParser())
 app.use(jsonParser)
-
-app.use('/video', checkTokenGet, express.static(VideoPath))
-app.use('/js', express.static(path.join(__dirname, "public/javascript")))
-app.use('/style', express.static(path.join(__dirname, "public/style")))
-app.use('/player', checkTokenGet, express.static(path.join(__dirname, "videoPlayer")))
 app.use("/favicon.ico", express.static(path.join(__dirname, "favicon.ico")))
+
+/**
+ * Public Uses
+ */
+app.use('/public/js', express.static(path.join(__dirname, "public", "javascript")))
+app.use('/public/style', express.static(path.join(__dirname, "public", "style")))
+
+/**
+ * Private Uses
+ */
+
+app.use('/private/js', checkTokenGet, express.static(path.join(__dirname, "private", "javascript")))
+app.use('/video', checkTokenGet, express.static(VideoPath))
+app.use('/private/style', checkTokenGet, express.static(path.join(__dirname, "private", "style")))
+app.use('/private/html', checkTokenGet, express.static(path.join(__dirname, path.join("private", "html"))))
+app.use("/player/player.html", checkTokenGet, express.static(path.join(__dirname, "private", "html", "player.html")))
+app.use("/player/videoShow.html", checkTokenGet, express.static(path.join(__dirname, "private", "html", "videoShow.html")))
+
 
 
 app.get("/login/", function(req, res) {
-    res.sendFile(__dirname + "/login.html")
+    res.sendFile(path.join(__dirname, "public", "html", "login.html"))
 });
 
 app.get("/chooser/",  [checkTokenGet], function(req, res) {
@@ -73,43 +90,58 @@ app.get("/", [checkTokenGet], function(req, res) {
 })
 
 app.get("/settings.html", [checkTokenGet], function(req, res) {
-    res.sendFile(path.join(__dirname, "videoPlayer", "settings.html"))
-})
-
-app.get("/download/:url/", checkTokenGet, function(req, res) {
-    var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
-    if (user["user"]["perm"] === "Admin")
-        res.send(fileStuff.downloadYoutTube(req.params["url"]))
-    else 
-        res.send("You dont have Permission to access that!")
+    res.sendFile(path.join(__dirname, "private", "html", "settings.html"))
 })
 
 app.get("/admin.html", [checkTokenGet], function(req, res) {
-    var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
-    if (user["user"]["perm"] === "Admin")
-        res.sendFile(path.join(__dirname, "videoPlayer", "admin.html"))
-    else 
-        res.send("You dont have Permission to access that!")
+    loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
+        if (!user["status"])
+            res.send(user);
+        if (user["user"]["perm"] === "Admin")
+            res.sendFile(path.join(__dirname, "private", "html", "admin.html"))
+        else 
+            res.send("You dont have Permission to access that!")
+    })
 })
 
 app.get("/logs.html", checkTokenGet, function(req, res) {
-    res.sendFile(path.join(__dirname, "videoPlayer", "logs.html"))
+    res.sendFile(path.join(__dirname, "private", "html", "logs.html"))
 })
 
 /**
  * Post
  */
 
+app.post('/backend/addUser', checkTokenPost, function(req, res) {
+    loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
+        if (!user["status"])
+            res.send(user)
+        if (user["user"]["perm"] === "Admin")
+            loginBackend.addNewUser(req.body.username, req.body.password, req.body.perm).then(response => {
+                res.send(response)
+            });
+        else 
+            res.send({"status" : false, "reason": "No Permission"})
+        
+    })
+})
+
 app.post("/backend/getUsers/", checkTokenPost, function(req, res) {
-    res.send(loginBackend.getUsers(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress))
+    loginBackend.loadUsers(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
+        res.send(response);
+    })
 })
 
 app.post("/backend/changePass/", checkTokenPost, function(req, res) {
-    res.send(loginBackend.changePassword(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.oldPass, req.body.newPass))
+    loginBackend.changePassword(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.oldPass, req.body.newPass).then(response => {
+        res.send(response);
+    })
 })
 
 app.post('/backend/getUserData/', checkTokenPost, function(req,res) {
-    res.send(fileStuff.getUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress))
+    fileStuff.getUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
+        res.send(answer)
+    })
 })
 
 app.post('/backend/setUserData/', checkTokenPost, function(req, res) {
@@ -117,48 +149,47 @@ app.post('/backend/setUserData/', checkTokenPost, function(req, res) {
 })
 
 app.post('/backend/login/', function(req, res) {
-    res.send(loginBackend.getToken(req.body.Username, req.body.Passwort, req.header('x-forwarded-for') || req.socket.remoteAddress));
+    loginBackend.GenerateUserToken(req.body.Username, req.body.Passwort, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
+        res.send(response);
+    })
 })
 
 app.post('/backend/checkToken/', function(req, res) {
-    res.send(loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress));
+    loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
+        res.send(response);
+    })
 })
 
 app.post('/backend/getFiles/', checkTokenPost, function(req, res) {
-    res.send({"status" : true, "files" : fileStuff.getFiles(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)});
+    fileStuff.getFiles(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(files => {
+        res.send({"status" : true, "files" : files});
+    })
 })
 
 app.post('/backend/getTime/', checkTokenPost, function(req, res) {
-    var answer = fileStuff.loadTime(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress);
-    if (answer !== -1)
-        res.send({"status" : true, "time" : answer});
-    else
-        res.send({"status" : false})
+    fileStuff.loadTime(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
+        if (answer !== -1)
+            res.send({"status" : true, "time" : answer});
+        else
+            res.send({"status" : false})
+    })
 })
 
 app.post("/backend/reload/", checkTokenPost, function(req, res) {
-    var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
-    if (user === null)
-        res.send({"status" : false, "reason" : "User not found!"})
-    if (user["user"]["perm"] === "Admin")
-        res.send(fileStuff.createImages(VideoPath, false, 5, 3, false))
-    else 
-        res.send({"status" : false, "reason" : "User is not an Admin!"})
-})
-
-app.post("/backend/reloadYT/", checkTokenPost, function(req, res) {
-    var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
-    if (user === null)
-        res.send({"status" : false, "reason" : "User not found!"})
-    if (user["user"]["perm"] === "Admin")
-        res.send(fileStuff.startYouTubeDownloader(VideoPath, false, 5, 3, false))
-    else 
-        res.send({"status" : false, "reason" : "User is not an Admin!"})
+    loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
+        if (!user["status"])
+            res.send(user)
+        if (user["user"]["perm"] === "Admin")
+            res.send(fileStuff.createImages(VideoPath, false, 5, 3, false))
+        else 
+            res.send({"status" : false, "reason" : "User is not an Admin!"})
+    })
 })
 
 app.post('/backend/setTime/', checkTokenPost, function(req, res) {
-    fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress);
-    res.send({"status" : true}); 
+    fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
+        res.send({"status" : answer}); 
+    })
 })
 
 app.post('/backend/FileData/', checkTokenPost, function(req, res) {
@@ -170,42 +201,24 @@ app.post('/backend/FileData/', checkTokenPost, function(req, res) {
 })
 
 app.post("/backend/changeActive/", checkTokenPost, function(req, res) {
-    var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
-    if (user["user"]["perm"] === "Admin")
-        res.send(loginBackend.changeActiveState(req.body.state, req.body.username))
-    else 
-        res.send({"status" : false})
+    loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
+        if (!user["status"])
+            res.send(user)
+        if (user["user"]["perm"] === "Admin")
+            loginBackend.changeActiveState(req.body.state, req.body.uuid, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
+                res.send(response);
+            })
+        else 
+            res.send({"status" : false})
+    })
 })
 
-app.post("/backend/deleteToken/", checkTokenPost, function(req, res) {
-    var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
-    if (user["user"]["perm"] === "Admin")
-        res.send(loginBackend.deleteToken(req.body.username))
-    else 
-        res.send({"status" : false})
-})
-
-app.post('/backend/logs/', checkTokenPost, function(req, res) {
-    res.send({"status" : true, "data" : exports.logs})
-})
-
-app.post('/log/', checkTokenPost, function(req, res) {
-    console.log(req.body.message)
-})
-
-app.post("/backend/clearLogs/", checkTokenPost, function(req, res) {
-    var user = loginBackend.checkTokenReturnEveryThing(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
-    if (user["user"]["perm"] === "Admin") {
-        exports.logs = [];
-        console.clear();
-        res.send({"status" : true})
-    } else 
-        res.send({"status" : false})
-})
+app.use("/", require("./routes/index"))
 
 app.use(checkTokenGet, function(req, res) {
-    res.sendFile(path.join(__dirname, "videoPlayer", "notFound.html"))
+    res.sendFile(path.join(__dirname, "public", "html", "notFound.html"))
 })
+
 
 var listener = app.listen(3000, "0.0.0.0", function() {
     var host = listener.address().address;
@@ -216,17 +229,10 @@ var listener = app.listen(3000, "0.0.0.0", function() {
 
 async function checkCookies() {
     setTimeout(() => { checkCookies() }, (1000 * 60));
-    loginBackend.checkTokenForValid();
-}
-
-async function youtube() {
-    setTimeout(() => { youtube() }, (1000 * 60 * 60 * 12));
-
-    fileStuff.startYouTubeDownloader();
+    await loginBackend.checkTokenForValid();
 }
 
 checkCookies();
-if (!exports.test)
-    youtube();
 
-fileStuff.createImages(VideoPath, false, 5, 3, false);
+if (!exports.test)
+    fileStuff.createImages(VideoPath, false, 5, 3, exports.debug);
