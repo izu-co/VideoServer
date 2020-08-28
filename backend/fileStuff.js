@@ -42,6 +42,7 @@ module.exports = {
         var retarr = [];
         if (!path.startsWith(index.VideoPath))
             path = Path.join(index.VideoPath, path);
+        if(!fs.existsSync(path)) return []
         return await readdir(path).then(data => data.forEach(async file => { 
             if (fs.lstatSync(path + Path.sep + file).isFile())
                 if (!index.VideoNameExtensions.includes(file.split(".")[file.split(".").length - 1]))
@@ -123,9 +124,11 @@ module.exports = {
     /**
      * @param {string} path 
      */
-    getFileData : function(path) {
+    getFileData : async function(path) {
         if (!path.startsWith(index.VideoPath))
             path = Path.join(index.VideoPath, path);
+        if (!fs.existsSync(path))
+            return {"status": false, "reason": "The given path does not exist"}
         var ret = {}
 
         var skips = loadSkips();
@@ -139,23 +142,22 @@ module.exports = {
 
         var split = path.split("\\");
         var string = split[split.length - 1].substring((split[split.length - 1].indexOf("-") + 2));
-        console.log(split)
-        var number
+        var number = -1
 
         if (string.substring(0, 3).match("^[0-9]+$"))
             number = parseInt(string.substring(0, 3), 10)
         if (string.substring(0, 2).match("^[0-9]+$"))
             number = parseInt(string.substring(0, 2), 10)
-        var newNumber = number+1;
-        if (number < 10)
-            number = "0" + number
-        if (newNumber < 10)
-            newNumber = "0" + newNumber;
-        console.log(split)
-        split[split.length - 1] = split[split.length - 1].replace(number, newNumber)
-        if (fs.existsSync(split.join("\\")))
-            ret["next"] = split.join("\\").replace(index.VideoPath, "")
-        console.log(ret)
+        if (number !== -1) {
+            var newNumber = number+1;
+            if (number < 10)
+                number = "0" + number
+            if (newNumber < 10)
+                newNumber = "0" + newNumber;
+            split[split.length - 1] = split[split.length - 1].replace(number, newNumber)
+            if (fs.existsSync(split.join("\\")))
+                ret["next"] = split.join("\\").replace(index.VideoPath, "")
+        }
         if (!isEmptyObject(ret))
             return ret;
         else 

@@ -27,16 +27,17 @@ console.log = function(){
 }
 
 var checkTokenPost = function (req, res, next) {
-    loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
+    /**loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
         if (user["status"]) {
             next();
         } else
             res.send({"status" : false, "reason" : "Permission denied!"})
-    })
+    }) */
+    next()
 }
 
 var checkTokenGet = function (req, res, next) {
-    if (req["cookies"]["token"]) {
+    /**if (req["cookies"]["token"]) {
         loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
             if (user["status"]) {
                 next();
@@ -44,7 +45,8 @@ var checkTokenGet = function (req, res, next) {
                 res.redirect("/login/")
         })
     } else 
-        res.redirect("/login/")
+        res.redirect("/login/")*/
+    next()
 }
 
 app.use(express.json())
@@ -108,114 +110,10 @@ app.get("/logs.html", checkTokenGet, function(req, res) {
     res.sendFile(path.join(__dirname, "private", "html", "logs.html"))
 })
 
-/**
- * Post
- */
-
-app.post('/backend/addUser', checkTokenPost, function(req, res) {
-    loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
-        if (!user["status"])
-            res.send(user)
-        if (user["user"]["perm"] === "Admin")
-            loginBackend.addNewUser(req.body.username, req.body.password, req.body.perm).then(response => {
-                res.send(response)
-            });
-        else 
-            res.send({"status" : false, "reason": "No Permission"})
-        
-    })
-})
-
-app.post("/backend/getUsers/", checkTokenPost, function(req, res) {
-    loginBackend.loadUsers(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
-        res.send(response);
-    })
-})
-
-app.post("/backend/changePass/", checkTokenPost, function(req, res) {
-    loginBackend.changePassword(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.oldPass, req.body.newPass).then(response => {
-        res.send(response);
-    })
-})
-
-app.post('/backend/getUserData/', checkTokenPost, function(req,res) {
-    fileStuff.getUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
-        res.send(answer)
-    })
-})
-
-app.post('/backend/setUserData/', checkTokenPost, function(req, res) {
-    res.send(fileStuff.saveUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.data))
-})
-
-app.post('/backend/login/', function(req, res) {
-    loginBackend.GenerateUserToken(req.body.Username, req.body.Passwort, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
-        res.send(response);
-    })
-})
-
-app.post('/backend/checkToken/', function(req, res) {
-    loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
-        res.send(response);
-    })
-})
-
-app.post('/backend/getFiles/', checkTokenPost, function(req, res) {
-    fileStuff.getFiles(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(files => {
-        res.send({"status" : true, "files" : files});
-    })
-})
-
-app.post('/backend/getTime/', checkTokenPost, function(req, res) {
-    fileStuff.loadTime(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
-        if (answer !== -1)
-            res.send({"status" : true, "time" : answer});
-        else
-            res.send({"status" : false})
-    })
-})
-
-app.post("/backend/reload/", checkTokenPost, function(req, res) {
-    loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
-        if (!user["status"])
-            res.send(user)
-        if (user["user"]["perm"] === "Admin")
-            res.send(fileStuff.createImages(VideoPath, false, 5, 3, false))
-        else 
-            res.send({"status" : false, "reason" : "User is not an Admin!"})
-    })
-})
-
-app.post('/backend/setTime/', checkTokenPost, function(req, res) {
-    fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
-        res.send({"status" : answer}); 
-    })
-})
-
-app.post('/backend/FileData/', checkTokenPost, function(req, res) {
-    var answer = fileStuff.getFileData(req.body.path, req.header('x-forwarded-for') || req.socket.remoteAddress);
-    if (answer !== null)
-        res.send({"status" : true, "response" : answer});
-    else
-        res.send({"status" : false})
-})
-
-app.post("/backend/changeActive/", checkTokenPost, function(req, res) {
-    loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
-        if (!user["status"])
-            res.send(user)
-        if (user["user"]["perm"] === "Admin")
-            loginBackend.changeActiveState(req.body.state, req.body.uuid, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
-                res.send(response);
-            })
-        else 
-            res.send({"status" : false})
-    })
-})
 
 app.use("/", require("./routes/index"))
 
-app.use(checkTokenGet, function(req, res) {
+app.get("*", checkTokenGet, function(req, res) {
     res.sendFile(path.join(__dirname, "public", "html", "notFound.html"))
 })
 

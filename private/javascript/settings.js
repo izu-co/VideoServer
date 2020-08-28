@@ -10,7 +10,7 @@ fetch('/backend/checkToken/', {
 .then(res =>{
     if (res["status"] !== true) 
         document.location.href = "/";
-    if (res["userdata"]["perm"] === "Admin")
+    if (res["user"]["perm"] === "Admin")
         isAdmin()
 })
 .catch(error => console.log(error))
@@ -90,7 +90,7 @@ function isAdmin() {
 }
 
 async function getData() {
-    var token = await fetch('/backend/checkToken/', {
+    var user = await fetch('/backend/checkToken/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
@@ -124,10 +124,11 @@ async function getData() {
     })
     .catch(error => console.log(error))
 
-    delete token["status"]
+    delete user["status"]
     delete userData["status"]
+    console.log(user, userData)
     return {
-        "token" : token,
+        "user" : user["user"],
         "userData" : userData["data"]
     }
 
@@ -143,7 +144,7 @@ volumeButton = document.getElementById('change')
 
 
 getData().then(data => {
-    usernameText.innerHTML = data["token"]["userdata"]["username"]
+    usernameText.innerHTML = data["user"]["username"]
     volume.value = data["userData"]["volume"]
     sendButton.addEventListener("click", function() {
         if (oldPass.value !== "" && newPass.value !== "" && newPassConfirm.value !== "") {
