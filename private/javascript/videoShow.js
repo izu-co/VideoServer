@@ -34,7 +34,7 @@ function getFiles(path) {
         if (res["status"] === true) {
             loadData(res["files"]);
         } else {
-           document.location.href = "/";
+           //document.location.href = "/";
         }
     })
     .catch(error => console.log(error))

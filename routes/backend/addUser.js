@@ -33,6 +33,7 @@ let args = ["token", "username", "password", "perm"];
  * @param {import("express").NextFunction} next
  */
 function requireAguments(req, res, next) {
+    res.status(300).send(req.route)
     let goOn = true;
     for(let i = 0; i<args.length; i++) {
         if (!req.body[args[i]] === undefined) {

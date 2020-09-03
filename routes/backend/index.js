@@ -5,14 +5,19 @@ var loginBackend = require("../../backend/UserMangement")
 
 let dirname = __dirname.split(path.sep)[__dirname.split(path.sep).length - 1]
 
-router.use(requireAguments, (req, res, next) => {
-    loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
-        if (user["status"]) {
-            res.locals.user = user["user"];
-            next();
-        } else
-            res.send(user)
-    })})
+router.use(requireAguments, 
+    (req, res, next) => {
+        if (req.method === "POST")
+            loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
+                if (user["status"]) {
+                    res.locals.user = user["user"];
+                    next();
+                } else
+                    res.send(user)
+            })
+        else 
+            next()
+    })
 
 /**Post Routes Start */
 router.use('/' + dirname, 
@@ -43,9 +48,11 @@ let args = ["token"];
  * @param {import("express").NextFunction} next
  */
 function requireAguments(req, res, next) {
+    if (req.method !== "POST")
+        next()
     let goOn = true;
     for(let i = 0; i<args.length; i++) {
-        if (!req.body[args[i]] === undefined) {
+        if (req.body[args[i]] === undefined) {
             res.status(400).send({"status" : false, "reason": "Missing Body argument '" + args[i] + "'"})
             goOn = false;
             break

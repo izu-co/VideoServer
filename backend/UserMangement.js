@@ -26,6 +26,7 @@ module.exports = {
                 }
             }
         }
+        console.log(token ,ip)
         return { "status" : false, "reason" : "User not Found" }
     },
 

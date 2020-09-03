@@ -95,27 +95,8 @@ app.get("/settings.html", [checkTokenGet], function(req, res) {
     res.sendFile(path.join(__dirname, "private", "html", "settings.html"))
 })
 
-app.get("/admin.html", [checkTokenGet], function(req, res) {
-    loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
-        if (!user["status"])
-            res.send(user);
-        if (user["user"]["perm"] === "Admin")
-            res.sendFile(path.join(__dirname, "private", "html", "admin.html"))
-        else 
-            res.send("You dont have Permission to access that!")
-    })
-})
-
-app.get("/logs.html", checkTokenGet, function(req, res) {
-    res.sendFile(path.join(__dirname, "private", "html", "logs.html"))
-})
-
 
 app.use("/", require("./routes/index"))
-
-app.get("*", checkTokenGet, function(req, res) {
-    res.sendFile(path.join(__dirname, "public", "html", "notFound.html"))
-})
 
 
 var listener = app.listen(3000, "0.0.0.0", function() {
