@@ -1,13 +1,14 @@
 var express = require("express")
 var router = express.Router()
 let index = require("../../index")
-const Path = require("path")
+const Path = require("path");
+const { getUserPOST } = require("../Routes");
 
 __filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 1].split(".");
 let routeName = __filename.slice(0, __filename.length - 1).join(".");
 
 router.route('/' + routeName + '/')
-    .post(postRouteHandler);
+    .post(getUserPOST ,postRouteHandler);
 
 /**
  * @param {import('express').Request} req 
@@ -21,5 +22,6 @@ function postRouteHandler(req, res) {
     } else 
         res.send({"status" : false})
 }
+
 
 module.exports = router;

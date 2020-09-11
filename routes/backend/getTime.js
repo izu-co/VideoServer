@@ -32,7 +32,7 @@ let args = ["path", "token"];
 function requireAguments(req, res, next) {
     let goOn = true;
     for(let i = 0; i<args.length; i++) {
-        if (!req.body[args[i]] === undefined) {
+        if (req.body[args[i]] === undefined) {
             res.status(400).send({"status" : false, "reason": "Missing Body argument '" + args[i] + "'"})
             goOn = false;
             break;

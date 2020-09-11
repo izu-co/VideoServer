@@ -4,16 +4,15 @@ const Path = require("path")
 const index = require("../../index")
 const {GetUserGET} = require("../Routes")
 
-router.route('/admin/')
+router.route('/')
     .get(GetUserGET, getRouteHandler)
 /**
  * @param {import('express').Request} req 
  * @param {import('express').Response} res 
  */
 function getRouteHandler(req, res) {
-    if (res.locals.user["perm"] === "Admin")
-        res.sendFile(Path.join(index.argv["Working Directory"], "private", "html", "admin.html"))
-    else 
-        res.send("You dont have Permission to access that!")
+    res.redirect("/player/videoShow.html?path=")
 }
+
+
 module.exports = router;

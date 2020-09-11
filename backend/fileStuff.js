@@ -40,8 +40,8 @@ module.exports = {
      */
     getFiles : async function(path, token, ip) {
         var retarr = [];
-        if (!path.startsWith(index.VideoPath))
-            path = Path.join(index.VideoPath, path);
+        if (!path.startsWith(index.argv["Video Directory"]))
+            path = Path.join(index.argv["Video Directory"], path);
         if(!fs.existsSync(path)) return []
         return await readdir(path).then(data => data.forEach(async file => { 
             if (fs.lstatSync(path + Path.sep + file).isFile())
@@ -55,9 +55,9 @@ module.exports = {
             var name = index.VideoNameExtensions.includes(split[split.length - 1]) ? name = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace(" [1080p]", "") : file;
             var push = {
                 "name" : name,
-                "Path" : Path.join(path.replace(index.VideoPath, ""), file),
+                "Path" : Path.join(path.replace(index.argv["Video Directory"], ""), file),
                 "type" : fs.lstatSync(path + Path.sep + file).isDirectory() ? "folder" : "video",
-                "image" : fs.lstatSync(path + Path.sep + file).isDirectory() ? Path.join(path.replace(index.VideoPath, ""), file + ".jpg") : Path.join(path.replace(index.VideoPath, ""), file.replace(split[split.length - 1], "jpg"))
+                "image" : fs.lstatSync(path + Path.sep + file).isDirectory() ? Path.join(path.replace(index.argv["Video Directory"], ""), file + ".jpg") : Path.join(path.replace(index.argv["Video Directory"], ""), file.replace(split[split.length - 1], "jpg"))
             }
             if (push["type"] === "video") 
                 push["timeStemp"] = this.loadTime(path + Path.sep + file, token, ip)          
@@ -80,8 +80,8 @@ module.exports = {
      * @param {string} token 
      */
     loadTime : async function(path, token, ip) {
-        if (!path.startsWith(index.VideoPath))
-            path = index.VideoPath + path
+        if (!path.startsWith(index.argv["Video Directory"]))
+            path = index.argv["Video Directory"] + path
         return loginBackend.getUserFromToken(token, ip).then(user => {
             var data = getData();
             if (!user["status"])
@@ -106,8 +106,8 @@ module.exports = {
      * @param {number} percent 
      */
     saveTime : async function (path, token, percent, ip) {
-        if (!path.startsWith(index.VideoPath))
-            path = index.VideoPath + path;
+        if (!path.startsWith(index.argv["Video Directory"]))
+            path = index.argv["Video Directory"] + path;
         return loginBackend.getUserFromToken(token, ip).then(user => {
             if (!user["status"])
                 return false;
@@ -125,8 +125,8 @@ module.exports = {
      * @param {string} path 
      */
     getFileData : async function(path) {
-        if (!path.startsWith(index.VideoPath))
-            path = Path.join(index.VideoPath, path);
+        if (!path.startsWith(index.argv["Video Directory"]))
+            path = Path.join(index.argv["Video Directory"], path);
         if (!fs.existsSync(path))
             return {"status": false, "reason": "The given path does not exist"}
         var ret = {}
@@ -156,7 +156,7 @@ module.exports = {
                 newNumber = "0" + newNumber;
             split[split.length - 1] = split[split.length - 1].replace(number, newNumber)
             if (fs.existsSync(split.join("\\")))
-                ret["next"] = split.join("\\").replace(index.VideoPath, "")
+                ret["next"] = split.join("\\").replace(index.argv["Video Directory"], "")
         }
         if (!isEmptyObject(ret))
             return ret;
@@ -191,16 +191,12 @@ module.exports = {
             saveSettings(settings);
             return {"status" : true}
         })
-    },
-
-    shutdown: function() {
-        process.exit(0)
     }
 }
 
 function loadSettings() {
     try {
-        return JSON.parse(fs.readFileSync(Path.join(index.path, "data", "settings.json")))
+        return JSON.parse(fs.readFileSync(Path.join(index.argv["Working Directory"], "data", "settings.json")))
     } catch (err) {
         if (index.test) {
             return {}
@@ -210,12 +206,12 @@ function loadSettings() {
 }
 
 function saveSettings(settings) {
-    fs.writeFileSync(Path.join(index.path, "data", "settings.json"), JSON.stringify(settings, null, 4))
+    fs.writeFileSync(Path.join(index.argv["Working Directory"], "data", "settings.json"), JSON.stringify(settings, null, 4))
 }
 
 function getData() {
     try {
-        return JSON.parse(fs.readFileSync(index.path + "/data/status.json"));
+        return JSON.parse(fs.readFileSync(index.argv["Working Directory"] + "/data/status.json"));
     } catch (err) {
         if (index.test) {
             return {}
@@ -226,7 +222,7 @@ function getData() {
 
 function saveData(data) {
     try {
-        fs.writeFileSync(index.path + "/data/status.json", JSON.stringify(data, null, 4))
+        fs.writeFileSync(index.argv["Working Directory"] + "/data/status.json", JSON.stringify(data, null, 4))
     } catch (err) {
         if (index.test) {
             return {}
@@ -236,7 +232,7 @@ function saveData(data) {
 }
 function loadSkips() {
     try {
-        return JSON.parse(fs.readFileSync(index.path + "/data/intros.json"));
+        return JSON.parse(fs.readFileSync(index.argv["Working Directory"] + "/data/intros.json"));
     } catch (err) {
         if (index.test) {
             return {}

@@ -3,7 +3,7 @@ const index = require("../index.js")
 const fs = require("fs")
 const PermissionLevel = ["User", "Admin"];
 const length = 20;
-const loginFilePath = path.join(index.path, "data", "logins.json")
+const loginFilePath = path.join(index.argv["Working Directory"], "data", "logins.json")
 module.exports = {
     /**
      * @param {string} token 
@@ -213,15 +213,22 @@ module.exports = {
     }, 
 
     checkTokenForValid: async function () {
-        let data = await readLogins();
-        let keys = Object.keys(data);
-        for (let i = 0; i < keys.length; i++) {
-            let user = data[keys[i]];
-            for (let a = 0; a < user["token"].length; a++) {
-                let token = user["token"][a];
-                
+        readLogins().then(data => {
+            let keys = Object.keys(data);
+            for (let i = 0; i < keys.length; i++) {
+                let user = data[keys[i]];
+                let tokens = user["token"]
+                for (let a = 0; a < tokens.length; a++) {
+                    let token = tokens[a];
+                    if (Date.now() > new Date(token["to"]).getTime()) {
+                        tokens.splice(a, 1);
+                    }
+                }
+                user["token"] = tokens;
+                data[keys[i]] = user;
+                writeLogins(data)
             }
-        }
+        })
     }
 }
 
