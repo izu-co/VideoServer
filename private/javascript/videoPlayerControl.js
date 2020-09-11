@@ -53,7 +53,7 @@ async function getFileData() {
         },
         body: JSON.stringify({
             "token" : loadCookie("token"),
-            path:  urlParams.get("path")
+            "path":  urlParams.get("path")
         }),
         method: "POST"
     }).then(data => data.json())
@@ -67,14 +67,15 @@ async function getFileData() {
 getFileData().then(res => {
     if (res["status"] !== true) 
         document.location.href = "/";
-    if (res["response"]["skip"]["startTime"] !== -1 && res["response"]["skip"]["startTime"] !== -1) {
+
+    if (res["data"]["skip"]["startTime"] !== -1 && res["data"]["skip"]["startTime"] !== -1) {
         skipButton.addEventListener("click", function() {
-            video.currentTime = res["response"]["skip"]["stopTime"];
+            video.currentTime = res["data"]["skip"]["stopTime"];
         })
 
         video.addEventListener("timeupdate", function() {
-            var start = res["response"]["skip"]["startTime"];
-            var stop = res["response"]["skip"]["stopTime"];
+            var start = res["data"]["skip"]["startTime"];
+            var stop = res["data"]["skip"]["stopTime"];
             var currTime = Math.round(video.currentTime)
             if (currTime > start && currTime < stop)
                 skipButton.className = "allowed"
@@ -83,10 +84,10 @@ getFileData().then(res => {
         })
     }
 
-    if (res["response"].hasOwnProperty("next")) {
+    if (res["data"].hasOwnProperty("next")) {
         next.style.opacity = 1;
         next.addEventListener("click", function() {
-            document.location.href = document.location.href.split("?")[0] + "?path=" + res["response"]["next"];
+            document.location.href = document.location.href.split("?")[0] + "?path=" + res["data"]["next"];
         })
     } else {
         next.style.opacity = 0.4
@@ -317,7 +318,7 @@ video.addEventListener("loadeddata", function () {
                     }
                 }
             } else {
-                document.location.href = "/";
+               document.location.href = "/";
             }
         })
         .catch(error => console.log(error))

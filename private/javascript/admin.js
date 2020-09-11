@@ -19,6 +19,7 @@ async function getUsers() {
 }
 
 getUsers().then(users => {
+    console.log(users)
     users.forEach(user => {
         var userContainer = document.createElement("div")
         userContainer.className = "User";
@@ -137,8 +138,6 @@ getUsers().then(users => {
         token.className = "token"
         token.innerHTML = "Token löschen"
 
-        if (user["token"].length === 0)
-            token.disabled = "disabled"
         token.addEventListener("click", function() {
             if (confirm("Wirklick löschen?")) {
                 fetch('/backend/deleteToken/', {

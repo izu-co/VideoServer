@@ -4,14 +4,14 @@ const Path = require("path")
 const index = require("../../index")
 const {GetUserGET} = require("../Routes")
 
-router.route('/')
+router.route('/settings')
     .get(GetUserGET, getRouteHandler)
 /**
  * @param {import('express').Request} req 
  * @param {import('express').Response} res 
  */
 function getRouteHandler(req, res) {
-    res.sendFile(path.join(__dirname, "private", "html", "settings.html"))
+    res.sendFile(Path.join(index.argv["Working Directory"], "private", "html", "settings.html"))
 }
 
 

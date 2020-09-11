@@ -126,7 +126,6 @@ async function getData() {
 
     delete user["status"]
     delete userData["status"]
-    console.log(user, userData)
     return {
         "user" : user["user"],
         "userData" : userData["data"]
@@ -198,6 +197,7 @@ function sendData(volume) {
         method: "POST"
     }).then(data => data.json())
     .then(res =>{
+        console.log(res)
         if (res["status"] !== true) 
             alert("Lautstärke wurde nicht geändert!")
         else 

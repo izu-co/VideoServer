@@ -182,8 +182,8 @@ module.exports = {
         })
     },
 
-    saveUserData: function(token, ip, data) {
-        loginBackend.getUserFromToken(token, ip).then(user => {
+    saveUserData: async function(token, ip, data) {
+        return await loginBackend.getUserFromToken(token, ip).then(user => {
             var settings = loadSettings();
     
             settings[user["user"]["username"]] = data;

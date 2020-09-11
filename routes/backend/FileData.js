@@ -16,7 +16,7 @@ router.route('/' + routeName + '/')
  */
 function postRouteHandler(req, res) {
     fileStuff.getFileData(req.body.path, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
-        res.send(answer)
+        res.send(answer===null?{"status": false} : {"status": true, "data": answer})
     })
 }
 

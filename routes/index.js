@@ -3,7 +3,7 @@ var router = express.Router();
 const index = require("../index")
 const path = require("path")
 
-router.use('/', 
+router.use('/',
 require('./backend/index'),
 require("./frontend/index"))
 router.use(notFound)
@@ -14,7 +14,6 @@ router.use(notFound)
  * @param {import('express').Response} res 
  */
 function notFound(req, res) {
-    console.log(req.method)
     switch (req.method) {
         case "POST":
             res.status(404).json({"status": false, "reason": "Not found"})
