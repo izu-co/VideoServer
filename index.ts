@@ -1,6 +1,6 @@
-const yargs = require("yargs")
+import * as yargs from "yargs";
 
-let argv = yargs  
+const argv = yargs  
     .option('Video Directory', {
         alias: 'vd',
         describe: 'The Directory Path were your videos are',
@@ -20,11 +20,9 @@ let argv = yargs
         alias: "wd"
     })
     .argv;
-argv["path"] = __dirname;
 
-
-const express = require("express")
-const fs = require("fs")
+import * as express from "express";
+import * as fs from "fs";
 const app = express();
 
 
@@ -33,29 +31,20 @@ if (!fs.existsSync(argv["Video Directory"])) {
     process.exit(1)
 }
 
-exports.argv = argv;
-exports.VideoNameExtensions = ["mp4"]
-exports.logs = [];
-exports.app = app;
+let VideoNameExtensions = ["mp4"]
 
-const fileStuff = require("./backend/fileStuff.js");
-const loginBackend = require("./backend/UserMangement");
+export {argv, app, VideoNameExtensions}
 
-console.stdlog = console.log.bind(console);
-console.log = function(){
-    exports.logs.push(Array.from(arguments));
-    console.stdlog.apply(console, arguments);
-}
+import * as fileStuff from "./backend/fileStuff";
+import * as loginBackend from "./backend/UserMangement";
 
 require("./routes/ExpressUses")
 
 app.use("/", require("./routes/index"))
 
 
-var listener = app.listen(3000, "0.0.0.0", function() {
-    var host = listener.address().address;
-    var port = listener.address().port;
-    console.log('App listening at http://%s:%s', host, port);
+app.listen(3000, "0.0.0.0", function() {
+    console.log('App listening at http://%s:%s', "localhost", "3000");
 })
 
 
@@ -66,5 +55,7 @@ async function checkCookies() {
 
 checkCookies();
 
-if (!exports.argv.debug)
-    fileStuff.createImages(argv["Video Directory"], false, 5, 3, exports.argv.debug);
+console.log(fileStuff.getFileData(""))
+
+if (!argv.debug)
+    fileStuff.createImages(argv["Video Directory"], false, 5, 3, argv.debug);
