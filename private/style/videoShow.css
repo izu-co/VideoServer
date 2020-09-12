@@ -34,15 +34,83 @@ b {
 }
 
 #container {
+    position: absolute;
     background-color: darkslategray;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
     gap: 0px 0px;
-    width: 100%;
+    top: 30px;
+    margin-top: 10px;
 }
 
 .text {
     color: white;
     background-color: transparent;
+}
+
+#buttons {
+    display: flex;
+    position: fixed;
+    height: 20px;
+    top: 5px;
+    left: 20px;
+    width: 100%;
+}
+
+#buttons::before {
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+
+#settings::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f4fe";
+}
+
+#settings {
+    position: absolute;
+    right: 35px;
+}
+
+#back::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f060";
+}
+
+#back {
+    position: absolute;
+}
+
+#back.notFound {
+    color: rgba(0, 0, 0, 0.3);
+}
+
+#admin::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f508";
+}
+
+#admin {
+    position: absolute;
+    right: 80px;
+}
+
+#admin.hidden {
+    visibility: hidden;
+}
+
+button {
+    background: none;
+    border: none;
+    outline: none;
 }

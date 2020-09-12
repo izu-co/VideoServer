@@ -8,4 +8,4 @@ done.txt
 java/YouTubeDownloader/output/error.txt
 java/YouTubeDownloader/output/output.txt
 *.log
-todo.txt
+package-lock.json

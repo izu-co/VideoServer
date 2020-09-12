@@ -10,6 +10,8 @@ fetch('/backend/checkToken/', {
 .then(res =>{
     if (res["status"] !== true) 
         document.location.href = "/";
+    if (res["user"]["perm"] === "Admin")
+        document.getElementById("admin").className = ""
 })
 .catch(error => console.log(error))
 
@@ -17,6 +19,30 @@ var queryString = window.location.search;
 var urlParams = new URLSearchParams(queryString)
 
 var container = document.getElementById('container')
+const backButton = document.getElementById("back")
+
+document.getElementById("admin").addEventListener("click", () => {
+    location.href = "/admin"
+})
+
+addLast()
+function addLast() {
+    let cookie = loadCookie("last")
+    if (cookie && cookie !== location.href) {
+        backButton.addEventListener("click", () => {
+            setTimeCookie("last", "", new Date(0), "/")
+            location.href = cookie
+        })
+    } else {
+        backButton.className = "notFound"
+    }
+    setCookie("last", location.href, "/")
+}
+
+
+window.addEventListener("scroll", () => {
+    setCookie("scroll:"+location.search.slice("?path=".length), window.scrollY, location.href)
+})
 
 getFiles(urlParams.get('path'))
 function getFiles(path) {
@@ -34,7 +60,7 @@ function getFiles(path) {
         if (res["status"] === true) {
             loadData(res["files"]);
         } else {
-           //document.location.href = "/";
+           document.location.href = "/";
         }
     })
     .catch(error => console.log(error))
@@ -54,7 +80,7 @@ function loadData(data) {
             return 0;
     })
 
-    data.forEach(file => {
+    data.forEach((file, index) => {
         var header = document.createElement("div");
         var div = document.createElement("div");
 
@@ -73,6 +99,8 @@ function loadData(data) {
         var tub = document.createElement("img");
         tub.className = "tumb"
         tub.src = "/video/" + encodeURI(file["image"]);
+        if (index === data.length - 1)
+            tub.addEventListener("load", () => setScroll())
         div.appendChild(tub)
 
         if (file["type"] === "video") {
@@ -96,6 +124,18 @@ function loadData(data) {
 }
 
 
+document.getElementById("settings").addEventListener("click", () => {
+    location.href = "/settings"
+})
+
+function setScroll() {
+    let cookie = loadCookie("scroll:"+location.search.slice("?path=".length))
+    window.scrollTo({
+        top: cookie
+    })
+}
+
+
 
 function loadCookie(name) {
     var nameEQ = name + "=";
@@ -106,4 +146,23 @@ function loadCookie(name) {
         if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
     }
     return null;
+}
+
+/**
+ * @param {string} cookie The cokkie
+ * @param {string} key The string
+ * @param {String} path
+ */
+function setCookie(name, cookie, path) {
+    document.cookie = name + "=" + cookie + ";path="+path;
+}
+
+/**
+ * @param {Date} expires The date
+ * @param {string} cookie The cokkie
+ * @param {string} key The string
+ * @param {string} path
+ */
+function setTimeCookie(name, cookie, expires, path) {
+    document.cookie = name + "=" + cookie + "; expires=" + expires.toUTCString() + ";path="+path;
 }
