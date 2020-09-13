@@ -13,6 +13,13 @@ import * as deleteTokenRoute from "./deleteToken"
 import * as FileData from "./FileData"
 import * as getFilesRoute from "./getFiles"
 import * as getTimeRoute from "./getTime"
+import * as getUserDataRoute from "./getUserData"
+import * as getUsersRoute from "./getUsers"
+import * as logRoute from "./log"
+import * as loginRoute from "./login"
+import * as reloadRoute from "./reload"
+import * as setTimeRoute from "./setTime"
+import * as setUserDataRoute from "./setUserData"
 
 /**Post Routes Start */
 router.use('/' + dirname, 
@@ -25,14 +32,13 @@ deleteTokenRoute,
 FileData,
 getFilesRoute,
 getTimeRoute,
-require("./getFiles"),
-require("./checkToken"),
-require("./login"),
-require("./setUserData"),
-require("./getUserData"),
-require("./changePass"),
-require("./getUsers"),
-require("./addUser"));
+getUserDataRoute,
+getUsersRoute,
+logRoute,
+loginRoute,
+reloadRoute,
+setTimeRoute,
+setUserDataRoute)
 /** Post Routes End */
 
 
