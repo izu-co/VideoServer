@@ -35,12 +35,14 @@ let VideoNameExtensions = ["mp4"]
 
 export {argv, app, VideoNameExtensions}
 
+import * as router from "./routes/index"
+import { init } from "./routes/ExpressUses";
 import * as fileStuff from "./backend/fileStuff";
 import * as loginBackend from "./backend/UserMangement";
 
-require("./routes/ExpressUses")
+init()
 
-app.use("/", require("./routes/index"))
+app.use("/", router)
 
 
 app.listen(3000, "0.0.0.0", function() {
@@ -54,8 +56,6 @@ async function checkCookies() {
 }
 
 checkCookies();
-
-console.log(fileStuff.getFileData(""))
 
 if (!argv.debug)
     fileStuff.createImages(argv["Video Directory"], false, 5, 3, argv.debug);

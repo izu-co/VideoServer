@@ -1,19 +1,16 @@
-var express = require('express');
-var router = express.Router();
-const index = require("../index")
-const path = require("path")
+import * as express from "express";
+import * as index from "../index";
+import * as path from "path";
+const router = express.Router();
+
+import * as frontRouter from "./frontend/index"
 
 router.use('/',
 require('./backend/index'),
-require("./frontend/index"))
+frontRouter)
 router.use(notFound)
 
-/**
- * 
- * @param {import('express').Request} req 
- * @param {import('express').Response} res 
- */
-function notFound(req, res) {
+function notFound(req:express.Request, res:express.Response) {
     switch (req.method) {
         case "POST":
             res.status(404).json({"status": false, "reason": "Not found"})
@@ -26,4 +23,4 @@ function notFound(req, res) {
     }
 }
 
-module.exports = router;
+export = router;

@@ -245,7 +245,7 @@ async function generateToken() {
     let keys = Object.keys(data);
     
     while (generateNewToken) {
-        for ( var i = 0; i < length; i++ ) {
+        for ( var i = 0; i < TokenLenght; i++ ) {
             result += characters.charAt(Math.floor(Math.random() * characters.length));
         }
 
