@@ -1,6 +1,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import * as loginBackend from "../backend/UserMangement"
+import slowDown from "express-slow-down";
 
 export function getUserPOST (req:Request, res:Response, next:NextFunction) {
     if (req.method === "POST")
@@ -49,3 +50,11 @@ export function requireArgumentsPost (Arguments:Array<string>) {
         }
     }
 }
+
+const limiter = slowDown({
+    delayAfter: 5,
+    maxDelayMs: 60 * 1000,
+    delayMs: 1000
+})
+
+export {limiter}

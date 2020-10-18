@@ -22,7 +22,7 @@ function saveCacheRegular() {
     saveCache(startCache, filePaths)
     setTimeout(() => {
         saveCacheRegular()
-    }, 1000 * 5);
+    }, 1000 * 10);
 }
 
 import router from "./routes/index"
@@ -49,3 +49,14 @@ checkCookies();
 
 if (!argv.debug)
     fileStuff.createImages(argv["Video Directory"], false, 5, 3, argv.debug);
+
+function exit() {
+    saveCache(startCache, filePaths)
+    process.exit(0)
+}
+
+process.on('SIGINT', exit)
+process.on('exit', exit)
+process.on('SIGTERM', exit)
+process.on('SIGHUP', () => exit)
+process.on('SIGBREAK', () => exit)

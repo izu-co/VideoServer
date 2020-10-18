@@ -5,11 +5,12 @@ const router = express.Router();
 
 import frontRouter from "./frontend/index"
 import backendRouter from "./backend/index"
+import { limiter } from "./Routes";
 
 router.use('/',
 backendRouter,
 frontRouter)
-router.use(notFound)
+router.use(limiter, notFound)
 
 function notFound(req:express.Request, res:express.Response) {
     switch (req.method) {
