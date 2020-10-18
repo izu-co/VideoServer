@@ -1,3 +1,9 @@
+import { Updater } from "./backend/updater";
+
+const updater = new Updater("anappleforlife", "videoplayer")
+
+updater.checkForUpdates()
+
 import { argv, filePaths } from "./yargs";
 
 import express from "express"
