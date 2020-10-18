@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="/private/style/settings.css">
+        <title>Settings</title>
+    </head>
+    <body>
+        <div id="container">
+            <div id="UsernameDiv" class="category">
+                <label for="Username">Username: </label>
+                <b id="Username" class="item"></b>
+            </div>
+            <div id="passwordDiv" class="category">
+                <label for="oldPass">Passwort: </label>
+                <input type="password" placeholder="Altes Passwort" class="item" id="oldPass">
+                <input type="password" placeholder="Neues Passwort" class="item" id="newPass">
+                <input type="password" placeholder="Passwort bestätigen" class="item" id="newPassConfirm">
+                <button id="send">Bestätigen</button>
+            </div>
+            <div id="StandartLautstärke" class="category">
+                <label for="stanLaut">Standart Lautstärke: </label>
+                <input type="number" placeholder="30" class="item" id="stanLaut" min="1" max="100">
+                <button id="change">Ändern</button>
+            </div>
+        </div>
+        <script type="text/javascript" src="/private/js/settings.js"></script>
+    </body>
+</html>
