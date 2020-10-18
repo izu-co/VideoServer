@@ -16,9 +16,9 @@
     "@types/yargs": "^15.0.8"
   },
   "scripts": {
-    "prebuild": "del C:\\Users\\apple\\Desktop\\out /s /Q /F && rmdir C:\\Users\\apple\\Desktop\\out /Q /S || exit 0",
+    "prebuild": "del .\\build /s /Q /F && rmdir .\\build /Q /S || exit 0",
     "build": "tsc",
-    "postbuild": "robocopy . C:Users\\apple\\Desktop\\out /e /xf *.ts tsconfig.json settings.json intros.json logins.json settings.json status.json .gitignore /xd .git node_modules || exit 0"
+    "postbuild": "robocopy . .\\build /e /xf *.ts tsconfig.json settings.json intros.json logins.json settings.json status.json .gitignore /xd build .git node_modules || exit 0"
   },
   "repository": {
     "type": "git",

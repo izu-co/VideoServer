@@ -12,4 +12,4 @@ package-lock.json
 settings.json
 test.ts
 tsconfig.json
-out
+build
