@@ -25,11 +25,10 @@ Before starting, you need to have [Node](https://nodejs.org/en/) and [Java](http
 ## :checkered_flag: Starting ##
 
 ```bash
-# Clone this project
-$ git clone https://github.com/{{github}}/{{repository}}
+# Download the Build.zip from the latest Release and unzip it
 
 # Access
-$ cd {{repository}}
+$ cd [Directory]
 
 # Install dependencies
 $ npm i
