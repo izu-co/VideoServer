@@ -1,5 +1,6 @@
 import * as fs from "fs"
 import { join } from "path"
+import fetch from "node-fetch";
 import unzipper from "unzipper";
 import readline from "readline";
 import progressStream from "progress-stream";
