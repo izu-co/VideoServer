@@ -37,17 +37,17 @@ export function createImages(path:string, override:boolean, maxRamInt:number, mi
     var proc = child_process.spawn("java", ["-Xmx" + maxRamInt + "G", "-Xms" + minRamInt + "G", "-jar", "./java/images.jar",  path, override])
 
     proc.stdout.on('data', (data: string | string[]) => {
-        if (writeOutput || (!data.includes("skiped") && data.toString().trim().length !== 0))
+        if (writeOutput && (data.toString().trim().length !== 0))
             console.log("[INFO][ImageCreation] " + data.toString().replace("\n", ""))
     });
           
     proc.stderr.on('data', (data: string | string[]) => {
-        if (writeOutput || (!data.includes("skiped") && data.toString().trim().length !== 0))
+        if (writeOutput && (data.toString().trim().length !== 0))
             console.log("[INFO][ImageCreation] " + data.toString().replace("\n", ""))
     });
           
     proc.on('close', (code: any) => {
-        console.log(`Image Creation done with code ${code}`);
+        console.log(`[INFO][ImageCreation] Image Creation done with code ${code}`);
     });
     return {"status" : true}
 }

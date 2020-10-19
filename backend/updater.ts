@@ -64,7 +64,7 @@ class Updater {
                     'User-Agent': 'github-app-updater'
                 }
             }).then(data => {
-                console.log("Downloading update...")
+                console.log("[INFO][Update] Downloading update...")
                 data.body.pipe(file)  
                 file.on("finish", () => updateFun({
                     path: file.path.toString()
@@ -77,12 +77,12 @@ class Updater {
         let stream = fs.createReadStream(file.path, {})
 
         stream.on("ready", () => {
-            console.log("Extracting")
+            console.log("[INFO][Update] Extracting")
             stream.pipe(unzipper.Extract({
                 path: "./"
             }))
+            console.log("[INFO][Update] Update compleated. Please restart.")
         })
-        console.log("Done")
     }
 }
 
