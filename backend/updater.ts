@@ -1,12 +1,14 @@
 import * as fs from "fs"
 import { join } from "path"
-import fetch from "node-fetch";
 import unzipper from "unzipper";
 import readline from "readline";
+import progressStream from "progress-stream";
+import req from "request";
 
 interface Update {
     downloadURL: string,
-    preRelease: boolean
+    preRelease: boolean,
+    size: number
 }
 
 interface File {
@@ -40,7 +42,8 @@ class Updater {
                         if (answer === "yes" || answer === "y") {
                             this.downloadUpdate({
                                 downloadURL: data.assets[0].browser_download_url,
-                                preRelease: data.prerelease
+                                preRelease: data.prerelease,
+                                size: data.assets[0].size
                             })
                         } else {
                             return
@@ -58,29 +61,46 @@ class Updater {
             return;
         if (!fs.existsSync("update.zip") || overwrite) {
             const file = fs.createWriteStream("update.zip");
-            fetch(update.downloadURL, {
-                method: 'GET',
+            console.log("[INFO][Update] Downloading update...")
+            let progress = progressStream({
+                time: 1000,
+                speed: 2,
+                length: update.size
+            }, function (progress) {
+                console.log(`[INFO][Update] ${progress.transferred}/${progress.length} (${Math.round(progress.percentage)+'%'}, eta ${progress.eta}s)`)
+            })
+            req(update.downloadURL, {
+                method: "GET",
                 headers: {
-                    'User-Agent': 'github-app-updater'
+                    "User-Agent": "github-updater"
                 }
-            }).then(data => {
-                console.log("[INFO][Update] Downloading update...")
-                data.body.pipe(file)  
-                file.on("finish", () => updateFun({
+            }).pipe(progress)
+            .pipe(file)
+            file.on("close", () => {
+                console.log("[INFO][Update] Update download done.")
+                this.update({
                     path: file.path.toString()
-                }))
+                })
             })
         }
     }
 
     update(file : File) {
         let stream = fs.createReadStream(file.path, {})
-
         stream.on("ready", () => {
             console.log("[INFO][Update] Extracting")
-            stream.pipe(unzipper.Extract({
-                path: "./"
-            }))
+            stream.pipe(unzipper.Parse())
+            .on('entry', (entry:unzipper.Entry) => {
+                if (entry.type === "Directory") {
+                    if (!fs.existsSync(entry.path))
+                        fs.mkdirSync(entry.path)
+                } else
+                    if (entry.path.startsWith("data") && fs.existsSync(entry.path))
+                        entry.autodrain()
+                    else
+                        entry.pipe(fs.createWriteStream(entry.path))
+            })
+            fs.unlinkSync(file.path)
             console.log("[INFO][Update] Update compleated. Please restart.")
         })
     }
