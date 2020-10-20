@@ -22,7 +22,7 @@ password.addEventListener("keyup", function(e) {
 })
 
 if (loadCookie("token")) {
-    fetch('/backend/checkToken/', {
+    fetchBackend('/backend/checkToken/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
@@ -30,17 +30,13 @@ if (loadCookie("token")) {
             "token" : loadCookie("token")
         }),
         method: "POST"
-    }).then(data => data.json())
-    .then(res =>{
-        if (res["status"] === true) {
-            wrongPass.style.color = "greenyellow";
-            wrongPass.innerHTML = "Token geladen, Login nicht notwendig!";
-            wrongPass.style.opacity = 1;
-            canlogin = false;
-            setTimeout(() => { document.location.href = "/" }, 2000);
-        } 
-    })
-    .catch(error => console.log(error))
+    }, () => {
+        wrongPass.style.color = "greenyellow";
+        wrongPass.innerHTML = "Token geladen, Login nicht notwendig!";
+        wrongPass.style.opacity = 1;
+        canlogin = false;
+        setTimeout(() => { document.location.href = "/" }, 2000);
+    }, false, false)
 }
 
 async function login() {
@@ -56,9 +52,9 @@ async function login() {
                 }),
                 method: "POST"
             }).then(data => data.json())
-            .then(res =>{
+            .then(res => {
                 if (res["status"] === true) {
-                    setCookie("token", res["token"], new Date(Date.now() + (1000 * 60 * 60 * 24)))
+                    setCookie("token", res["data"], new Date(Date.now() + (1000 * 60 * 60 * 24)))
                     wrongPass.style.color = "greenyellow";
                     wrongPass.innerHTML = "Erfolgreich eingeloggt!";
                     wrongPass.style.opacity = 1;
@@ -98,4 +94,27 @@ function loadCookie(name) {
  */
 function setCookie(name, cookie, expires) {
     document.cookie = name + "=" + cookie + "; expires=" + expires.toUTCString() + ";path=/";
+}
+
+/**
+ * @param {string} url 
+ * @param {object} options 
+ * @param {boolean} sendBack
+ * @param {boolean} doAlert
+ * @param {Function} callback
+ * @returns {Promise<any>}
+ */
+function fetchBackend(url, options, callback, sendBack = true, doAlert = false) {
+    fetch(url, options).then(data => data.json())
+    .then(res => {
+        if (!res["status"]) {
+            if (sendBack)
+                document.location.href = "/"
+            else
+                if (doAlert)
+                    alert("Something went wrong\n" + res["reason"])
+        } else
+            callback(res["data"])
+    })
+    .catch(error => console.log(error))
 }

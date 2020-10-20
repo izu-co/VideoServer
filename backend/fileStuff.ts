@@ -28,7 +28,7 @@ export interface UserDataAnswer {
     "status": true|false,
     "data"?: {
         "volume"?: string
-    }
+    } | object
 }
 
 export function createImages(path:string, override:boolean, maxRamInt:number, minRamInt:number, writeOutput:boolean): Status {
@@ -96,7 +96,7 @@ export async function loadTime(path:string, token:string, ip:string) : Promise<n
     var data = getData()
     if (!answer["status"])
         return -1
-    let user = answer["user"]
+    let user = answer["data"]
     if (data.hasOwnProperty(user["username"])) {
         if (data[user["username"]].hasOwnProperty(path)) {
             return data[user["username"]][path]
@@ -114,7 +114,7 @@ export async function saveTime (path:string, token:string, percent:number, ip:st
     return loginBackend.getUserFromToken(token, ip).then(answer => {
         if (!answer["status"])
             return false;
-        let user = answer["user"]
+        let user = answer["data"]
         let data = getData();
         if (!data.hasOwnProperty(user["username"])) 
             data[user["username"]] = {};
@@ -170,7 +170,7 @@ export async function getUserData (token:string, ip:string): Promise<UserDataAns
     return await loginBackend.getUserFromToken(token, ip).then(answer => {
         if (!answer["status"])
             return answer;
-        let user = answer["user"]
+        let user = answer["data"]
         var settings = loadSettings()
         var ret = {};
     
@@ -188,7 +188,7 @@ export async function saveUserData (token:string, ip:string, data:SettingsDataIn
     return await loginBackend.getUserFromToken(token, ip).then(user => {
         var settings = loadSettings();
     
-        settings[user["user"]["username"]] = data;
+        settings[user["data"]["username"]] = data;
     
         saveSettings(settings);
         return {"status" : true}
