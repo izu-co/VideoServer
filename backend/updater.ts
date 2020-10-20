@@ -101,9 +101,9 @@ class Updater {
                     else
                         entry.pipe(fs.createWriteStream(entry.path))
             })
-            fs.unlinkSync(file.path)
             console.log("[INFO][Update] Update compleated. Please restart.")
         })
+        stream.on("close", () => fs.unlinkSync(file.path))
     }
 }
 

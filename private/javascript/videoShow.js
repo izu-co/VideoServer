@@ -19,29 +19,33 @@ var queryString = window.location.search;
 var urlParams = new URLSearchParams(queryString)
 
 var container = document.getElementById('container')
-const backButton = document.getElementById("back")
 
 document.getElementById("admin").addEventListener("click", () => {
     location.href = "/admin"
 })
 
-addLast()
-function addLast() {
-    let cookie = loadCookie("last")
-    if (cookie && cookie !== location.href) {
-        backButton.addEventListener("click", () => {
-            setTimeCookie("last", "", new Date(0), "/")
-            location.href = cookie
-        })
-    } else {
-        backButton.className = "notFound"
-    }
-    setCookie("last", location.href, "/")
-}
-
 
 window.addEventListener("scroll", () => {
     setCookie("scroll:"+location.search.slice("?path=".length), window.scrollY, location.href)
+})
+
+const logoutButton = document.getElementById("logout")
+logoutButton.addEventListener("click", () => {
+    fetch('/backend/logout', {
+        headers: {
+            "content-type" : "application/json; charset=UTF-8"
+        },
+        body: JSON.stringify({
+            "token" : loadCookie("token")
+        }),
+        method: "POST"
+    }).then(data => data.json())
+    .then(res => {
+        if (res["status"] === true)
+            document.location.href = "/"
+        else
+            alert("Something went wrong")
+    })
 })
 
 getFiles(urlParams.get('path'))
