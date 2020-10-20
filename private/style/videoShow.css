@@ -78,17 +78,6 @@ b {
     right: 35px;
 }
 
-#back::before {
-    font-size: 25px;
-    font-family: "Font Awesome 5 Free"; 
-    font-weight: 900; 
-    content: "\f060";
-}
-
-#back {
-    position: absolute;
-}
-
 #back.notFound {
     color: rgba(0, 0, 0, 0.3);
 }
@@ -107,6 +96,17 @@ b {
 
 #admin.hidden {
     visibility: hidden;
+}
+
+#logout {
+    position: absolute;
+}
+
+#logout::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f2f5";
 }
 
 button {

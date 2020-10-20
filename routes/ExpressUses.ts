@@ -20,7 +20,6 @@ export function init() {
     /**
      * Private Uses
      */
-
     app.use('/private/js', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "javascript")))
     app.use('/video', GetUserGET, express.static(argv["Video Directory"]))
     app.use('/private/style', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "style")))

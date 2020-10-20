@@ -38,6 +38,13 @@ $ node index.js --vd [Video directory]
 
 # The server will initialize in the <http://localhost:3000>
 ```
+
+## 💳 Credits ##
+
+[Logout Icon](https://fontawesome.com/icons/sign-out-alt?style=solid): [fontawesome.com](https://fontawesome.com/)\
+[Settings Icon](https://fontawesome.com/icons/user-cog?style=solid): [fontawesome.com](https://fontawesome.com/)\
+[Admin Icon](https://fontawesome.com/icons/user-tie?style=solid): [fontawesome.com](https://fontawesome.com/)
+
 ## :memo: License ##
 
 This project is under license from MIT. For more details, see the [LICENSE](LICENSE.md) file.

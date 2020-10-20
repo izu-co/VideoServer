@@ -231,6 +231,33 @@ export async function checkTokenForValid() {
     }
 }
 
+export async function logout(tokenToLogout:string, ip:string): Promise<BasicAnswer> {
+    let data = readLogins()
+    let user = await getUserFromToken(tokenToLogout, ip)
+    if (!user["status"])
+        return <BasicAnswer> user;
+    let tokens = user.user.token
+    let found = false
+    for (let a = 0; a < tokens.length; a++) {
+        let token = tokens[a];
+        if (token.token === tokenToLogout) {
+            tokens.splice(a, 1);
+            found = true;
+        }
+    }
+    user["token"] = tokens;
+    writeLogins(data)
+    if (found)
+        return {
+            status: true
+        }
+    else
+        return {
+            status: false,
+            reason: "Token not found"
+        }
+}
+
 
 async function generateToken() {
     let result           = '';
