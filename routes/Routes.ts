@@ -7,7 +7,7 @@ export function getUserPOST (req:Request, res:Response, next:NextFunction) {
     if (req.method === "POST")
         loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
             if (user["status"]) {
-                res.locals.user = user["user"];
+                res.locals.user = user["data"];
                 next();
             } else
                 res.send(user)
@@ -21,7 +21,7 @@ export function GetUserGET (req:Request, res:Response, next:NextFunction) {
         if (req["cookies"]["token"]) {
             loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
                 if (user["status"]) {
-                    res.locals.user = user["user"]
+                    res.locals.user = user["data"]
                     next()
                 } else
                     res.redirect("/login")

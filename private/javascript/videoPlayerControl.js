@@ -31,7 +31,7 @@ var urlParams = new URLSearchParams(queryString)
 
 video.src = "/video/" + urlParams.get("path");
 
-fetch('/backend/checkToken/', {
+fetchBackend('/backend/checkToken/', {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
@@ -39,43 +39,28 @@ fetch('/backend/checkToken/', {
         "token" : loadCookie("token")
     }),
     method: "POST"
-}).then(data => data.json())
-.then(res =>{
-    if (res["status"] !== true) 
-        document.location.href = "/";
-})
-.catch(error => console.log(error))
+}, () => {}, true, false)
 
-async function getFileData() {
-    var data = await fetch('/backend/FileData/', {
-        headers: {
-            "content-type" : "application/json; charset=UTF-8"
-        },
-        body: JSON.stringify({
-            "token" : loadCookie("token"),
-            "path":  urlParams.get("path")
-        }),
-        method: "POST"
-    }).then(data => data.json())
-    .then(res =>{
-        return res;
-    })
-    .catch(error => console.log(error))
-    return data;
-}
+fetchBackend('/backend/FileData/', {
+    headers: {
+        "content-type" : "application/json; charset=UTF-8"
+    },
+    body: JSON.stringify({
+        "token" : loadCookie("token"),
+        "path":  urlParams.get("path")
+    }),
+    method: "POST"
+}, res => loadData(res), false, false)
 
-getFileData().then(res => {
-    if (res["status"] !== true) 
-        document.location.href = "/";
-
-    if (res["data"]["skip"]["startTime"] !== -1 && res["data"]["skip"]["startTime"] !== -1) {
+function loadData(res) {
+    if (res["skip"]["startTime"] !== -1 && res["skip"]["startTime"] !== -1) {
         skipButton.addEventListener("click", function() {
-            video.currentTime = res["data"]["skip"]["stopTime"];
+            video.currentTime = res["skip"]["stopTime"];
         })
 
         video.addEventListener("timeupdate", function() {
-            var start = res["data"]["skip"]["startTime"];
-            var stop = res["data"]["skip"]["stopTime"];
+            var start = res["skip"]["startTime"];
+            var stop = res["skip"]["stopTime"];
             var currTime = Math.round(video.currentTime)
             if (currTime > start && currTime < stop)
                 skipButton.className = "allowed"
@@ -84,10 +69,10 @@ getFileData().then(res => {
         })
     }
 
-    if (res["data"].hasOwnProperty("next")) {
+    if (res.hasOwnProperty("next")) {
         next.style.opacity = 1;
         next.addEventListener("click", function() {
-            document.location.href = document.location.href.split("?")[0] + "?path=" + res["data"]["next"];
+            document.location.href = document.location.href.split("?")[0] + "?path=" + res["next"];
         })
     } else {
         next.style.opacity = 0.4
@@ -95,7 +80,7 @@ getFileData().then(res => {
             alert("Es wurde keine nächste Folge gefunden!")
         })
     }
-})
+}
 
 document.body.onkeyup = function(e){
     if(e.keyCode == 32){
@@ -132,7 +117,7 @@ function togglePlayPause() {
     }
 }
 
-fetch('/backend/getUserData/', {
+fetchBackend('/backend/getUserData/', {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
@@ -140,14 +125,10 @@ fetch('/backend/getUserData/', {
         "token" : loadCookie("token")
     }),
     method: "POST"
-}).then(data => data.json())
-.then(res =>{
-    if (res["status"] !== true) 
-        document.location.href = "/";
-    video.volume = res["data"]["volume"] / 100
-    soundbar.value = res["data"]["volume"]
-})
-.catch(error => console.log(error))
+}, res => {
+    video.volume = res["volume"] / 100
+    soundbar.value = res["volume"]
+}, true, false)
 
 soundbar.onchange = function() {
     video.volume = soundbar.value / 100;
@@ -240,7 +221,7 @@ video.addEventListener('timeupdate', function() {
     var timePer = Math.floor(video.currentTime / video.duration * 100) / 100;
     if (timePer !== last) {
         last = timePer;
-        fetch('/backend/setTime/', {
+        fetchBackend('/backend/setTime/', {
             headers: {
                 "content-type" : "application/json; charset=UTF-8"
             },
@@ -250,8 +231,7 @@ video.addEventListener('timeupdate', function() {
                 "path" : urlParams.get("path")
             }),
             method: "POST"
-        })
-        .catch(error => console.log(error))
+        }, () => {}, false, false)
 
     }
 })
@@ -297,29 +277,47 @@ document.addEventListener("fullscreenchange", function() {
 
 video.addEventListener("loadeddata", function () {
     if (!skiped)
-        fetch('/backend/getTime/', {
+        fetchBackend('/backend/getTime/', {
             headers: {
                 "content-type" : "application/json; charset=UTF-8"
             },
             body: JSON.stringify({
                 "token" : loadCookie("token"),
-                path : urlParams.get("path")
+                "path" : urlParams.get("path")
             }),
             method: "POST"
-        }).then(data => data.json())
-        .then(res =>{
-            if (res["status"] === true) {
-                if (res["time"] !== 0) {
+        }, res => {
+            console.log(res)
+            if (res !== 0) {
+                togglePlayPause()
+                if (window.confirm("Möchtest du da weitermachen wo du das letzte mal aufgehört hast?")) {
+                    video.currentTime = (video.duration * res)
+                    skiped = true;
                     togglePlayPause()
-                    if (window.confirm("Möchtest du da weitermachen wo du das letzte mal aufgehört hast?")) {
-                        video.currentTime = (video.duration * res["time"])
-                        skiped = true;
-                        togglePlayPause()
-                    }
                 }
-            } else {
-               document.location.href = "/";
             }
-        })
-        .catch(error => console.log(error))
+        }, true, false)
 })
+
+/**
+ * @param {string} url 
+ * @param {object} options 
+ * @param {boolean} sendBack
+ * @param {boolean} DoAlert
+ * @param {Function} callback
+ * @returns {Promise<any>}
+ */
+function fetchBackend(url, options, callback, sendBack = true, DoAlert = false) {
+    fetch(url, options).then(data => data.json())
+    .then(res => {
+        if (!res["status"]) {
+            if (sendBack)
+                document.location.href = "/"
+            else
+                if (DoAlert)
+                    alert("Something went wrong\n" + res["reason"])
+        } else
+            callback(res["data"])
+    })
+    .catch(error => console.log(error))
+}

@@ -1,4 +1,4 @@
-fetch('/backend/checkToken/', {
+fetchBackend('/backend/checkToken/', {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
@@ -6,14 +6,10 @@ fetch('/backend/checkToken/', {
         "token" : loadCookie("token")
     }),
     method: "POST"
-}).then(data => data.json())
-.then(res =>{
-    if (res["status"] !== true) 
-        document.location.href = "/";
-    if (res["user"]["perm"] === "Admin")
+}, res => {
+    if (res["perm"] === "Admin")
         document.getElementById("admin").className = ""
-})
-.catch(error => console.log(error))
+}, true, false)
 
 var queryString = window.location.search;
 var urlParams = new URLSearchParams(queryString)
@@ -50,7 +46,7 @@ logoutButton.addEventListener("click", () => {
 
 getFiles(urlParams.get('path'))
 function getFiles(path) {
-    fetch('/backend/getFiles/', {
+    fetchBackend('/backend/getFiles/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
@@ -59,21 +55,12 @@ function getFiles(path) {
             "path" : path
         }),
         method: "POST"
-    }).then(data => data.json())
-    .then(res =>{
-        if (res["status"] === true) {
-            loadData(res["files"]);
-        } else {
-           document.location.href = "/";
-        }
-    })
-    .catch(error => console.log(error))
+    }, res => loadData(res), true, false)
 }
 /**
  * @param {Array} data 
  */
 function loadData(data) {
-
     data.sort(function(a, b) {
         if (a["type"] === "video" && b["type"] === "video")
             if(a["name"].match(/\d+/g) != null && b["name"].match(/\d+/g) != null)
@@ -169,4 +156,27 @@ function setCookie(name, cookie, path) {
  */
 function setTimeCookie(name, cookie, expires, path) {
     document.cookie = name + "=" + cookie + "; expires=" + expires.toUTCString() + ";path="+path;
+}
+
+/**
+ * @param {string} url 
+ * @param {object} options 
+ * @param {boolean} sendBack
+ * @param {boolean} doAlert
+ * @param {Function} callback
+ * @returns {Promise<any>}
+ */
+function fetchBackend(url, options, callback, sendBack = true, doAlert = false) {
+    fetch(url, options).then(data => data.json())
+    .then(res => {
+        if (!res["status"]) {
+            if (sendBack)
+                document.location.href = "/"
+            else
+                if (doAlert)
+                    alert("Something went wrong\n" + res["reason"])
+        } else
+            callback(res["data"])
+    })
+    .catch(error => console.log(error))
 }

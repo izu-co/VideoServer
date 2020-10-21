@@ -1,4 +1,4 @@
-fetch('/backend/checkToken/', {
+fetchBackend('/backend/checkToken/', {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
@@ -6,14 +6,10 @@ fetch('/backend/checkToken/', {
         "token" : loadCookie("token")
     }),
     method: "POST"
-}).then(data => data.json())
-.then(res =>{
-    if (res["status"] !== true) 
-        document.location.href = "/";
-    if (res["user"]["perm"] === "Admin")
+}, res => {
+    if (res["perm"] === "Admin")
         isAdmin()
-})
-.catch(error => console.log(error))
+}, true, false)
 
 function isAdmin() {
 
@@ -30,7 +26,7 @@ function isAdmin() {
     reload.className = "item";
     reload.id = "reload";
     reload.addEventListener("click", function() {
-    fetch('/backend/reload/', {
+    fetchBackend('/backend/reload/', {
             headers: {
                 "content-type" : "application/json; charset=UTF-8"
             },
@@ -38,15 +34,10 @@ function isAdmin() {
                 "token" : loadCookie("token")
             }),
             method: "POST"
-        }).then(data => data.json())
-        .then(res =>{
-            if (res["status"] !== true) 
-                alert("Reload failed!\nReason: " + res["reason"])
-            else
-                alert("Started Reload!")
         })
-        .catch(error => console.log(error))
-    })
+    }, () => {
+        alert("Started reload")
+    }, false, true)
 
     reloadDiv.appendChild(reloadLabel)
     reloadDiv.appendChild(reload)
@@ -58,8 +49,16 @@ function isAdmin() {
     document.getElementById('container').appendChild(reloadDiv);
 }
 
-async function getData() {
-    var user = await fetch('/backend/checkToken/', {
+fetchBackend('/backend/checkToken/', {
+    headers: {
+        "content-type" : "application/json; charset=UTF-8"
+    },
+    body: JSON.stringify({
+        "token" : loadCookie("token")
+    }),
+    method: "POST"
+}, user => {
+    fetchBackend('/backend/getUserData/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
@@ -67,40 +66,13 @@ async function getData() {
             "token" : loadCookie("token")
         }),
         method: "POST"
-    }).then(data => data.json())
-    .then(res =>{
-        if (res["status"] !== true) 
-            document.location.href = "/";
-    
-        return res;
-    })
-    .catch(error => console.log(error))
-
-    var userData = await fetch('/backend/getUserData/', {
-        headers: {
-            "content-type" : "application/json; charset=UTF-8"
-        },
-        body: JSON.stringify({
-            "token" : loadCookie("token")
-        }),
-        method: "POST"
-    }).then(data => data.json())
-    .then(res =>{
-        if (res["status"] !== true) 
-            document.location.href = "/";
-    
-        return res;
-    })
-    .catch(error => console.log(error))
-
-    delete user["status"]
-    delete userData["status"]
-    return {
-        "user" : user["user"],
-        "userData" : userData["data"]
-    }
-
-}
+    }, userData => {
+        updateData({
+            "user" : user,
+            "userData" : userData
+        })
+    }, true, false)
+}, true, false)
 
 var usernameText = document.getElementById('Username'),
 sendButton = document.getElementById('send'),
@@ -111,13 +83,13 @@ volume = document.getElementById('stanLaut'),
 volumeButton = document.getElementById('change')
 
 
-getData().then(data => {
+function updateData(data) {
     usernameText.innerHTML = data["user"]["username"]
     volume.value = data["userData"]["volume"]
     sendButton.addEventListener("click", function() {
         if (oldPass.value !== "" && newPass.value !== "" && newPassConfirm.value !== "") {
             if (newPass.value === newPassConfirm.value) {
-                fetch('/backend/changePass/', {
+                fetchBackend('/backend/changePass/', {
                     headers: {
                         "content-type" : "application/json; charset=UTF-8"
                     },
@@ -127,15 +99,7 @@ getData().then(data => {
                         "oldPass" : oldPass.value
                     }),
                     method: "POST"
-                }).then(data => data.json())
-                .then(res => {
-                    if (res["status"] !== true) 
-                        alert("Something went wrong")
-                    else 
-                        alert("Das Passwort wurde gespeichert!")
-                    
-                })
-                .catch(error => console.log(error))
+                }, () => alert("Das Passwort wurde gespeichert!"), false, true)
                 
             } else
                 alert("Die Passwörter stimmen nicht überein")
@@ -147,13 +111,13 @@ getData().then(data => {
         sendData(volume.value)
     })
 
-}) 
+}
 
 /**
  * @param {Number} volume 
  */
 function sendData(volume) {
-    fetch('/backend/setUserData/', {
+    fetchBackend('/backend/setUserData/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
@@ -164,15 +128,7 @@ function sendData(volume) {
             }
         }),
         method: "POST"
-    }).then(data => data.json())
-    .then(res =>{
-        console.log(res)
-        if (res["status"] !== true) 
-            alert("Lautstärke wurde nicht geändert!")
-        else 
-            alert("Lautstärke wurde geändert!")
-    })
-    .catch(error => console.log(error))
+    }, () => alert("Lautstärke wurde geändert!"), false, true)
 }
 
 function loadCookie(name) {
@@ -184,4 +140,27 @@ function loadCookie(name) {
         if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
     }
     return null;
+}
+
+/**
+ * @param {string} url 
+ * @param {object} options 
+ * @param {boolean} sendBack
+ * @param {boolean} DoAlert
+ * @param {Function} callback
+ * @returns {Promise<any>}
+ */
+function fetchBackend(url, options, callback, sendBack = true, DoAlert = false) {
+    fetch(url, options).then(data => data.json())
+    .then(res => {
+        if (!res["status"]) {
+            if (sendBack)
+                document.location.href = "/"
+            else
+                if (DoAlert)
+                    alert("Something went wrong\n" + res["reason"])
+        } else
+            callback(res["data"])
+    })
+    .catch(error => console.log(error))
 }

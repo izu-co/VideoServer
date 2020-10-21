@@ -22,7 +22,7 @@ export interface User {
 export interface SecretUser {
     "status":true|false,
     "reason"?:string,
-    "user"?: {
+    "data"?: {
         "username":string,
         "perm":"Admin"|"User",
         "active":true|false
@@ -31,18 +31,19 @@ export interface SecretUser {
 
 export interface UserRequestAnswer {
     "status": true|false,
-    "user"?:User,
+    "data"?:User,
     "reason"?:string
 }
 
 export interface BasicAnswer {
     "status": true|false,
-    "reason"?:string
+    "reason"?:string,
+    "data"?:any
 }
 
 export interface TokenAnswer {
     "status":true|false,
-    "token"?:string,
+    "data"?:string,
     "reason"?:string
 }
 
@@ -56,7 +57,7 @@ export async function getUserFromToken (token:string, ip:string): Promise<UserRe
             if (user["token"][i]["token"] === token && user["token"][i]["ip"] === ip) {
                 if (user["active"]) {
                     user["uuid"] = keys[a];
-                    return {"status" : true, "user" : user};
+                    return {"status" : true, "data" : user};
                 } else {
                     return { "status" : false, "reason" : "Der Account ist deaktiviert!" }
                 }
@@ -112,7 +113,7 @@ export async function GenerateUserToken (username:string, password:string, ip:st
             tokens.push(token)
             user["token"] = tokens;
             data[keys[i]] = user;
-            return {"status": writeLogins(data), "token" : rohtoken};
+            return {"status": writeLogins(data), "data" : rohtoken};
         }
     }
     return {"status" : false, "reason" : "Der Benutzername oder das Passwort ist falsch"};
@@ -121,17 +122,17 @@ export async function GenerateUserToken (username:string, password:string, ip:st
 export async function checkToken (token:string, ip:string): Promise<SecretUser> {
     var user = await getUserFromToken(token, ip);
     if (user["status"] === true) {
-        delete user["user"]["password"];
-        delete user["user"]["token"];
+        delete user["data"]["password"];
+        delete user["data"]["token"];
     } 
     return user;
 }
 
-export async function loadUsers (token:string, ip:string) {
+export async function loadUsers (token:string, ip:string) : Promise<BasicAnswer> {
     let user = await getUserFromToken(token, ip);
     if (user["status"] === true) {
-        if (user["user"]["perm"] === "Admin") {
-            let users = await readLogins();
+        if (user["data"]["perm"] === "Admin") {
+            let users = readLogins();
             let retUsers = [];
             let keys = Object.keys(users);
             for (let i = 0; i < keys.length; i++) {
@@ -145,7 +146,7 @@ export async function loadUsers (token:string, ip:string) {
                 AddUser["password"] = passText;
                 retUsers.push(AddUser);
             }
-            return {"status" : true, "users" : retUsers} 
+            return {"status" : true, "data" : retUsers} 
         } else {
             return {"status" : false, "reason" : "You are not permitted to do that!"}
         }
@@ -156,7 +157,7 @@ export async function loadUsers (token:string, ip:string) {
 
 export async function deleteToken (uuid:string, token:string, ip:string) : Promise<BasicAnswer>{
     let AuthoriseUser = await getUserFromToken(token, ip);
-    if (AuthoriseUser["status"] && AuthoriseUser["user"]["perm"] === "Admin") {
+    if (AuthoriseUser["status"] && AuthoriseUser["data"]["perm"] === "Admin") {
         let data = await readLogins();
         let keys = Object.keys(data);
         for (let i = 0; i < keys.length; i++) {
@@ -198,13 +199,13 @@ export async function changePassword (token:string, ip:string, oldPass:string, n
         return user;
         
     let data = await readLogins();
-    if (data.hasOwnProperty(user["user"]["uuid"])) {
-        if (user["user"]["password"] === oldPass) {
-            let uuid = user["user"]["uuid"];
-            user["user"]["password"] = newPass;
-            delete user["user"]["uuid"]
-            data[uuid] = user["user"];
-            return {"status": await writeLogins(data, )};
+    if (data.hasOwnProperty(user["data"]["uuid"])) {
+        if (user["data"]["password"] === oldPass) {
+            let uuid = user["data"]["uuid"];
+            user["data"]["password"] = newPass;
+            delete user["data"]["uuid"]
+            data[uuid] = user["data"];
+            return {"status": writeLogins(data)};
         } else {
             return {"status" : false, "reason": "The old password is wrong!"}
         }
@@ -236,7 +237,7 @@ export async function logout(tokenToLogout:string, ip:string): Promise<BasicAnsw
     let user = await getUserFromToken(tokenToLogout, ip)
     if (!user["status"])
         return <BasicAnswer> user;
-    let tokens = user.user.token
+    let tokens = user.data.token
     let found = false
     for (let a = 0; a < tokens.length; a++) {
         let token = tokens[a];
