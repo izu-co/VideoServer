@@ -54,8 +54,10 @@ export function createImages(path:string, override:boolean, maxRamInt:number, mi
 
 export async function getFiles(path:string, token:string, ip:string): Promise<Array<FileData>> {
     var retarr = [];
-    if (!path.startsWith(index.argv["Video Directory"]))
-        path = Path.join(index.argv["Video Directory"], path);
+    let pathCheck = checkPath(path)
+    if (!pathCheck.status)
+        return retarr
+    path = pathCheck.data
     if(!fs.existsSync(path)) return []
     return await readdir(path).then(data => data.forEach(async file => { 
         if (fs.lstatSync(path + Path.sep + file).isFile())
@@ -90,8 +92,10 @@ export async function getFiles(path:string, token:string, ip:string): Promise<Ar
 }
 
 export async function loadTime(path:string, token:string, ip:string) : Promise<number> {
-    if (!path.startsWith(index.argv["Video Directory"]))
-        path = index.argv["Video Directory"] + path
+    let pathCeck = checkPath(path)
+    if (!pathCeck.status)
+        return 0
+    path = pathCeck.data
     const answer = await loginBackend.getUserFromToken(token, ip)
     var data = getData()
     if (!answer["status"])
@@ -109,8 +113,10 @@ export async function loadTime(path:string, token:string, ip:string) : Promise<n
 }
     
 export async function saveTime (path:string, token:string, percent:number, ip:string) : Promise<boolean> {
-    if (!path.startsWith(index.argv["Video Directory"]))
-        path = index.argv["Video Directory"] + path;
+    let pathCeck = checkPath(path)
+    if (!pathCeck.status)
+        return false
+    path = pathCeck.data
     return loginBackend.getUserFromToken(token, ip).then(answer => {
         if (!answer["status"])
             return false;
@@ -125,8 +131,10 @@ export async function saveTime (path:string, token:string, percent:number, ip:st
 }
 
 export async function getFileData (path:string) : Promise<SkipData|{"status":true|false, "reason"?:string}> {
-    if (!path.startsWith(index.argv["Video Directory"]))
-        path = Path.join(index.argv["Video Directory"], path);
+    let pathCeck = checkPath(path)
+    if (!pathCeck.status)
+        return pathCeck
+    path = pathCeck.data
     if (!fs.existsSync(path))
         return {"status": false, "reason": "The given path does not exist"}
     var ret = {}
@@ -225,13 +233,20 @@ async function readdir(path:string) {
     });
 }
 
-function isEmptyObject(obj) {
+function isEmptyObject(obj:object) {
     return !Object.keys(obj).length;
 }
 
-function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+function checkPath(path:string): loginBackend.BasicAnswer {
+    if (!path.startsWith(index.argv["Video Directory"]))
+        path = Path.join(index.argv["Video Directory"], path)
+    if (!Path.resolve(path).startsWith(Path.resolve(index.argv["Video Directory"])))
+        return {
+            status: false,
+            reason: "The path provided is invalid"
+        }
+    return {
+        "status": true,
+        "data": path
+    }
 }
