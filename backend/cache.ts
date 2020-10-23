@@ -19,7 +19,7 @@ function saveCache(cache:cacheInterface, paths: filePathsInterface):void {
 }
 
 function saveFile(path:fs.PathLike, data:object) {
-    fs.writeFileSync(path, JSON.stringify(data, null, 3))
+    fs.writeFileSync(path, JSON.stringify(data, null, 4))
 }
 
 function readFile(path:fs.PathLike):object {
