@@ -139,7 +139,7 @@ export async function getFileData (path:string) : Promise<SkipData|{"status":tru
         return {"status": false, "reason": "The given path does not exist"}
     var ret = {}
 
-    var skips = loadSkips();
+    var skips = loadSkips()
     if (skips.hasOwnProperty(path))
         ret["skip"] = skips[path]
     else 

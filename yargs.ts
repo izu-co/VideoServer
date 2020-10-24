@@ -43,31 +43,32 @@ const argv = yargs
         describe: "The path where the status data should be safed to."
     })
     .argv;
-
 let data:settingsInterface
 if (fs.existsSync("settings.json")) 
     data = <settingsInterface> JSON.parse(fs.readFileSync("settings.json").toString())
-
+if (!fs.existsSync("data"))
+    fs.mkdirSync("data")
 argv["Video Directory"] = (data!==undefined&&data["Video Directory"]!==undefined)?data["Video Directory"].toString():false || argv["Video Directory"]
 argv["Working Directory"] = (data!==undefined&&data["Working Directory"]!==undefined)?data["Working Directory"].toString():false || argv["Working Directory"]
 argv.debug = (data)?data.debug:false || argv.debug
 
+
 const filePaths:filePathsInterface = {
     settings: {
-        path: (data)?data.settingsFile:false || argv.settingsFile,
-        exists: fs.existsSync((data)?data.settingsFile:false || argv.settingsFile)
+        path: (data&&data.settingsFile!==undefined)?data.settingsFile:false || argv.settingsFile,
+        exists: fs.existsSync((data&&data.settingsFile!==undefined)?data.settingsFile:false || argv.settingsFile)
     },
     introSkips: {
-        path: (data)?data.introFile:false || argv.introFile,
-        exists: fs.existsSync((data)?data.introFile:false || argv.introFile)
+        path: (data&&data.introFile!==undefined)?data.introFile:false || argv.introFile,
+        exists: fs.existsSync((data&&data.introFile!==undefined)?data.introFile:false || argv.introFile)
     },
     logins: {
-        path: (data)?data.loginFile:false || argv.loginFile,
-        exists: fs.existsSync((data)?data.loginFile:false || argv.loginFile)
+        path: (data&&data.loginFile!==undefined)?data.loginFile:false || argv.loginFile,
+        exists: fs.existsSync((data&&data.loginFile!==undefined)?data.loginFile:false || argv.loginFile)
     },
     status: {
-        path: (data)?data.statusFile:false || argv.statusFile,
-        exists: fs.existsSync((data)?data.statusFile:false || argv.statusFile)
+        path: (data&&data.statusFile!==undefined)?data.statusFile:false || argv.statusFile,
+        exists: fs.existsSync((data&&data.statusFile!==undefined)?data.statusFile:false || argv.statusFile)
     },
 }
 

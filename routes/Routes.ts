@@ -17,6 +17,8 @@ export function getUserPOST (req:Request, res:Response, next:NextFunction) {
 }
 
 export function GetUserGET (req:Request, res:Response, next:NextFunction) {
+    if (!req.cookies["token"] && req.headers["token"])
+        req.cookies["token"] = req.headers["token"];
     if (req.method === "GET")
         if (req["cookies"]["token"]) {
             loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
