@@ -262,7 +262,7 @@ export async function logout(tokenToLogout:string, ip:string): Promise<BasicAnsw
 
 async function generateToken() {
     let result           = '';
-    let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-:_!%&/()}][{';
+    let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-:_!%/()}][{';
     let generateNewToken = true;
 
     var data = readLogins();
