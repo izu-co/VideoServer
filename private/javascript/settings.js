@@ -26,7 +26,7 @@ function isAdmin() {
     reload.className = "item";
     reload.id = "reload";
     reload.addEventListener("click", function() {
-    fetchBackend('/backend/reload/', {
+        fetchBackend('/backend/reload/', {
             headers: {
                 "content-type" : "application/json; charset=UTF-8"
             },
@@ -34,10 +34,10 @@ function isAdmin() {
                 "token" : loadCookie("token")
             }),
             method: "POST"
-        })
-    }, () => {
-        alert("Started reload")
-    }, false, true)
+        }, () => {
+            alert("Started reload")
+        }, false, true)
+    });
 
     reloadDiv.appendChild(reloadLabel)
     reloadDiv.appendChild(reload)
