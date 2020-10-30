@@ -151,7 +151,6 @@ export async function getFileData (path:string) : Promise<SkipData|{"status":tru
     var split = path.split("\\");
     var string = split[split.length - 1].substring((split[split.length - 1].indexOf("-") + 2));
     var number = -1
-
     if (string.substring(0, 3).match("^[0-9]+$"))
         number = parseInt(string.substring(0, 3), 10)
     if (string.substring(0, 2).match("^[0-9]+$"))
@@ -159,11 +158,9 @@ export async function getFileData (path:string) : Promise<SkipData|{"status":tru
     let numberString;
     let newNumberString;
     if (number !== -1) {
-        var newNumber = number+1;
-        if (number < 10)
-        numberString = "0" + number
-        if (newNumber < 10)
-        newNumberString = "0" + newNumber;
+        let newNumber = number+1;
+        numberString = number < 10 ? "0" + number : number
+        newNumberString = newNumber < 10 ? "0" + newNumber : newNumber
         split[split.length - 1] = split[split.length - 1].replace(numberString, newNumberString)
         if (fs.existsSync(split.join("\\")))
             ret["next"] = split.join("\\").replace(index.argv["Video Directory"], "")
