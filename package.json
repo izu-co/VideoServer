@@ -1,6 +1,7 @@
 {
   "name": "videoplayer",
   "version": "1.1.6",
+  "version": "1.1.5",
   "description": "A Video Player",
   "main": "index.js",
   "dependencies": {
