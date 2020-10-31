@@ -34,7 +34,7 @@ export interface UserDataAnswer {
 export function createImages(path:string, override:boolean, maxRamInt:number, minRamInt:number, writeOutput:boolean): Status {
     console.log("[INFO][ImageCreation] Startet creating of Images!")
        
-    var proc = child_process.spawn("java", ["-Xmx" + maxRamInt + "G", "-Xms" + minRamInt + "G", "-jar", "./java/images.jar",  path, override])
+    var proc = child_process.spawn("java", ["-Xmx" + maxRamInt + "G", "-Xms" + minRamInt + "G", "-jar", "./java/ThumbnailGenerator-1.0.jar",  path, override])
 
     proc.stdout.on('data', (data: string | string[]) => {
         if (writeOutput && (data.toString().trim().length !== 0))
