@@ -54,7 +54,7 @@ async function checkCookies() {
 checkCookies();
 
 if (!argv.debug)
-    fileStuff.createImages(argv["Video Directory"], false, 5, 3, argv.debug);
+    fileStuff.createImages(argv["Video Directory"], false, false);
 
 function exit() {
     saveCache(startCache, filePaths)
