@@ -13,7 +13,7 @@ router.route('/' + routeName + '/')
 
 function postRouteHandler(req:express.Request, res:express.Response) {
     if (res.locals.user["perm"] === "Admin")
-        res.send(fileStuff.createImages(index.argv["Video Directory"], false, 5, 3, false))
+        res.send(fileStuff.createImages(index.argv["Video Directory"], false, false))
     else 
         res.send({"status" : false, "reason" : "Permission denied!"})
 }

@@ -1,6 +1,8 @@
-import { Updater } from "./backend/updater";
+import { FileSettings, Updater } from "./backend/updater";
 
-const updater = new Updater("anappleforlife", "videoplayer")
+const updater = new Updater("anappleforlife", "videoplayer", new Map<string, FileSettings>()
+    .set("data", FileSettings.DontOverride)
+)
 
 updater.checkForUpdates()
 
@@ -40,11 +42,9 @@ init()
 
 app.use("/", router)
 
-
-app.listen(3000, "0.0.0.0", function() {
-    console.log('[INFO] App listening at http://%s:%s', "localhost", "3000");
+app.listen(3000, () => {
+    console.log("[INFO] Listening on http://%s:%d/", "localhost", 3000)
 })
-
 
 async function checkCookies() {
     await loginBackend.checkTokenForValid();
@@ -54,7 +54,7 @@ async function checkCookies() {
 checkCookies();
 
 if (!argv.debug)
-    fileStuff.createImages(argv["Video Directory"], false, 5, 3, argv.debug);
+    fileStuff.createImages(argv["Video Directory"], false, false);
 
 function exit() {
     saveCache(startCache, filePaths)
