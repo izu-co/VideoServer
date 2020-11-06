@@ -40,11 +40,9 @@ init()
 
 app.use("/", router)
 
-
-app.listen(3000, "0.0.0.0", function() {
-    console.log('[INFO] App listening at http://%s:%s', "localhost", "3000");
+app.listen(3000, () => {
+    console.log("[INFO] Listening on http://%s:%d/", "localhost", 3000)
 })
-
 
 async function checkCookies() {
     await loginBackend.checkTokenForValid();
