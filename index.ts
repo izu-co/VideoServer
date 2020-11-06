@@ -1,6 +1,8 @@
-import { Updater } from "./backend/updater";
+import { FileSettings, Updater } from "./backend/updater";
 
-const updater = new Updater("anappleforlife", "videoplayer")
+const updater = new Updater("anappleforlife", "videoplayer", new Map<string, FileSettings>()
+    .set("data", FileSettings.DontOverride)
+)
 
 updater.checkForUpdates()
 
