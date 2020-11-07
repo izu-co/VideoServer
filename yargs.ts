@@ -2,6 +2,7 @@ import * as yargs from "yargs";
 import path from "path"
 import fs from "fs"
 import { filePathsInterface, settingsInterface } from "./interfaces";
+import { getBackupPath } from "./backend/cache";
 
 const argv = yargs  
     .option('Video Directory', {
@@ -72,13 +73,22 @@ const filePaths:filePathsInterface = {
     },
 }
 
+
 for (let a in filePaths)
     if (!filePaths[a]["exists"]) {
+        if (fs.existsSync(getBackupPath(filePaths[a]["path"].toString()))) {
+            filePaths[a] = {
+                path: filePaths[a]["path"],
+                backup: getBackupPath(filePaths[a]["path"].toString()),
+                exists: true
+            }
+            continue;
+        } 
         try {
             fs.writeFileSync(filePaths[a]["path"], "{}")
         } catch (e) {
-            console.log("[ERROR] The path for the '" + a + "' file was not found")
-            process.exit(1)
+                console.log("[ERROR] The path for the '" + a + "' file was not found")
+                process.exit(1)
         }
     }
 

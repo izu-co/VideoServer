@@ -26,9 +26,9 @@
     "@types/yargs": "^15.0.8"
   },
   "scripts": {
-    "prebuild": "del .\\build /s /Q /F && rmdir .\\build /Q /S || exit 0",
+    "prebuild": "IF EXIST build (rmdir .\\build /Q /S)",
     "build": "tsc",
-    "postbuild": "robocopy . .\\build /e /xf *.ts tsconfig.json intros.json status.json .gitignore update.zip /xd build .git* node_modules || exit 0"
+    "postbuild": "robocopy . .\\build /e /xf *.ts tsconfig.json settings.json settings.backup.json logins.backup.json intros*.json status*.json .gitignore update.zip /xd test build .git* node_modules || exit 0"
   },
   "repository": {
     "type": "git",

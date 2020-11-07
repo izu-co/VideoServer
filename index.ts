@@ -19,7 +19,7 @@ if (!fs.existsSync(argv["Video Directory"])) {
 
 let VideoNameExtensions = ["mp4"]
 
-import { readCache, saveCache } from "./backend/cache"
+import { backupCache, readCache, saveCache } from "./backend/cache"
 
 const startCache = readCache(filePaths)
 
@@ -31,6 +31,14 @@ function saveCacheRegular() {
     setTimeout(() => {
         saveCacheRegular()
     }, 1000 * 10);
+}
+
+backupCacheRegual()
+function backupCacheRegual() {
+    backupCache(startCache, filePaths)
+    setTimeout(() => {
+        backupCacheRegual()
+    }, 1000 * 60 * 10);
 }
 
 import router from "./routes/index"
