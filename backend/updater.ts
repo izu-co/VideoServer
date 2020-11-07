@@ -122,7 +122,6 @@ class Updater {
             })
         })
         stream.on("close", () => {
-            fs.unlinkSync(file.path)
             console.log("[INFO][Update] Update compleated. Please restart.")
         })
     }
