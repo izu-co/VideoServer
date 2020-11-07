@@ -216,7 +216,7 @@ function saveData(data:StatusInterface) {
     index.cache.status = data
 }
 function loadSkips(): IntroSkipInterface {
-    return index.cache.introSkipPositions;
+    return index.cache.introSkips;
 }
 
 async function readdir(path:string) {

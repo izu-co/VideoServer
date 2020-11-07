@@ -42,7 +42,7 @@ export interface SettingsInterface {
 }
 
 export interface cacheInterface {
-    "introSkipPositions": IntroSkipInterface
+    "introSkips": IntroSkipInterface
     "logins": LoginInterface
     "settings": SettingsInterface,
     "status": StatusInterface
@@ -50,7 +50,8 @@ export interface cacheInterface {
 
 export interface pathCheck {
     "path": PathLike,
-    "exists": boolean
+    "exists": boolean,
+    "backup"?: PathLike
 }
 export interface filePathsInterface {
     "introSkips": pathCheck,

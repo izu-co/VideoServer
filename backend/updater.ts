@@ -58,7 +58,6 @@ class Updater {
     }
 
     downloadUpdate(update: Update, downloadPreRelase = false, overwrite= true) {       
-        let updateFun = this.update
         if (!downloadPreRelase && update.preRelease)
             return;
         if (!fs.existsSync("update.zip") || overwrite) {
@@ -111,7 +110,8 @@ class Updater {
                                 if (!fs.existsSync(resolve(entry.path, "..")))
                                     fs.mkdirSync(resolve(entry.path, ".."))
                                 entry.pipe(fs.createWriteStream(entry.path))
-                            }
+                            } else 
+                                entry.autodrain()
                             break;
                         case FileSettings.Override: 
                             if (!fs.existsSync(resolve(entry.path, "..")))
@@ -119,14 +119,10 @@ class Updater {
                             entry.pipe(fs.createWriteStream(entry.path))
                             break;
                     }
-                    /*if (entry.path.startsWith("data") && fs.existsSync(entry.path))
-                        entry.autodrain()
-                    else
-                        entry.pipe(fs.createWriteStream(entry.path))*/
             })
         })
         stream.on("close", () => {
-            //fs.unlinkSync(file.path)
+            fs.unlinkSync(file.path)
             console.log("[INFO][Update] Update compleated. Please restart.")
         })
     }
