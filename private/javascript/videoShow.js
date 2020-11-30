@@ -58,9 +58,10 @@ function getFiles(path) {
     }, res => loadData(res), true, false)
 }
 /**
- * @param {Array} data 
+ * @param {Object} input 
  */
-function loadData(data) {
+function loadData(input) {
+    data = input["files"];
     data.sort(function(a, b) {
         if (a["type"] === "video" && b["type"] === "video")
             if(a["name"].match(/\d+/g) != null && b["name"].match(/\d+/g) != null)
@@ -103,8 +104,7 @@ function loadData(data) {
         var text = document.createElement("b");
 
         text.className = "text"
-
-        document.title = urlParams.get('path')
+        document.title = urlParams.get('path').split(input["pathSep"]).pop()
 
         text.innerText = file["name"];
         div.appendChild(text);
