@@ -53,6 +53,7 @@ fetchBackend('/backend/FileData/', {
 }, res => loadData(res), false, false)
 
 function loadData(res) {
+    document.title = res["current"].split(res["pathSep"]).pop()
     if (res["skip"]["startTime"] !== -1 && res["skip"]["startTime"] !== -1) {
         skipButton.addEventListener("click", function() {
             video.currentTime = res["skip"]["stopTime"];

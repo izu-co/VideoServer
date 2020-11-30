@@ -119,6 +119,10 @@ document.getElementById("settings").addEventListener("click", () => {
     location.href = "/settings"
 })
 
+document.getElementById("server").addEventListener("click", () => {
+    location.href = "/server"
+})
+
 function setScroll() {
     let cookie = loadCookie("scroll:"+location.search.slice("?path=".length))
     window.scrollTo({

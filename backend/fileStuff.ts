@@ -20,7 +20,9 @@ export interface FileData {
 export interface SkipData {
     "startTime": number,
     "stopTime": number,
-    "next"?: string
+    "next"?: string,
+    "current": string,
+    "pathSep": string
 }
 
 
@@ -165,6 +167,8 @@ export async function getFileData (path:string) : Promise<SkipData|{"status":tru
         if (fs.existsSync(split.join("\\")))
             ret["next"] = split.join("\\").replace(index.argv["Video Directory"], "")
     }
+    ret["pathSep"] = Path.sep
+    ret["current"] = path;
     if (!isEmptyObject(ret))
         return <SkipData> ret;
     else 

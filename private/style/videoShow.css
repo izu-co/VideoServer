@@ -91,7 +91,7 @@ b {
 
 #admin {
     position: absolute;
-    right: 80px;
+    right: 120px;
 }
 
 #admin.hidden {
@@ -107,6 +107,18 @@ b {
     font-family: "Font Awesome 5 Free"; 
     font-weight: 900; 
     content: "\f2f5";
+}
+
+#server {
+    position: absolute;
+    right: 80px;
+}
+
+#server::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f233";
 }
 
 button {
