@@ -39,6 +39,7 @@ export function init() {
     }, express.static(argv["Video Directory"]))
     app.use('/private/style', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "style")))
     app.use('/private/html', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "html")))
+    app.use("/private/font", GetUserGET, express.static(path.join(argv["Working Directory"], "private", "font")))
     app.use("/player/player.html", GetUserGET, express.static(path.join(argv["Working Directory"], "private", "html", "player.html")))
     app.use("/player/videoShow.html", GetUserGET, express.static(path.join(argv["Working Directory"], "private", "html", "videoShow.html")))
 }

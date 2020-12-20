@@ -60,7 +60,7 @@ export async function getFiles(path:string, token:string, ip:string): Promise<Ar
     if (!pathCheck.status)
         return retarr
     path = pathCheck.data
-    if(!fs.existsSync(path)) return []
+    if(!fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) return []
     return await readdir(path).then(data => data.forEach(async file => { 
         if (fs.lstatSync(path + Path.sep + file).isFile())
             if (!index.VideoNameExtensions.includes(file.split(".")[file.split(".").length - 1]))
@@ -150,7 +150,7 @@ export async function getFileData (path:string) : Promise<SkipData|{"status":tru
             "stopTime" : -1
         }
 
-    var split = path.split("\\");
+    var split = path.split(Path.sep);
     var string = split[split.length - 1].substring((split[split.length - 1].indexOf("-") + 2));
     var number = -1
     if (string.substring(0, 3).match("^[0-9]+$"))
@@ -164,8 +164,8 @@ export async function getFileData (path:string) : Promise<SkipData|{"status":tru
         numberString = number < 10 ? "0" + number : number
         newNumberString = newNumber < 10 ? "0" + newNumber : newNumber
         split[split.length - 1] = split[split.length - 1].replace(numberString, newNumberString)
-        if (fs.existsSync(split.join("\\")))
-            ret["next"] = split.join("\\").replace(index.argv["Video Directory"], "")
+        if (fs.existsSync(split.join(Path.sep)))
+            ret["next"] = split.join(Path.sep).replace(index.argv["Video Directory"], "")
     }
     ret["pathSep"] = Path.sep
     ret["current"] = path;

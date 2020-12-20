@@ -16,6 +16,8 @@ var urlParams = new URLSearchParams(queryString)
 
 var container = document.getElementById('container')
 
+var filter = ""
+
 document.getElementById("admin").addEventListener("click", () => {
     location.href = "/admin"
 })
@@ -61,6 +63,10 @@ function getFiles(path) {
  * @param {Object} input 
  */
 function loadData(input) {
+
+    while (container.lastChild != null)
+        container.removeChild(container.lastChild)
+
     data = input["files"];
     data.sort(function(a, b) {
         if (a["type"] === "video" && b["type"] === "video")
@@ -71,6 +77,8 @@ function loadData(input) {
         else
             return 0;
     })
+
+    data = data.filter(a => a["name"].toLowerCase().includes(filter.toLowerCase()))
 
     data.forEach((file, index) => {
         var header = document.createElement("div");
@@ -130,6 +138,16 @@ function setScroll() {
     })
 }
 
+document.getElementById("search").addEventListener("input", (e) => {
+    filter = e.target.value
+    getFiles(urlParams.get('path'))
+})
+
+document.getElementById("searchForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    filter = new FormData(e.target).get("search")
+    getFiles(urlParams.get('path'))
+}) 
 
 
 function loadCookie(name) {

@@ -1,5 +1,11 @@
+@font-face {
+    font-family: Axis;
+    src: url(/private/font/AXIS_Extra_Bold_800.otf);
+    font-weight: bold;
+}
+
 * {
-    background-color: darkslategray;
+    background-color: #262626;
 }
 
 b {
@@ -33,19 +39,30 @@ b {
     grid-row-end: 3;
 }
 
+.Headline {
+    position: fixed;
+    text-align: center;
+    font-family: Axis;
+    background-color: transparent;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    top: -15px;
+    width: 100%;
+}
+
 #container {
     position: absolute;
-    background-color: darkslategray;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
     gap: 0px 0px;
-    top: 30px;
-    margin-top: 10px;
+    top: 50px;
 }
 
 .text {
     color: white;
+	font-family: "AXIS";
     background-color: transparent;
 }
 
@@ -56,6 +73,7 @@ b {
     top: 5px;
     left: 20px;
     width: 100%;
+    background-color: transparent;
 }
 
 #buttons::before {
@@ -76,6 +94,7 @@ b {
 #settings {
     position: absolute;
     right: 35px;
+    color: #fff;
 }
 
 #back.notFound {
@@ -92,6 +111,7 @@ b {
 #admin {
     position: absolute;
     right: 120px;
+    color: #fff;
 }
 
 #admin.hidden {
@@ -100,6 +120,7 @@ b {
 
 #logout {
     position: absolute;
+    color: #fff;
 }
 
 #logout::before {
@@ -112,6 +133,7 @@ b {
 #server {
     position: absolute;
     right: 80px;
+    color: #fff;
 }
 
 #server::before {
@@ -125,4 +147,31 @@ button {
     background: none;
     border: none;
     outline: none;
+}
+
+#searchForm {
+    border-bottom: 1px solid white;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    position: absolute;
+    left: 45px;
+    height: 28px;
+}
+
+input[type="search"] {
+    border: none;
+    height: 100%;
+    color: white;
+}
+
+#search {
+    color: #fff;
+}
+
+#search::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f002";
 }
