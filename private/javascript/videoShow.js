@@ -48,6 +48,7 @@ logoutButton.addEventListener("click", () => {
 
 getFiles(urlParams.get('path'))
 function getFiles(path) {
+    console.log(path, urlParams.get('path'))
     fetchBackend('/backend/getFiles/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
@@ -140,12 +141,18 @@ function setScroll() {
 
 document.getElementById("search").addEventListener("input", (e) => {
     filter = e.target.value
+    
+    queryString = window.location.search;
+    urlParams = new URLSearchParams(queryString)
     getFiles(urlParams.get('path'))
 })
 
 document.getElementById("searchForm").addEventListener("submit", (e) => {
     e.preventDefault();
     filter = new FormData(e.target).get("search")
+    
+    queryString = window.location.search;
+    urlParams = new URLSearchParams(queryString)
     getFiles(urlParams.get('path'))
 }) 
 
