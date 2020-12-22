@@ -1,5 +1,5 @@
 import * as express from "express"
-import * as fileStuff from "../../backend/fileStuff";
+import * as util from "../../backend/util"
 import * as Path from "path";
 import { requireArgumentsPost } from "../Routes";
 const router = express.Router()
@@ -11,7 +11,7 @@ router.route('/' + routeName + '/')
     .post(requireArgumentsPost(["token"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    fileStuff.getUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
+    util.getUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
         res.send(answer)
     })
 }
