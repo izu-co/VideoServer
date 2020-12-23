@@ -3,5 +3,6 @@ import { loadTime } from "./videoServing/loadTime";
 import { getFiles } from "./videoServing/getFiles";
 import { saveTime } from "./videoServing/saveTime";
 import { getFileData } from "./videoServing/getFileData";
+import { getSortTypes } from "./videoServing/getSortTypes";
 
-export { createImages, loadTime, getFiles, saveTime, getFileData };
+export { createImages, loadTime, getFiles, saveTime, getFileData, getSortTypes };

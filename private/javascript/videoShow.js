@@ -7,13 +7,14 @@ fetchBackend('/backend/checkToken/', {
     }),
     method: "POST"
 }, res => {
-    if (res["perm"] === "Admin")
+    if (res["perm"] === "Admin") 
         document.getElementById("admin").className = ""
+    else
+        document.getElementById("sortDiv").style.right = "120px"
 }, true, false)
 
 var queryString = window.location.search;
 var urlParams = new URLSearchParams(queryString)
-
 var container = document.getElementById('container')
 
 var filter = ""
@@ -22,6 +23,60 @@ document.getElementById("admin").addEventListener("click", () => {
     location.href = "/admin"
 })
 
+let sort = document.getElementById("sort")
+
+let loading = {
+    aInternal: false,
+    aListener: function(val) {},
+    set a(val) {
+      this.aInternal = val;
+      this.aListener(val);
+    },
+    get a() {
+      return this.aInternal;
+    },
+    registerListener: function(listener) {
+      this.aListener = listener;
+    }
+}
+
+loading.registerListener(function (val) {
+    let curr = val ? "invis" : "vis"
+    let toset = val ? "vis" : "invis"
+
+    document.getElementById("running").classList.remove(curr)
+    document.getElementById("running").classList.add(toset)
+})
+
+fetchBackend('/backend/getSortTypes/', {
+    headers: {
+        "content-type" : "application/json; charset=UTF-8"
+    },
+    body: JSON.stringify({
+        "token" : loadCookie("token")
+    }),
+    method: "POST"
+}, res => {
+    res.forEach(a => {
+        let option = document.createElement("option")
+        option.value = a;
+        option.innerHTML = a;
+        sort.appendChild(option)
+    })
+}, true, false)
+
+let last = sort.value;
+
+sort.addEventListener("change", (e) => {
+    queryString = window.location.search;
+    urlParams = new URLSearchParams(queryString)
+    if (loading.a) {
+        sort.value  = last;
+        return;
+    }
+    last = sort.value
+    getFiles(urlParams.get('path'), e.target.value)
+})
 
 window.addEventListener("scroll", () => {
     setCookie("scroll:"+location.search.slice("?path=".length), window.scrollY, location.href)
@@ -47,15 +102,16 @@ logoutButton.addEventListener("click", () => {
 })
 
 getFiles(urlParams.get('path'))
-function getFiles(path) {
-    console.log(path, urlParams.get('path'))
+function getFiles(path, type = null) {
+    loading.a = true
     fetchBackend('/backend/getFiles/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
         body: JSON.stringify({
             "token" : loadCookie("token"),
-            "path" : path
+            "path" : path,
+            "type": type
         }),
         method: "POST"
     }, res => loadData(res), true, false)
@@ -121,6 +177,7 @@ function loadData(input) {
         header.className = "showItem";
         container.appendChild(header);
     })
+    loading.a = false
 }
 
 

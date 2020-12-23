@@ -82,6 +82,10 @@ export interface TokenAnswer {
     "reason"?:string
 }
 
+export enum SortTypes {
+    File = "Nach Ordner", Created = "Zuletzt hinzugefügt"
+}
+
 function isEmptyObject(obj:object) {
     return !Object.keys(obj).length;
 }

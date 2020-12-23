@@ -22,6 +22,7 @@ import setTimeRoute from "./setTime"
 import setUserDataRoute from "./setUserData"
 import logoutRoute from "./logout"
 import getWatcherRoute from "./getWatchers"
+import getSortTypesRoute from "./getSortTypes"
 
 /**Post Routes Start */
 router.use('/' + dirname, 
@@ -42,7 +43,8 @@ reloadRoute,
 setTimeRoute,
 setUserDataRoute,
 logoutRoute,
-getWatcherRoute)
+getWatcherRoute,
+getSortTypesRoute)
 /** Post Routes End */
 
 
