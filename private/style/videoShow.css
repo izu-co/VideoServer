@@ -118,6 +118,43 @@ b {
     visibility: hidden;
 }
 
+#sortDiv {
+    height: 28px;    
+    width: 10%;
+    position: absolute;
+    right: 160px;
+    display: block;
+}
+
+#sort {
+    position: absolute;
+    right: 0;
+    border: none;
+    border-bottom: 1px solid white;
+    overflow: hidden; 
+    color: white;
+    width: 80%;
+    height: 100%;
+}
+
+#running.invis {
+    opacity: 0;
+}
+
+#running.vis {
+    opacity: 1;
+}
+
+#running::before {
+    content: "\f110";
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    color: #fff;
+    width: 20%;
+    height: 100%;
+}
+
 #logout {
     position: absolute;
     color: #fff;
