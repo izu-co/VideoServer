@@ -196,13 +196,22 @@ function setScroll() {
     })
 }
 
+let lastSearch = ""
+
 document.getElementById("search").addEventListener("input", (e) => {
     filter = e.target.value
     
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString)
-    getFiles(urlParams.get('path'))
+    if (loading.a) {
+        e.target.value = lastSearch;
+        return;
+    }
+    lastSearch = filter;
+    getFiles(urlParams.get('path'), sort.value)
 })
+
+
 
 document.getElementById("searchForm").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -210,7 +219,12 @@ document.getElementById("searchForm").addEventListener("submit", (e) => {
     
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString)
-    getFiles(urlParams.get('path'))
+    if (loading.a) {
+        e.target.value = lastSearch;
+        return;
+    }
+    lastSearch = filter;
+    getFiles(urlParams.get('path'), sort.value)
 }) 
 
 
