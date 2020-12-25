@@ -1,8 +1,6 @@
 import * as yargs from "yargs";
-import path from "path"
 import fs from "fs"
-import { filePathsInterface, settingsInterface } from "./interfaces";
-import { getBackupPath } from "./backend/cache";
+import { settingsInterface } from "./interfaces";
 
 const argv = yargs  
     .option('Video Directory', {
@@ -23,25 +21,10 @@ const argv = yargs
         describe: "Dont change if you dont know what you are doing!\nYou can change the working directory if you need it.",
         alias: "wd"
     })
-    .option('introFile', {
-        string: true,
-        default: path.join(__dirname, "data", "intros.json"),
-        describe: "The path where the intro data should be safed to."
-    })
-    .option('loginFile', {
-        string: true,
-        default: path.join(__dirname, "data", "logins.json"),
-        describe: "The path where the login data should be safed to."
-    })
-    .option('settingsFile', {
-        string: true,
-        default: path.join(__dirname, "data", "settings.json"),
-        describe: "The path where the settings data should be safed to."
-    })
-    .option('statusFile', {
-        string: true,
-        default: path.join(__dirname, "data", "status.json"),
-        describe: "The path where the status data should be safed to."
+    .option("beta", {
+        boolean: true,
+        default: false,
+        describe: "Set this to true if you want to download beta versions!"
     })
     .argv;
 let data:settingsInterface
@@ -54,42 +37,4 @@ argv["Working Directory"] = (data!==undefined&&data["Working Directory"]!==undef
 argv.debug = (data)?data.debug:false || argv.debug
 
 
-const filePaths:filePathsInterface = {
-    settings: {
-        path: (data&&data.settingsFile!==undefined)?data.settingsFile:false || argv.settingsFile,
-        exists: fs.existsSync((data&&data.settingsFile!==undefined)?data.settingsFile:false || argv.settingsFile)
-    },
-    introSkips: {
-        path: (data&&data.introFile!==undefined)?data.introFile:false || argv.introFile,
-        exists: fs.existsSync((data&&data.introFile!==undefined)?data.introFile:false || argv.introFile)
-    },
-    logins: {
-        path: (data&&data.loginFile!==undefined)?data.loginFile:false || argv.loginFile,
-        exists: fs.existsSync((data&&data.loginFile!==undefined)?data.loginFile:false || argv.loginFile)
-    },
-    status: {
-        path: (data&&data.statusFile!==undefined)?data.statusFile:false || argv.statusFile,
-        exists: fs.existsSync((data&&data.statusFile!==undefined)?data.statusFile:false || argv.statusFile)
-    },
-}
-
-
-for (let a in filePaths)
-    if (!filePaths[a]["exists"]) {
-        if (fs.existsSync(getBackupPath(filePaths[a]["path"].toString()))) {
-            filePaths[a] = {
-                path: filePaths[a]["path"],
-                backup: getBackupPath(filePaths[a]["path"].toString()),
-                exists: true
-            }
-            continue;
-        } 
-        try {
-            fs.writeFileSync(filePaths[a]["path"], "{}")
-        } catch (e) {
-                console.log("[ERROR] The path for the '" + a + "' file was not found")
-                process.exit(1)
-        }
-    }
-
-export {argv, filePaths}
+export {argv}

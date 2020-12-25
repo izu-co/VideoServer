@@ -3,7 +3,7 @@ import * as Path from "path"
 import * as fs from "fs"
 import { SettingsDataInterface, SettingsInterface, StatusInterface, IntroSkipInterface, LoginInterface } from "../interfaces";
 import * as loginBackend from "./UserMangement"
-
+import { db } from "../index";
 
 export interface Status {
     "status": true|false
@@ -51,7 +51,7 @@ export interface User {
     "password":string,
     "perm":"Admin"|"User",
     "active":true|false,
-    "token": Array<Token>
+    "uuid": string
 }
 
 export interface SecretUser {
@@ -108,14 +108,13 @@ async function getUserData (token:string, ip:string): Promise<UserDataAnswer> {
     return await loginBackend.getUserFromToken(token, ip).then(answer => {
         if (!answer["status"])
             return answer;
-        let user = answer["data"]
-        var settings = loadSettings()
+        let volume = db.prepare("SELECT * from settings WHERE UUID=?").get("volume")
         var ret = {};
     
-        if (user !== null && settings.hasOwnProperty(user["username"])) {
-            ret["volume"] = settings[user["username"]]["volume"]
+        if (volume === undefined) {
+            ret["volume"] = db.prepare("SELECT * from settings WHERE UUID=?").get("default")["volume"]
         } else {
-            ret["volume"] = settings["default"]["volume"];
+            ret["volume"] = volume["volume"]
         }
     
         return {"status" : true, "data" : ret};
@@ -124,32 +123,12 @@ async function getUserData (token:string, ip:string): Promise<UserDataAnswer> {
 
 async function saveUserData (token:string, ip:string, data:SettingsDataInterface) : Promise<Status>{
     return await loginBackend.getUserFromToken(token, ip).then(user => {
-        var settings = loadSettings();
-    
-        settings[user["data"]["username"]] = data;
-    
-        saveSettings(settings);
+        if (!user.status) return user;
+
+        db.prepare("UPDATE settings SET volume = ? WHERE UUID = ?").run(data["volume"], user.data.uuid)
+
         return {"status" : true}
     })
-}
-
-function loadSettings(): SettingsInterface {
-    return index.cache.settings
-}
-
-function saveSettings(settings:SettingsInterface) {
-    index.cache.settings = settings
-}
-
-function getData(): StatusInterface {
-    return index.cache.status
-}
-
-function saveData(data:StatusInterface) {
-    index.cache.status = data
-}
-function loadSkips(): IntroSkipInterface {
-    return index.cache.introSkips;
 }
 
 async function readdir(path:string) {
@@ -168,8 +147,6 @@ async function generateToken(TokenLenght) {
     let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let generateNewToken = true;
 
-    var data = readLogins();
-    let keys = Object.keys(data);
     
     while (generateNewToken) {
         for ( var i = 0; i < TokenLenght; i++ ) {
@@ -178,26 +155,13 @@ async function generateToken(TokenLenght) {
 
         generateNewToken = false;
         
-        for (let a = 0; a < keys.length; a++) {
-            var user = data[keys[a]];
-            for (let i = 0; i < user["token"].length; i++) 
-                if (user["token"]["token"] === result) {
-                    generateNewToken = true;
-                    result = ''
-                }
+        let data = db.prepare("SELECT * FROM users WHERE UUID=?").get(result)
+        if (data !== undefined) {
+            generateNewToken = true;
+            result = ''
         }
     }
     return result;
-}
-
-
-function writeLogins(data:LoginInterface) {
-    index.cache.logins = data;
-    return true;
-}
-
-function readLogins() {           
-    return Object.assign({}, index.cache.logins)
 }
 
 function uuidv4() {
@@ -207,4 +171,4 @@ function uuidv4() {
     });
 }
 
-export {isEmptyObject, checkPath, getUserData, saveUserData, loadSettings, saveSettings, getData, saveData, loadSkips, readdir, generateToken, writeLogins, readLogins, uuidv4}
+export {isEmptyObject, checkPath, getUserData, saveUserData, readdir, generateToken, uuidv4}

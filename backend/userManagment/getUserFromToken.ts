@@ -1,23 +1,28 @@
-import { readLogins, UserRequestAnswer, User } from "../util";
+import { UserRequestAnswer, User } from "../util";
+import { db } from "../../index";
 
 async function getUserFromToken (token:string, ip:string): Promise<UserRequestAnswer> {
-    var data = readLogins();
 
-    let keys = Object.keys(data);
-    for (let a = 0; a < keys.length; a++) {
-        var user = <User> Object.assign({}, data[keys[a]]);
-        for (let i = 0; i < user["token"].length; i++) {
-            if (token === user.token[i].token && ip === user.token[i].ip) {
-                if (user["active"]) {
-                    user["uuid"] = keys[a];
-                    return {"status" : true, "data" : user};
-                } else {
-                    return { "status" : false, "reason" : "Der Account ist deaktiviert!" }
-                }
-            }
+    let tokenUser = db.prepare("SELECT * FROM tokens WHERE token=?").get(token)
+
+    if (tokenUser === undefined) return { "status" : false, "reason" : "User not Found" }
+    if (tokenUser["ip"] !== ip)  return { "status" : false, "reason" : "User not Found" }
+
+    let User = db.prepare("SELECT * FROM users WHERE UUID=?").get(tokenUser["UUID"])
+
+    if (User === undefined) return { status : false, reason : "Can't get the user assosiated with the token. Please report to an admin!"}
+    if (!User["active"]) return { status: false, reason: "Der Account wurd deaktiviert!"}
+
+    return {
+        status: true,
+        data: {
+            active: new Boolean(User["active"]).valueOf(),
+            password: User["password"],
+            perm: User["perm"],
+            username: User["username"],
+            uuid: User["UUID"]
         }
     }
-    return { "status" : false, "reason" : "User not Found" }
 }
 
 export {getUserFromToken}

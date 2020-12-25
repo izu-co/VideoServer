@@ -3,6 +3,7 @@ import * as index from "../../index"
 import * as fs from "fs"
 import * as Path from "path"
 import { loadTime } from "./loadTime";
+import { getUserFromToken } from "../UserMangement";
 
 async function getFiles(path:string, token:string, ip:string, type:string = null): Promise<Array<FileData>> {
     let searchType:SortTypes;
@@ -34,7 +35,10 @@ async function getFiles(path:string, token:string, ip:string, type:string = null
 
 async function getFileFromFolder(path:string, token:string, ip:string) {
     var retarr = [];
-    return await readdir(path).then(data => data.forEach(async file => { 
+
+    let Users = await getUserFromToken(token, ip);
+
+    return await readdir(path).then(data => data.forEach(file => { 
         if (fs.lstatSync(path + Path.sep + file).isFile())
             if (!index.VideoNameExtensions.includes(file.split(".")[file.split(".").length - 1]))
                 return;
@@ -51,7 +55,7 @@ async function getFileFromFolder(path:string, token:string, ip:string) {
             "image" : fs.lstatSync(path + Path.sep + file).isDirectory() ? Path.join(path.replace(index.argv["Video Directory"], ""), file + ".jpg") : Path.join(path.replace(index.argv["Video Directory"], ""), file.replace(split[split.length - 1], "jpg"))
         }
         if (push["type"] === "video") 
-            push["timeStemp"] = loadTime(path + Path.sep + file, token, ip)          
+            push["timeStemp"] = loadTime(path + Path.sep + file, token, ip, Users)          
         retarr.push(push);
             
     })).then(() => {
@@ -67,34 +71,27 @@ async function getFileFromFolder(path:string, token:string, ip:string) {
 }
 
 async function getFileFromCreated(path:string, token:string, ip:string) {
-    var retarr = [];
-    getFilesRecursively(path).filter(k => index.VideoNameExtensions.includes(k.substring(k.lastIndexOf(".") + 1))).forEach(file => { 
-        var split = file.split(".");
-        var name:string = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace(" [1080p]", "");
-        var push = {
-            "name" : name.substring(name.lastIndexOf(Path.sep) + 1),
-            "Path" : file.replace(index.argv["Video Directory"], ""),
-            "type" : "video",
-            "image" : file.replace(index.argv["Video Directory"], "").substr(0, file.replace(index.argv["Video Directory"], "").lastIndexOf(".") + 1) + "jpg"
-        }
-        if (push["type"] === "video") 
-            push["timeStemp"] = loadTime(file, token, ip)          
-        retarr.push(push);
-    })
+    let Users = await getUserFromToken(token, ip);
 
-    retarr.sort((a,b) => {
-        return fs.lstatSync(Path.join(index.argv["Video Directory"], b["Path"])).mtime.valueOf() - fs.lstatSync(Path.join(index.argv["Video Directory"], a["Path"])).mtime.valueOf();
-    })
+    if (!Users.status) return []
+
+    var retarr = getFilesRecursively(path).filter(k => index.VideoNameExtensions.includes(k.substring(k.lastIndexOf(".") + 1)));
+
+    retarr = retarr.sort((a, b) => fs.lstatSync(b).mtimeMs - fs.lstatSync(a).mtimeMs)
 
     retarr = retarr.slice(0, 50)
 
-    let promisses = []
-    for(let i = 0; i < retarr.length; i++) 
-    promisses.push(retarr[i]["timeStemp"])
-    return Promise.all(promisses).then((data) => {
-        for(let i = 0; i<data.length; i++)
-            retarr[i]["timeStemp"] = data[i]
-        return retarr
+    return retarr.map(file => {
+        var split = file.split(".");
+        var name:string = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace(" [1080p]", "");
+        var push = <FileData> {
+            "name" : name.substring(name.lastIndexOf(Path.sep) + 1),
+            "Path" : file.replace(index.argv["Video Directory"], ""),
+            "type" : "video",
+            "image" : file.replace(index.argv["Video Directory"], "").substr(0, file.replace(index.argv["Video Directory"], "").lastIndexOf(".") + 1) + "jpg",
+            "timeStemp":  loadTime(file, token, ip, Users)          
+        }
+        return push;
     })
 }
 
