@@ -1,9 +1,9 @@
-import { loadSkips, checkPath, isEmptyObject, SkipData } from "../util";
+import { checkPath, isEmptyObject, SkipData } from "../util";
 import * as fs from "fs"
 import * as Path from "path"
 import * as index from "../../index"
 
-async function getFileData (path:string) : Promise<SkipData|{"status":true|false, "reason"?:string}> {
+function getFileData (path:string) : SkipData|{"status":true|false, "reason"?:string} {
     let pathCeck = checkPath(path)
     if (!pathCeck.status)
         return pathCeck
@@ -12,9 +12,12 @@ async function getFileData (path:string) : Promise<SkipData|{"status":true|false
         return {"status": false, "reason": "The given path does not exist"}
     var ret = {}
 
-    var skips = loadSkips()
-    if (skips.hasOwnProperty(path))
-        ret["skip"] = skips[path]
+    let skip = index.db.prepare("SELECT * FROM intros WHERE path=?").get(path)
+    if (skip !== undefined)
+        ret["skip"] = {
+            "startTime" : skip["startTime"],
+            "stopTime" : skip["endTime"]
+        }
     else 
         ret["skip"] = {
             "startTime" : -1,

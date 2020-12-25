@@ -19,8 +19,7 @@ export interface LoginInterface {
         "username": string,
         "password": string,
         "perm": "User"|"Admin",
-        "active": true|false,
-        "token": Array<TokenInterface>
+        "active": true|false
     }
 }
 
@@ -41,31 +40,14 @@ export interface SettingsInterface {
     [username:string]: SettingsDataInterface
 }
 
-export interface cacheInterface {
-    "introSkips": IntroSkipInterface
-    "logins": LoginInterface
-    "settings": SettingsInterface,
-    "status": StatusInterface
-}
-
 export interface pathCheck {
     "path": PathLike,
     "exists": boolean,
     "backup"?: PathLike
-}
-export interface filePathsInterface {
-    "introSkips": pathCheck,
-    "logins": pathCheck,
-    "settings": pathCheck,
-    "status": pathCheck
 }
 
 export interface settingsInterface {
     "Video Directory"?: PathLike,
     "debug"?: boolean,
     "Working Directory"?:PathLike,
-    "introFile"?: PathLike,
-    "loginFile"?: PathLike,
-    "settingsFile"?: PathLike,
-    "statusFile"?: PathLike
 }

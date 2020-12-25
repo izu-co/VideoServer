@@ -2,9 +2,10 @@ import {FileData, checkPath, readdir, SortTypes} from "../util"
 import * as index from "../../index"
 import * as fs from "fs"
 import * as Path from "path"
-import { loadTime } from "./loadTime";
+import { loadTime, IsOnWatchList } from "../fileStuff";
+import { getUserFromToken } from "../UserMangement";
 
-async function getFiles(path:string, token:string, ip:string, type:string = null): Promise<Array<FileData>> {
+function getFiles(path:string, token:string, ip:string, type:string = null): Array<FileData> {
     let searchType:SortTypes;
     switch (type) {
         case null:
@@ -15,6 +16,8 @@ async function getFiles(path:string, token:string, ip:string, type:string = null
             break
         case SortTypes.Created:
             searchType = SortTypes.Created
+        case SortTypes.WatchList:
+            searchType = SortTypes.WatchList
     }
     if (searchType == null)
         return [];
@@ -29,12 +32,57 @@ async function getFiles(path:string, token:string, ip:string, type:string = null
             return getFileFromFolder(path, token, ip);
         case SortTypes.Created:
             return getFileFromCreated(path, token, ip);
+        case SortTypes.WatchList:
+            return getFilesFromWatchList(token, ip);
     }
 }
 
-async function getFileFromFolder(path:string, token:string, ip:string) {
+function getFilesFromWatchList(token:string, ip:string) {
+    let Users = getUserFromToken(token, ip);
+
+    if (!Users.status) return []
+
+    let answers = index.db.prepare("SELECT * FROM watchlist WHERE UUID=?").all(Users.data.uuid)
+
+    let retarr = []
+
+    answers.map(a => a["path"]).forEach(file => {
+        let pathCheck = checkPath(file);
+        if (!pathCheck.status) return;
+
+        let path = <string> pathCheck.data
+
+        if (!fs.existsSync(path)) return;
+
+        if (fs.lstatSync(path).isFile())
+            if (!index.VideoNameExtensions.includes(path.split(".")[path.split(".").length - 1]))
+                return;
+        if (fs.lstatSync(path).isDirectory())
+            if (!fs.existsSync(path + ".jpg"))
+                return;        
+        var split = path.split(".");
+        var name = index.VideoNameExtensions.includes(split[split.length - 1]) ? name = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace(" [1080p]", "") : file;
+        var push = {
+            "name" : name,
+            "Path" : path.replace(index.argv["Video Directory"], ""),
+            "type" : fs.lstatSync(path).isDirectory() ? "folder" : "video",
+            "image" : fs.lstatSync(path).isDirectory() ? path.replace(index.argv["Video Directory"], "") + ".jpg" : path.replace(index.argv["Video Directory"], "").replace(split[split.length - 1], "jpg"),
+            "watchList": IsOnWatchList(Users.data, file.replace(index.argv["Video Directory"], ""))  
+        }
+        if (push["type"] === "video") 
+            push["timeStemp"] = loadTime(path, token, ip, Users)          
+        retarr.push(push);        
+    })
+
+    return retarr
+}
+
+function getFileFromFolder(path:string, token:string, ip:string) {
     var retarr = [];
-    return await readdir(path).then(data => data.forEach(async file => { 
+
+    let Users = getUserFromToken(token, ip);
+
+    readdir(path).forEach(file => { 
         if (fs.lstatSync(path + Path.sep + file).isFile())
             if (!index.VideoNameExtensions.includes(file.split(".")[file.split(".").length - 1]))
                 return;
@@ -48,53 +96,41 @@ async function getFileFromFolder(path:string, token:string, ip:string) {
             "name" : name,
             "Path" : Path.join(path.replace(index.argv["Video Directory"], ""), file),
             "type" : fs.lstatSync(path + Path.sep + file).isDirectory() ? "folder" : "video",
-            "image" : fs.lstatSync(path + Path.sep + file).isDirectory() ? Path.join(path.replace(index.argv["Video Directory"], ""), file + ".jpg") : Path.join(path.replace(index.argv["Video Directory"], ""), file.replace(split[split.length - 1], "jpg"))
+            "image" : fs.lstatSync(path + Path.sep + file).isDirectory() ? Path.join(path.replace(index.argv["Video Directory"], ""), file + ".jpg") : Path.join(path.replace(index.argv["Video Directory"], ""), file.replace(split[split.length - 1], "jpg")),
+            "watchList": IsOnWatchList(Users.data, file.replace(index.argv["Video Directory"], ""))  
         }
         if (push["type"] === "video") 
-            push["timeStemp"] = loadTime(path + Path.sep + file, token, ip)          
+            push["timeStemp"] = loadTime(path + Path.sep + file, token, ip, Users)          
         retarr.push(push);
             
-    })).then(() => {
-        let promisses = []
-        for(let i = 0; i < retarr.length; i++) 
-            promisses.push(retarr[i]["timeStemp"])
-        return Promise.all(promisses).then((data) => {
-            for(let i = 0; i<data.length; i++)
-                retarr[i]["timeStemp"] = data[i]
-            return retarr
-        })
     })
+
+    return retarr;
 }
 
-async function getFileFromCreated(path:string, token:string, ip:string) {
-    var retarr = [];
-    getFilesRecursively(path).filter(k => index.VideoNameExtensions.includes(k.substring(k.lastIndexOf(".") + 1))).forEach(file => { 
-        var split = file.split(".");
-        var name:string = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace(" [1080p]", "");
-        var push = {
-            "name" : name.substring(name.lastIndexOf(Path.sep) + 1),
-            "Path" : file.replace(index.argv["Video Directory"], ""),
-            "type" : "video",
-            "image" : file.replace(index.argv["Video Directory"], "").substr(0, file.replace(index.argv["Video Directory"], "").lastIndexOf(".") + 1) + "jpg"
-        }
-        if (push["type"] === "video") 
-            push["timeStemp"] = loadTime(file, token, ip)          
-        retarr.push(push);
-    })
+function getFileFromCreated(path:string, token:string, ip:string) {
+    let Users = getUserFromToken(token, ip);
 
-    retarr.sort((a,b) => {
-        return fs.lstatSync(Path.join(index.argv["Video Directory"], b["Path"])).mtime.valueOf() - fs.lstatSync(Path.join(index.argv["Video Directory"], a["Path"])).mtime.valueOf();
-    })
+    if (!Users.status) return []
+
+    var retarr = getFilesRecursively(path).filter(k => index.VideoNameExtensions.includes(k.substring(k.lastIndexOf(".") + 1)));
+
+    retarr = retarr.sort((a, b) => fs.lstatSync(b).mtimeMs - fs.lstatSync(a).mtimeMs)
 
     retarr = retarr.slice(0, 50)
 
-    let promisses = []
-    for(let i = 0; i < retarr.length; i++) 
-    promisses.push(retarr[i]["timeStemp"])
-    return Promise.all(promisses).then((data) => {
-        for(let i = 0; i<data.length; i++)
-            retarr[i]["timeStemp"] = data[i]
-        return retarr
+    return retarr.map(file => {
+        var split = file.split(".");
+        var name:string = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace(" [1080p]", "");
+        var push = <FileData> {
+            "name" : name.substring(name.lastIndexOf(Path.sep) + 1),
+            "Path" : file.replace(index.argv["Video Directory"], ""),
+            "type" : "video",
+            "image" : file.replace(index.argv["Video Directory"], "").substr(0, file.replace(index.argv["Video Directory"], "").lastIndexOf(".") + 1) + "jpg",
+            "timeStemp": loadTime(file, token, ip, Users),
+            "watchList": IsOnWatchList(Users.data, file.replace(index.argv["Video Directory"], ""))  
+        }
+        return push;
     })
 }
 

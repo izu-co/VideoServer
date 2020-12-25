@@ -11,9 +11,8 @@ router.route('/' + routeName + '/')
     .post(requireArgumentsPost(["token"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    util.getUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
-        res.send(answer)
-    })
+    let answer = util.getUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)
+    res.send(answer)
 }
 
 

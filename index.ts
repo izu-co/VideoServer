@@ -1,12 +1,12 @@
+import { argv } from "./yargs";
 import { FileSettings, Updater } from "./backend/updater";
 
 const updater = new Updater("anappleforlife", "videoplayer", new Map<string, FileSettings>()
-    .set("data", FileSettings.DontOverride)
+    .set("data", FileSettings.DontOverride), argv.beta
 )
 
 updater.checkForUpdates()
 
-import { argv, filePaths } from "./yargs";
 
 import express from "express"
 import * as fs from "fs";
@@ -17,27 +17,19 @@ if (!fs.existsSync(argv["Video Directory"])) {
     process.exit(1)
 }
 
-let VideoNameExtensions = ["mp4"]
+const VideoNameExtensions = ["mp4"]
 
-import { backupCache, readCache, saveCache } from "./backend/cache"
+export {argv, app, VideoNameExtensions }
 
-const startCache = readCache(filePaths)
+import { db, backup } from "./backend/datebase"
 
-export {argv, app, VideoNameExtensions, startCache as cache}
-
-saveCacheRegular()
-function saveCacheRegular() {
-    saveCache(startCache, filePaths)
-    setTimeout(() => {
-        saveCacheRegular()
-    }, 1000 * 10);
-}
+export { db }
 
 backupCacheRegual()
 function backupCacheRegual() {
-    backupCache(startCache, filePaths)
+    backup()
     setTimeout(() => {
-        backupCacheRegual()
+        backupCacheRegual();
     }, 1000 * 60 * 10);
 }
 
@@ -65,7 +57,6 @@ if (!argv.debug)
     fileStuff.createImages(argv["Video Directory"], false, false);
 
 function exit() {
-    saveCache(startCache, filePaths)
     process.exit(0)
 }
 

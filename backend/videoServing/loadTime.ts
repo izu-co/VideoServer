@@ -1,25 +1,23 @@
-import { checkPath, getData } from "../util";
-import * as loginBackend from "../UserMangement"
 
-async function loadTime(path:string, token:string, ip:string) : Promise<number> {
+import { checkPath, User, UserRequestAnswer } from "../util";
+import * as loginBackend from "../UserMangement"
+import { db } from "../..";
+
+function loadTime(path:string, token:string, ip:string, user:UserRequestAnswer = null) : number {
     let pathCeck = checkPath(path)
     if (!pathCeck.status)
         return 0
-    path = pathCeck.data
-    const answer = await loginBackend.getUserFromToken(token, ip)
-    var data = getData()
-    if (!answer["status"])
-        return -1
-    let user = answer["data"]
-    if (data.hasOwnProperty(user["username"])) {
-        if (data[user["username"]].hasOwnProperty(path)) {
-            return data[user["username"]][path]
-        } else {
-            return 0
-        }
-    } else {
-        return 0
+    path = pathCeck.data    
+    if (user === null ) {
+        user = loginBackend.getUserFromToken(token, ip)
+        if (!user["status"])
+            return -1
     }
+    let data = db.prepare("SELECT * FROM status WHERE UUID=? AND path=?").get(user.data.uuid, path)
+    if (data === undefined)
+        return 0;
+    else 
+        return data["data"]
 }
 
 export {loadTime}

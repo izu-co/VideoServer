@@ -11,12 +11,11 @@ router.route('/' + routeName + '/')
     .post(requireArgumentsPost(["path", "token"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    fileStuff.getFiles(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.type).then(files => {
-        res.send({"status" : true, "data" : {
-            files: files,
-            pathSep: Path.sep
-        }});
-    })
+    let files = fileStuff.getFiles(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.type)
+    res.send({"status" : true, "data" : {
+        files: files,
+        pathSep: Path.sep
+    }});
 }
 
 

@@ -1,32 +1,23 @@
-import { BasicAnswer, readLogins, uuidv4, writeLogins } from "../util";
+import { BasicAnswer, uuidv4, } from "../util";
+import { db } from "../../index";
 
 const PermissionLevel = ["User", "Admin"];
 
-async function addNewUser (username:string, password:string, perm:"Admin"|"User") : Promise<BasicAnswer> {
-    var data = readLogins();
-
-    let keys = Object.keys(data);
-    for (let a = 0; a < keys.length; a++) {
-        if (username === data[keys[a]]["username"])
+function addNewUser (username:string, password:string, perm:"Admin"|"User") : BasicAnswer {
+    let userWithName = db.prepare("SELECT * FROM users WHERE username=?").get(username)
+    if (userWithName !== undefined)
             return { "status" : false, "reason" : "Der Username exestiert bereits!" }
-    }
     let uuid = uuidv4();
-    while (data.hasOwnProperty(uuid)) {
+    while (db.prepare("SELECT * FROM users WHERE UUID=?").get(uuid) !== undefined) {
+
         uuid = uuidv4();
     }
 
     if (!PermissionLevel.includes(perm))
         return { "status" : false, "reason" : "Die Permission gibt es nicht!" }
-
-    data[uuid] = {
-        "username" : username,
-        "password" : password,
-        "perm" : perm,
-        "active" : true,
-        "token" : []
-    }
-
-    return {"status": writeLogins(data)};
+    db.prepare("INSERT INTO users VALUES (?, ?, ?, ?, ?)").run(uuid, username, password, perm, true)
+    
+    return {"status": true};
 }
 
 export { addNewUser }

@@ -12,9 +12,8 @@ router.route('/' + routeName + '/')
 
 function postRouteHandler(req:express.Request, res:express.Response) {
     if (res.locals.user["perm"] === "Admin") {
-        loginBackend.changeActiveState(req.body.state, req.body.uuid, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
-            res.send(response);
-        })
+        let response = loginBackend.changeActiveState(req.body.state, req.body.uuid, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)
+        res.send(response);
     } else 
         res.send({"status" : false})
 }

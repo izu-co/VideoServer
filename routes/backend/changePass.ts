@@ -12,9 +12,8 @@ router.route('/' + routeName + '/')
 
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    loginBackend.changePassword(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.oldPass, req.body.newPass).then(response => {
-        res.send(response);
-    })
+    let response = loginBackend.changePassword(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.oldPass, req.body.newPass)
+    return response;
 }
 
 export = router;

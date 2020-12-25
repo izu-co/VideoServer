@@ -11,12 +11,11 @@ router.route('/' + routeName + '/')
     .post(requireArgumentsPost(["path", "token"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    fileStuff.loadTime(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
-        if (answer !== -1)
-            res.send({"status" : true, "data" : answer});
-        else
-            res.send({"status" : false})
-    })
+    let answer = fileStuff.loadTime(req.body.path, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)
+    if (answer !== -1)
+        res.send({"status" : true, "data" : answer});
+    else
+        res.send({"status" : false})
 }
 
 export = router;

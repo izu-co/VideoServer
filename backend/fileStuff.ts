@@ -4,5 +4,6 @@ import { getFiles } from "./videoServing/getFiles";
 import { saveTime } from "./videoServing/saveTime";
 import { getFileData } from "./videoServing/getFileData";
 import { getSortTypes } from "./videoServing/getSortTypes";
+import { addToWatchList, IsOnWatchList, removeFromWatchList } from "./videoServing/watchlist";
 
-export { createImages, loadTime, getFiles, saveTime, getFileData, getSortTypes };
+export { createImages, loadTime, getFiles, saveTime, getFileData, getSortTypes, addToWatchList, IsOnWatchList, removeFromWatchList };

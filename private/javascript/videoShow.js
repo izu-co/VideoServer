@@ -141,7 +141,72 @@ function loadData(input) {
         var header = document.createElement("div");
         var div = document.createElement("div");
 
-        div.addEventListener("click", function() {
+
+        div.className = "Item"
+        
+        let tubDiv = document.createElement("div")
+
+
+        var tub = document.createElement("img");
+        tub.className = "tumb"
+        tub.src = "/video/" + encodeURI(file["image"]);
+        if (index === data.length - 1)
+            tub.addEventListener("load", () => setScroll())
+
+        let add = document.createElement("button")
+        add.classList.add("watchList")
+        add.classList.add(file["watchList"] ? "already" : "add")
+        add.addEventListener("click", () => {
+            let pathToFetch = "/backend/" + (add.classList.contains("already") ? "removeWatchList" : "addWatchList/");
+            fetchBackend(pathToFetch, {
+                headers: {
+                    "content-type" : "application/json; charset=UTF-8"
+                },
+                body: JSON.stringify({
+                    "token" : loadCookie("token"),
+                    "path" : file["Path"]
+                }),
+                method: "POST"
+            },(data) => {
+                if (data === "added") {
+                    add.classList.remove("add")
+                    add.classList.add("already")
+                } else {
+                    add.classList.remove("already")
+                    add.classList.add("add")
+                }
+            }, false, true)
+        })   
+
+        tubDiv.style.position = "relative"
+        tubDiv.appendChild(tub)
+        tubDiv.appendChild(add)
+        div.appendChild(tubDiv)
+
+        if (file["type"] === "video") {
+            var fortschritt = document.createElement("div")
+            fortschritt.className = "fortschritt"
+            fortschritt.style.width = (file["timeStemp"] * 100) + "%"
+            div.appendChild(fortschritt)
+        }
+
+        var text = document.createElement("b");
+
+        text.className = "text"
+        document.title = urlParams.get('path').split(input["pathSep"]).pop()
+
+        let textToDisplay = file["name"];
+        if (textToDisplay.startsWith(input["pathSep"])) textToDisplay = textToDisplay.substring(input["pathSep"].length)
+
+        textToDisplay = textToDisplay.substring(textToDisplay.lastIndexOf(input["pathSep"]) + 1)
+
+        text.innerText = textToDisplay;
+
+        div.addEventListener("click", function(e) {
+            if (!(e.target === this || e.target === tub || e.target === text))  {
+                return;
+            }
+
             if (file["type"] === "folder") {
                 urlParams.set('path', file["Path"])
                 location.href = location.pathname + "?" + urlParams.toString();
@@ -151,27 +216,6 @@ function loadData(input) {
             }
         })
 
-        div.className = "Item"
-        
-        var tub = document.createElement("img");
-        tub.className = "tumb"
-        tub.src = "/video/" + encodeURI(file["image"]);
-        if (index === data.length - 1)
-            tub.addEventListener("load", () => setScroll())
-        div.appendChild(tub)
-
-        if (file["type"] === "video") {
-            var fortschritt = document.createElement("div")
-            fortschritt.className = "fortschritt"
-            fortschritt.style.width = (file["timeStemp"] * 100) + "%"
-            div.appendChild(fortschritt)
-        }
-        var text = document.createElement("b");
-
-        text.className = "text"
-        document.title = urlParams.get('path').split(input["pathSep"]).pop()
-
-        text.innerText = file["name"];
         div.appendChild(text);
         header.appendChild(div)
         header.className = "showItem";
