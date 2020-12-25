@@ -5,7 +5,6 @@ function checkTokenForValid() {
 
     for (let token of tokens) {
         if (Date.now() > token["until"])
-            db.prepare("DELETE FROM tokens WHERE token=?").run(token["token"])
     }
 }
 

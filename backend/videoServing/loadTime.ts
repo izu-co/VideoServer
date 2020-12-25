@@ -1,3 +1,4 @@
+
 import { checkPath, User, UserRequestAnswer } from "../util";
 import * as loginBackend from "../UserMangement"
 import { db } from "../..";
@@ -6,8 +7,7 @@ function loadTime(path:string, token:string, ip:string, user:UserRequestAnswer =
     let pathCeck = checkPath(path)
     if (!pathCeck.status)
         return 0
-    path = pathCeck.data
-    
+    path = pathCeck.data    
     if (user === null ) {
         user = loginBackend.getUserFromToken(token, ip)
         if (!user["status"])

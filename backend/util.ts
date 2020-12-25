@@ -139,7 +139,7 @@ function generateToken(TokenLenght) {
     let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let generateNewToken = true;
 
-    
+  
     while (generateNewToken) {
         for ( var i = 0; i < TokenLenght; i++ ) {
             result += characters.charAt(Math.floor(Math.random() * characters.length));
