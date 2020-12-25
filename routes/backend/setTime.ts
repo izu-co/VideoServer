@@ -11,9 +11,8 @@ router.route('/' + routeName + '/')
     .post(getUserPOST, requireArgumentsPost(["path", "token", "percent"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress).then(answer => {
-        res.send({"status" : answer}); 
-    })
+    let response = fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress)
+    res.send({"status": response})
 }
 
 export = router;

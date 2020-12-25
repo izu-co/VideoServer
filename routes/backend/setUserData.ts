@@ -11,9 +11,8 @@ router.route('/' + routeName + '/')
     .post(getUserPOST, requireArgumentsPost(["token","data"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    util.saveUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.data).then(response => {
-        res.send(response)
-    })
+    let response = util.saveUserData(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.data)
+    res.send(response)
 }
 
 export = router;

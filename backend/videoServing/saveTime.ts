@@ -2,12 +2,12 @@ import { checkPath } from "../util";
 import * as loginBackend from "../UserMangement"
 import { db } from "../..";
 
-async function saveTime (path:string, token:string, percent:number, ip:string) : Promise<boolean> {
+function saveTime (path:string, token:string, percent:number, ip:string) : boolean {
     let pathCeck = checkPath(path)
     if (!pathCeck.status)
         return false
     path = pathCeck.data
-    let answer = await loginBackend.getUserFromToken(token, ip);
+    let answer = loginBackend.getUserFromToken(token, ip);
     if (!answer.status)
         return false;
     let old = db.prepare("SELECT * FROM status WHERE UUID=? AND path=?").get(answer.data.uuid, path)

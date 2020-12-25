@@ -2,8 +2,8 @@ import { BasicAnswer} from "../util";
 import { getUserFromToken } from "../UserMangement";
 import { db } from "../..";
 
-async function changeActiveState (state:boolean, uuid:string, token:string, ip:string): Promise<BasicAnswer>{
-    var user = await getUserFromToken(token, ip);
+function changeActiveState (state:boolean, uuid:string, token:string, ip:string): BasicAnswer{
+    var user = getUserFromToken(token, ip);
     if (!user["status"])
         return user;
     if (user["data"]["perm"] !== "Admin") return {status: false, reason: "Unzureichende Rechte"}

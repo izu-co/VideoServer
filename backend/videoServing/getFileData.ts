@@ -3,7 +3,7 @@ import * as fs from "fs"
 import * as Path from "path"
 import * as index from "../../index"
 
-async function getFileData (path:string) : Promise<SkipData|{"status":true|false, "reason"?:string}> {
+function getFileData (path:string) : SkipData|{"status":true|false, "reason"?:string} {
     let pathCeck = checkPath(path)
     if (!pathCeck.status)
         return pathCeck

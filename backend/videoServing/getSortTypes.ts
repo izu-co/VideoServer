@@ -1,7 +1,7 @@
 import { BasicAnswer, SortTypes } from "../util";
 
 
-async function getSortTypes() : Promise<BasicAnswer> {
+function getSortTypes() : BasicAnswer {
     let types = []
     for (let k of Object.values(SortTypes))
         types.push(k)

@@ -2,14 +2,14 @@ import { checkPath, User, UserRequestAnswer } from "../util";
 import * as loginBackend from "../UserMangement"
 import { db } from "../..";
 
-async function loadTime(path:string, token:string, ip:string, user:UserRequestAnswer = null) : Promise<number> {
+function loadTime(path:string, token:string, ip:string, user:UserRequestAnswer = null) : number {
     let pathCeck = checkPath(path)
     if (!pathCeck.status)
         return 0
     path = pathCeck.data
     
     if (user === null ) {
-        user = await loginBackend.getUserFromToken(token, ip)
+        user = loginBackend.getUserFromToken(token, ip)
         if (!user["status"])
             return -1
     }

@@ -2,8 +2,8 @@ import { BasicAnswer } from "../util";
 import { getUserFromToken } from "../UserMangement";
 import { db } from "../..";
 
-async function deleteToken (uuid: string, token:string, ip:string) : Promise<BasicAnswer>{
-    let AuthoriseUser = await getUserFromToken(token, ip);
+function deleteToken (uuid: string, token:string, ip:string) : BasicAnswer{
+    let AuthoriseUser = getUserFromToken(token, ip);
     if (AuthoriseUser["status"] && AuthoriseUser["data"]["perm"] === "Admin") {
 
 

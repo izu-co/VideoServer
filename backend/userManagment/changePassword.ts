@@ -2,8 +2,8 @@ import { BasicAnswer } from "../util";
 import { getUserFromToken } from "../UserMangement";
 import { db } from "../..";
 
-async function changePassword (token:string, ip:string, oldPass:string, newPass:string): Promise<BasicAnswer> {
-    var user = await getUserFromToken(token, ip);
+function changePassword (token:string, ip:string, oldPass:string, newPass:string): BasicAnswer {
+    var user = getUserFromToken(token, ip);
     if (!user["status"])
         return user;
     

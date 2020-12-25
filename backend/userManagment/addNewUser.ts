@@ -3,7 +3,7 @@ import { db } from "../../index";
 
 const PermissionLevel = ["User", "Admin"];
 
-async function addNewUser (username:string, password:string, perm:"Admin"|"User") : Promise<BasicAnswer> {
+function addNewUser (username:string, password:string, perm:"Admin"|"User") : BasicAnswer {
     let userWithName = db.prepare("SELECT * FROM users WHERE username=?").get(username)
     if (userWithName !== undefined)
             return { "status" : false, "reason" : "Der Username exestiert bereits!" }

@@ -137,6 +137,29 @@ b {
     height: 100%;
 }
 
+.watchList {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 5px;
+}
+
+.watchList.add::before {
+    content: "\f067";
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    color: #fff;
+}
+
+.watchList.already::before {
+    content: "\f00c";
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    color: #fff;
+}
+
 #running.invis {
     opacity: 0;
 }

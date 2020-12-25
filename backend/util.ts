@@ -14,6 +14,7 @@ export interface FileData {
     "Path": string,
     "type": "video"|"folder",
     "image": string,
+    "watchList": boolean,
     "timeStemp"?: number|Promise<number>
 }
 
@@ -83,7 +84,7 @@ export interface TokenAnswer {
 }
 
 export enum SortTypes {
-    File = "Nach Ordner", Created = "Zuletzt hinzugefügt"
+    File = "Nach Ordner", Created = "Zuletzt hinzugefügt", WatchList = "Watchlist"
 }
 
 function isEmptyObject(obj:object) {
@@ -104,45 +105,36 @@ function checkPath(path:string): BasicAnswer {
     }
 }
 
-async function getUserData (token:string, ip:string): Promise<UserDataAnswer> {
-    return await loginBackend.getUserFromToken(token, ip).then(answer => {
-        if (!answer["status"])
-            return answer;
-        let volume = db.prepare("SELECT * from settings WHERE UUID=?").get("volume")
-        var ret = {};
+function getUserData (token:string, ip:string): UserDataAnswer {
+    let answer = loginBackend.getUserFromToken(token, ip)
+    if (!answer["status"])
+        return answer;
+    let volume = db.prepare("SELECT * from settings WHERE UUID=?").get("volume")
+    var ret = {};
     
-        if (volume === undefined) {
-            ret["volume"] = db.prepare("SELECT * from settings WHERE UUID=?").get("default")["volume"]
-        } else {
-            ret["volume"] = volume["volume"]
-        }
+    if (volume === undefined) {
+        ret["volume"] = db.prepare("SELECT * from settings WHERE UUID=?").get("default")["volume"]
+    } else {
+        ret["volume"] = volume["volume"]
+    }
     
-        return {"status" : true, "data" : ret};
-    })
+    return {"status" : true, "data" : ret};
 }
 
-async function saveUserData (token:string, ip:string, data:SettingsDataInterface) : Promise<Status>{
-    return await loginBackend.getUserFromToken(token, ip).then(user => {
-        if (!user.status) return user;
+function saveUserData (token:string, ip:string, data:SettingsDataInterface) : Status{
+    let user = loginBackend.getUserFromToken(token, ip)
+    if (!user.status) return user;
 
-        db.prepare("UPDATE settings SET volume = ? WHERE UUID = ?").run(data["volume"], user.data.uuid)
+    db.prepare("UPDATE settings SET volume = ? WHERE UUID = ?").run(data["volume"], user.data.uuid)
 
-        return {"status" : true}
-    })
+    return {"status" : true}
 }
 
-async function readdir(path:string) {
-    return new Promise<string[]>(function (resolve, reject) {
-        fs.readdir(path, 'utf8', function (err, data) {
-            if (err)
-                reject(err);
-            else
-                resolve(data);
-        });
-    });
+function readdir(path:string) {
+    return fs.readdirSync(path)
 }
 
-async function generateToken(TokenLenght) {
+function generateToken(TokenLenght) {
     let result           = '';
     let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let generateNewToken = true;

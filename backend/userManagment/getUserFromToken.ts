@@ -1,7 +1,7 @@
 import { UserRequestAnswer, User } from "../util";
 import { db } from "../../index";
 
-async function getUserFromToken (token:string, ip:string): Promise<UserRequestAnswer> {
+function getUserFromToken (token:string, ip:string): UserRequestAnswer {
 
     let tokenUser = db.prepare("SELECT * FROM tokens WHERE token=?").get(token)
 

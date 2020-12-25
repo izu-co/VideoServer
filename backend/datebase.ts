@@ -14,6 +14,7 @@ if (!fileExists) {
     db.exec("CREATE TABLE IF NOT EXISTS intros (path TEXT PRIMARY KEY, startTime INT, endTime INT)")
     db.exec("CREATE TABLE IF NOT EXISTS settings (UUID TEXT PRIMARY KEY, volume INT)")
     db.exec("CREATE TABLE IF NOT EXISTS tokens (token TEXT PRIMARY KEY, UUID TEXT, created INTEGER, until INTEGER, ip TEXT)")
+    db.exec("CREATE TABLE IF NOT EXISTS watchlist (UUID TEXT, path TEXT)")
     let prep = db.prepare("INSERT INTO settings VALUES (?, ?)")
     prep.run("default", 30)
     prep = db.prepare("INSERT INTO users VALUES (?, ?, ?, ?, ?)")

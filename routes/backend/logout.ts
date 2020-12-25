@@ -11,9 +11,8 @@ router.route('/' + routeName + '/')
     .post(requireArgumentsPost(["token"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    loginBackend.logout(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(response => {
-        res.send(response);
-    })
+    let response = loginBackend.logout(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)
+    res.send(response)
 }
 
 export = router;

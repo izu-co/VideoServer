@@ -24,17 +24,20 @@ enum FileSettings {
 
 class Updater {
 
-    constructor(private username:string, private repository:string, private fileSettings :Map<string, FileSettings>) {}
+    constructor(private username:string, private repository:string, private fileSettings :Map<string, FileSettings>, private downloadBeta:boolean) {}
 
     checkForUpdates() {
         fs.readFile(join(__dirname, "../", "package.json"), (err, data) => {
             if (err)
                 console.log("[ERROR]", err)
             let packageJSON = JSON.parse(data.toString())
-            fetch(`https://api.github.com/repos/${this.username}/${this.repository}/releases/latest`)
+            fetch(`https://api.github.com/repos/${this.username}/${this.repository}/releases`, {method: "GET"})
             .then(data => data.json())
             .then(data => {
-                if (data.tag_name > "v" + packageJSON.version) {
+                if (!this.downloadBeta)
+                    data = data.filter(a => !a["prerelease"])
+                 
+                if (data[0].tag_name > "v" + packageJSON.version) {
                     let rl = readline.createInterface({
                         input: process.stdin,
                         output: process.stdout
@@ -43,9 +46,9 @@ class Updater {
                         rl.close()
                         if (answer === "yes" || answer === "y") {
                             this.downloadUpdate({
-                                downloadURL: data.assets[0].browser_download_url,
-                                preRelease: data.prerelease,
-                                size: data.assets[0].size
+                                downloadURL: data[0].assets[0].browser_download_url,
+                                preRelease: data[0].prerelease,
+                                size: data[0].assets[0].size
                             })
                         } else {
                             return

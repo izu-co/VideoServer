@@ -11,9 +11,8 @@ router.route('/' + routeName + '/')
     .post(getUserPOST, requireArgumentsPost(["path"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    fileStuff.getFileData(req.body.path).then(answer => {
-        res.send(answer===null?{"status": false} : {"status": true, "data": answer})
-    })
+    let answer = fileStuff.getFileData(req.body.path)
+    res.send(answer===null?{"status": false} : {"status": true, "data": answer})
 }
 
 export = router;

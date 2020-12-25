@@ -4,15 +4,14 @@ import * as loginBackend from "../backend/UserMangement"
 import slowDown from "express-slow-down";
 
 export function getUserPOST (req:Request, res:Response, next:NextFunction) {
-    if (req.method === "POST")
-        loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
-            if (user["status"]) {
-                res.locals.user = user["data"];
-                next();
-            } else
-                res.send(user)
-        })
-    else 
+    if (req.method === "POST") {
+        let user = loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)
+        if (user["status"]) {
+            res.locals.user = user["data"];
+            next();
+        } else
+            res.send(user)
+    } else 
         next()
 }
 
@@ -20,13 +19,12 @@ export function GetUserGET (req:Request, res:Response, next:NextFunction) {
     req.cookies["token"] = req.cookies["token"] || req.headers["token"] || req.query["token"]
     if (req.method === "GET")
         if (req["cookies"]["token"]) {
-            loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress).then(user => {
-                if (user["status"]) {
-                    res.locals.user = user["data"]
-                    next()
-                } else
-                    res.redirect("/login")
-            })
+            let user = loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
+            if (user["status"]) {
+                res.locals.user = user["data"]
+                next()
+            } else
+                res.redirect("/login")
         } else
             res.redirect("/login")
     else

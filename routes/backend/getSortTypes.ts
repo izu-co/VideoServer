@@ -11,9 +11,8 @@ router.route('/' + routeName + '/')
     .post(getUserPOST, postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    fileStuff.getSortTypes().then(answer => {
-        res.send(answer)
-    })
+    let answer = fileStuff.getSortTypes()
+    res.send(answer)
 }
 
 export = router;
