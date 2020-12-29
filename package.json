@@ -30,7 +30,7 @@
   "scripts": {
     "prebuild": "IF EXIST build (rmdir .\\build /Q /S)",
     "build": "tsc",
-    "postbuild": "robocopy . .\\build /e /xf *.ts settings.json tsconfig.json *.log .gitignore update.zip /xd test data build .git* node_modules || exit 0"
+    "postbuild": "robocopy . .\\build /e /xf *.ts settings.json tsconfig.json *.log .gitignore update.zip /xd test data build .git* node_modules || powershell Compress-Archive .\\build\\* .\\build\\build.zip || exit 0"
   },
   "repository": {
     "type": "git",
