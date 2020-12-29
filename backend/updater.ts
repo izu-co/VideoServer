@@ -9,7 +9,6 @@ import req from "request";
 
 interface Update {
     downloadURL: string,
-    preRelease: boolean,
     size: number
 }
 
@@ -47,7 +46,6 @@ class Updater {
                         if (answer === "yes" || answer === "y") {
                             this.downloadUpdate({
                                 downloadURL: data[0].assets[0].browser_download_url,
-                                preRelease: data[0].prerelease,
                                 size: data[0].assets[0].size
                             })
                         } else {
@@ -60,9 +58,7 @@ class Updater {
         })
     }
 
-    downloadUpdate(update: Update, downloadPreRelase = false, overwrite= true) {       
-        if (!downloadPreRelase && update.preRelease)
-            return;
+    downloadUpdate(update: Update, overwrite= true) {       
         if (!fs.existsSync("update.zip") || overwrite) {
             const file = fs.createWriteStream("update.zip");
             console.log("[INFO][Update] Downloading update...")
