@@ -4,6 +4,7 @@ import * as fs from "fs"
 import { SettingsDataInterface, SettingsInterface, StatusInterface, IntroSkipInterface, LoginInterface } from "../interfaces";
 import * as loginBackend from "./UserMangement"
 import { db } from "../index";
+import { RunResult } from "better-sqlite3";
 
 export interface Status {
     "status": true|false
@@ -109,7 +110,8 @@ function getUserData (token:string, ip:string): UserDataAnswer {
     let answer = loginBackend.getUserFromToken(token, ip)
     if (!answer["status"])
         return answer;
-    let volume = db.prepare("SELECT * from settings WHERE UUID=?").get("volume")
+    
+    let volume = db.prepare("SELECT * from settings WHERE UUID=?").get(answer.data.uuid)
     var ret = {};
     
     if (volume === undefined) {
@@ -125,9 +127,13 @@ function saveUserData (token:string, ip:string, data:SettingsDataInterface) : St
     let user = loginBackend.getUserFromToken(token, ip)
     if (!user.status) return user;
 
-    db.prepare("UPDATE settings SET volume = ? WHERE UUID = ?").run(data["volume"], user.data.uuid)
-
-    return {"status" : true}
+    let exists = db.prepare("SELECT * FROM settings WHERE UUID=?").get(user.data.uuid)
+    let answer:RunResult;
+    if (exists)
+        answer = db.prepare("UPDATE settings SET volume = ? WHERE UUID = ?").run(data["volume"], user.data.uuid)
+    else 
+        answer = db.prepare("INSERT INTO settings VALUES(?,?)").run(user.data.uuid, data["volume"])
+    return {"status" : answer.changes > 0}
 }
 
 function readdir(path:string) {
