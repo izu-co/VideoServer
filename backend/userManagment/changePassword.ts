@@ -6,7 +6,6 @@ function changePassword (token:string, ip:string, oldPass:string, newPass:string
     var user = getUserFromToken(token, ip);
     if (!user["status"])
         return user;
-    
     if (user["data"]["password"] === oldPass) {
         db.prepare("UPDATE users SET password=? WHERE UUID=?").run(newPass, user.data.uuid)
         return {"status": true};

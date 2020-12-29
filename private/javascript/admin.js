@@ -9,6 +9,12 @@ fetchBackend("/backend/getUsers/", {
     }),
     method: "POST"
 }, users => {
+users = users.sort((a,b) => {
+    if (a["perm"] !== b["perm"])
+        return b["perm"] === "Admin" ? 1 : 0 - a["perm"] === "Admin" ? 1 : 0
+    else 
+        return a["username"].localeCompare(b["username"]) 
+})
 users.forEach(user => {
     var userContainer = document.createElement("div")
     userContainer.className = "User";
@@ -73,7 +79,7 @@ users.forEach(user => {
         body: JSON.stringify({
             "token" : loadCookie("token"),
             "state" : checkavtive.checked,
-            "uuid" : user["uuid"]
+            "uuid" : user["UUID"]
         }),
         method: "POST"
         }, () => {}, false, true)
@@ -110,7 +116,7 @@ users.forEach(user => {
                 },
                 body: JSON.stringify({
                     "token" : loadCookie("token"),
-                    "uuid" : user["uuid"]
+                    "uuid" : user["UUID"]
                 }),
                 method: "POST"
             }, () => {

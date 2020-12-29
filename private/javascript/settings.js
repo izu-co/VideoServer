@@ -6,48 +6,8 @@ fetchBackend('/backend/checkToken/', {
         "token" : loadCookie("token")
     }),
     method: "POST"
-}, res => {
-    if (res["perm"] === "Admin")
-        isAdmin()
-}, true, false)
+}, res => {}, true, false)
 
-function isAdmin() {
-
-    var reloadDiv = document.createElement("div");
-    reloadDiv.id = "ReloadDiv";
-    reloadDiv.className = "category";
-
-    var reloadLabel = document.createElement("label")
-    reloadLabel.htmlFor = "reload";
-    reloadLabel.innerHTML = "Generiere Vorschaubilder"
-
-    var reload = document.createElement("button");
-    reload.innerHTML = "Reload";
-    reload.className = "item";
-    reload.id = "reload";
-    reload.addEventListener("click", function() {
-        fetchBackend('/backend/reload/', {
-            headers: {
-                "content-type" : "application/json; charset=UTF-8"
-            },
-            body: JSON.stringify({
-                "token" : loadCookie("token")
-            }),
-            method: "POST"
-        }, () => {
-            alert("Started reload")
-        }, false, true)
-    });
-
-    reloadDiv.appendChild(reloadLabel)
-    reloadDiv.appendChild(reload)
-
-    var reloadYTDiv = document.createElement("div");
-    reloadYTDiv.id = "ReloadYTDiv";
-    reloadYTDiv.className = "category";
-
-    document.getElementById('container').appendChild(reloadDiv);
-}
 
 fetchBackend('/backend/checkToken/', {
     headers: {
@@ -99,7 +59,12 @@ function updateData(data) {
                         "oldPass" : oldPass.value
                     }),
                     method: "POST"
-                }, () => alert("Das Passwort wurde gespeichert!"), false, true)
+                }, () => {
+                    alert("Das Passwort wurde gespeichert!")
+                    oldPass.value = ""
+                    newPass.value = ""
+                    newPassConfirm.value = ""
+                }, false, true)
                 
             } else
                 alert("Die Passwörter stimmen nicht überein")

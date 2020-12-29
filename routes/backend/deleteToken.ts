@@ -12,11 +12,8 @@ router.route('/' + routeName + '/')
 
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    if (res.locals.user["perm"] === "Admin") {
-        let response = loginBackend.deleteToken(req.body.uuid, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)
-        res.send(response)
-    } else 
-        res.send({"status" : false})
+    let response = loginBackend.deleteToken(req.body.uuid, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)
+    res.send(response)
 }
 
 export = router;

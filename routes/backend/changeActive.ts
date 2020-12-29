@@ -8,7 +8,7 @@ let filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 1]
 let routeName = filename.slice(0, filename.length - 1).join(".");
 
 router.route('/' + routeName + '/')
-    .post(requireArgumentsPost(["token", "state", "uuid", "token"]), getUserPOST ,postRouteHandler);
+    .post(requireArgumentsPost(["token", "state", "uuid"]), getUserPOST ,postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
     if (res.locals.user["perm"] === "Admin") {

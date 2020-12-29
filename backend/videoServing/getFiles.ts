@@ -16,8 +16,10 @@ function getFiles(path:string, token:string, ip:string, type:string = null): Arr
             break
         case SortTypes.Created:
             searchType = SortTypes.Created
+            break
         case SortTypes.WatchList:
             searchType = SortTypes.WatchList
+            break
     }
     if (searchType == null)
         return [];
