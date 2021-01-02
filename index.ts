@@ -46,8 +46,8 @@ app.listen(3000, () => {
     console.log("[INFO] Listening on http://%s:%d/", "localhost", 3000)
 })
 
-async function checkCookies() {
-    await loginBackend.checkTokenForValid();
+function checkCookies() {
+    loginBackend.checkTokenForValid();
     setTimeout(() => { checkCookies() }, (1000 * 60));
 }
 

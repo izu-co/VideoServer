@@ -99,7 +99,7 @@ class Updater {
                 if (entry.type === "Directory" && setting != FileSettings.Ignore) {
                     if (!fs.existsSync(entry.path))
                         fs.mkdirSync(entry.path)
-                } else
+                } else {
                     switch (setting) {
                         case FileSettings.Ignore: 
                             entry.autodrain()
@@ -118,9 +118,11 @@ class Updater {
                             entry.pipe(fs.createWriteStream(entry.path))
                             break;
                     }
+                }
             })
         })
         stream.on("close", () => {
+            fs.unlinkSync(file.path)
             console.log("[INFO][Update] Update compleated. Please restart.")
         })
     }
