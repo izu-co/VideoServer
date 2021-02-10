@@ -100,6 +100,7 @@ function checkPath(path:string): BasicAnswer {
             status: false,
             reason: "The path provided is invalid"
         }
+    console.log(path)
     return {
         "status": true,
         "data": path
