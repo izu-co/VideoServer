@@ -8,7 +8,11 @@ With the Video Server you can stream your videos anywhere in the world
 
 :heavy_check_mark: Automatic thumbnail generation\
 :heavy_check_mark: Login with token system\
-:heavy_check_mark: Continue watching at your last position
+:heavy_check_mark: Continue watching at your last position\
+:heavy_check_mark: File indexing to reduce file operations\
+:heavy_check_mark: Watchlist\
+:heavy_check_mark: Sorting types\
+:heavy_check_mark: Search for video
 
 ## :rocket: Technologies ##
 
