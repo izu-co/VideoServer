@@ -81,7 +81,7 @@ function getFileFromFolder(path:string, token:string, ip:string) {
     var retarr = [];
     let Users = getUserFromToken(token, ip);
     index.fileIndex.prepare("SELECT * FROM files").all().filter(a => {
-        return new RegExp(escapeRegExp(path + Path.sep) + "[^\\\\]*(\\\\|(webm|mp4))$").test(a["isDir"] ? a["path"] + Path.sep : a["path"])
+        return new RegExp(escapeRegExp(path + Path.sep) + "[^" + escapeRegExp(Path.sep) + "]*(" + escapeRegExp(Path.sep) + "|(webm|mp4))$").test(a["isDir"] ? a["path"] + Path.sep : a["path"])
     }).forEach(file => { 
         let name:string = file["path"].split(Path.sep)[file["path"].split(Path.sep).length - 1];
         if (!file["isDir"])
