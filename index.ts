@@ -1,7 +1,12 @@
-import { argv } from "./yargs";
-import { FileSettings, Updater } from "./backend/updater";
+import {
+    argv
+} from "./yargs";
+import {
+    FileSettings,
+    Updater
+} from "./backend/updater";
 
-const updater = new Updater("anappleforlife", "videoplayer", new Map<string, FileSettings>()
+const updater = new Updater("anappleforlife", "videoplayer", new Map < string, FileSettings > ()
     .set("data", FileSettings.DontOverride), argv.beta
 )
 
@@ -17,15 +22,27 @@ if (!fs.existsSync(argv["Video Directory"])) {
     process.exit(1)
 }
 
-const VideoNameExtensions = ["mp4"]
+const VideoNameExtensions = ["mp4", "webm"]
 
-export {argv, app, VideoNameExtensions }
+export {
+    argv,
+    app,
+    VideoNameExtensions
+}
 
-import { db, backup } from "./backend/datebase"
+import {
+    db,
+    backup,
+    fileIndex
+} from "./backend/database"
 
-export { db }
+export {
+    db,
+    fileIndex
+}
 
 backupCacheRegual()
+
 function backupCacheRegual() {
     backup()
     setTimeout(() => {
@@ -34,7 +51,9 @@ function backupCacheRegual() {
 }
 
 import router from "./routes/index"
-import { init } from "./routes/ExpressUses";
+import {
+    init
+} from "./routes/ExpressUses";
 import * as fileStuff from "./backend/fileStuff";
 import * as loginBackend from "./backend/UserMangement";
 
@@ -48,7 +67,9 @@ app.listen(3000, () => {
 
 function checkCookies() {
     loginBackend.checkTokenForValid();
-    setTimeout(() => { checkCookies() }, (1000 * 60));
+    setTimeout(() => {
+        checkCookies()
+    }, (1000 * 60));
 }
 
 checkCookies();

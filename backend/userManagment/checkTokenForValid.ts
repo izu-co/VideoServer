@@ -1,4 +1,4 @@
-import { db } from "../datebase";
+import { db } from "../database";
 
 function checkTokenForValid() {
     let tokens = db.prepare("SELECT * FROM tokens").all();

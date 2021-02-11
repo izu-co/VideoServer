@@ -1,31 +1,33 @@
-import { PathLike } from "fs";
+import {
+    PathLike
+} from "fs";
 
 export interface IntroSkipInterface {
-    [path:string] : {
+    [path: string]: {
         "startTime": number,
         "stopTime": number
     }
 }
 
 export interface TokenInterface {
-    "when":number,
-    "to":number,
-    "token":string,
-    "ip":string
+    "when": number,
+    "to": number,
+    "token": string,
+    "ip": string
 }
 
 export interface LoginInterface {
-    [uuid:string]: {
+    [uuid: string]: {
         "username": string,
         "password": string,
-        "perm": "User"|"Admin",
-        "active": true|false
+        "perm": "User" | "Admin",
+        "active": true | false
     }
 }
 
 export interface StatusInterface {
-    [username:string]: {
-        [path:string]: number
+    [username: string]: {
+        [path: string]: number
     }
 }
 
@@ -37,17 +39,17 @@ export interface SettingsInterface {
     "default": {
         "volume": number
     },
-    [username:string]: SettingsDataInterface
+    [username: string]: SettingsDataInterface
 }
 
 export interface pathCheck {
     "path": PathLike,
     "exists": boolean,
-    "backup"?: PathLike
+    "backup" ? : PathLike
 }
 
 export interface settingsInterface {
-    "Video Directory"?: PathLike,
-    "debug"?: boolean,
-    "Working Directory"?:PathLike,
+    "Video Directory" ? : PathLike,
+    "debug" ? : boolean,
+    "Working Directory" ? : PathLike,
 }
