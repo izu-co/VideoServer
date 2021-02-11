@@ -59,17 +59,15 @@ function getFilesFromWatchList(token:string, ip:string) {
         if (fs.lstatSync(path).isFile())
             if (!index.VideoNameExtensions.includes(path.split(".")[path.split(".").length - 1]))
                 return;
-        if (fs.lstatSync(path).isDirectory())
-            if (!fs.existsSync(path + ".jpg"))
-                return;        
-        var split = path.split(".");
-        var name = index.VideoNameExtensions.includes(split[split.length - 1]) ? name = file.substring(0, file.length - (split[split.length - 1].length + 1)).replace(" [1080p]", "") : file;
-        var push = {
+        if (!fs.existsSync(path + ".jpg"))
+            return;        
+        let name = path.substring(path.lastIndexOf(Path.sep))
+        let push = {
             "name" : name,
             "Path" : path.replace(index.argv["Video Directory"], ""),
             "type" : fs.lstatSync(path).isDirectory() ? "folder" : "video",
-            "image" : fs.lstatSync(path).isDirectory() ? path.replace(index.argv["Video Directory"], "") + ".jpg" : path.replace(index.argv["Video Directory"], "").replace(split[split.length - 1], "jpg"),
-            "watchList": IsOnWatchList(Users.data, file.replace(index.argv["Video Directory"], ""))  
+            "image" : (path + ".jpg").replace(index.argv["Video Directory"], ""),
+            "watchList": true
         }
         if (push["type"] === "video") 
             push["timeStemp"] = loadTime(path, token, ip, Users)          
@@ -96,7 +94,7 @@ function getFileFromFolder(path:string, token:string, ip:string) {
             "watchList": IsOnWatchList(Users.data, file["path"].replace(index.argv["Video Directory"], ""))  
         }
         if (push["type"] === "video") 
-            push["timeStemp"] = loadTime(path + Path.sep + file, token, ip, Users)          
+            push["timeStemp"] = loadTime(file["path"], token, ip, Users)          
         retarr.push(push);
             
     })
@@ -108,9 +106,12 @@ function getFileFromCreated(path:string, token:string, ip:string) {
 
     if (!Users.status) return []
     var retarr = [];
-    index.fileIndex.prepare("SELECT * FROM files").all().filter(a => {
-        return new RegExp(escapeRegExp(path + Path.sep) + "[^\\\\]*(\\\\|(webm|mp4))$").test(a["isDir"] ? a["path"] + Path.sep : a["path"])
-    }).forEach(file => { 
+    let files = index.fileIndex.prepare("SELECT * FROM files").all()
+    files = files.filter(a => !a["isDir"])
+    files = files.sort((a, b) => b["created"] - a["created"])
+    if (files.length > 50)
+        files = files.slice(0, 50)
+    files.forEach(file => { 
         let name:string = file["path"].split(Path.sep)[file["path"].split(Path.sep).length - 1];
         if (!file["isDir"])
             name = name.substring(0, name.lastIndexOf("."))
@@ -125,6 +126,7 @@ function getFileFromCreated(path:string, token:string, ip:string) {
         retarr.push(push);
             
     })
+    
     return retarr;
 }
 

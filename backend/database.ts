@@ -26,7 +26,7 @@ fileIndex.exec("CREATE TABLE files (path TEXT PRIMARY KEY, created INT, isDir BO
 console.log("[INFO] Started indexing of files... This might take a minute.")
 
 getAllFiles(argv["Video Directory"]).forEach(file => {
-	fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(file, fs.statSync(file).mtimeMs, fs.statSync(file).isDirectory() ? 1 : 0)
+	fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(file, fs.statSync(file).atimeMs, fs.statSync(file).isDirectory() ? 1 : 0)
 })
 
 chok.watch(argv["Video Directory"], {
@@ -39,13 +39,13 @@ chok.watch(argv["Video Directory"], {
 		case "add":
 			if (path.substring(path.lastIndexOf(".") + 1) == "jpg" && fs.existsSync(path.substring(0, path.lastIndexOf(".")))) {
 				if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path.substring(0, path.lastIndexOf("."))) == null) {
-					fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path.substring(0, path.lastIndexOf(".")), fs.lstatSync(path.substring(0, path.lastIndexOf("."))).mtimeMs, fs.lstatSync(path.substring(0, path.lastIndexOf("."))).isDirectory() ? 1 : 0)
+					fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path.substring(0, path.lastIndexOf(".")), fs.lstatSync(path.substring(0, path.lastIndexOf("."))).atimeMs, fs.lstatSync(path.substring(0, path.lastIndexOf("."))).isDirectory() ? 1 : 0)
 				}
 			} else {
 				if (VideoNameExtensions.includes(path.substring(path.lastIndexOf(".") + 1)) &&
 					fs.existsSync(path + ".jpg")) {
 					if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) == null) {
-						fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path, stats ? stats.mtimeMs : 0, 0)
+						fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path, stats ? stats.atimeMs : 0, 0)
 					}
 				}
 			}
@@ -66,7 +66,7 @@ chok.watch(argv["Video Directory"], {
 		case "addDir":
 			if (fs.existsSync(path + ".jpg")) {
 				if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) == null) {
-					fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path, stats ? stats.mtimeMs : 0, 1)
+					fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path, stats ? stats.atimeMs : 0, 1)
 				}
 			}
 			break;
@@ -76,7 +76,7 @@ chok.watch(argv["Video Directory"], {
 			break;
 		case "change":
 			if (stats && fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) != null)
-				fileIndex.prepare("UPDATE files SET created=? WHERE path=?").run(stats.mtimeMs, path)
+				fileIndex.prepare("UPDATE files SET created=? WHERE path=?").run(stats.atimeMs, path)
 			break;
 	}
 })

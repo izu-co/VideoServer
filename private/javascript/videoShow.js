@@ -1,13 +1,13 @@
 fetchBackend('/backend/checkToken/', {
     headers: {
-        "content-type" : "application/json; charset=UTF-8"
+        "content-type": "application/json; charset=UTF-8"
     },
     body: JSON.stringify({
-        "token" : loadCookie("token")
+        "token": loadCookie("token")
     }),
     method: "POST"
 }, res => {
-    if (res["perm"] === "Admin") 
+    if (res["perm"] === "Admin")
         document.getElementById("admin").className = ""
     else
         document.getElementById("sortDiv").style.right = "120px"
@@ -27,16 +27,16 @@ let sort = document.getElementById("sort")
 
 let loading = {
     aInternal: false,
-    aListener: function(val) {},
+    aListener: function (val) {},
     set a(val) {
-      this.aInternal = val;
-      this.aListener(val);
+        this.aInternal = val;
+        this.aListener(val);
     },
     get a() {
-      return this.aInternal;
+        return this.aInternal;
     },
-    registerListener: function(listener) {
-      this.aListener = listener;
+    registerListener: function (listener) {
+        this.aListener = listener;
     }
 }
 
@@ -50,10 +50,10 @@ loading.registerListener(function (val) {
 
 fetchBackend('/backend/getSortTypes/', {
     headers: {
-        "content-type" : "application/json; charset=UTF-8"
+        "content-type": "application/json; charset=UTF-8"
     },
     body: JSON.stringify({
-        "token" : loadCookie("token")
+        "token": loadCookie("token")
     }),
     method: "POST"
 }, res => {
@@ -71,7 +71,7 @@ sort.addEventListener("change", (e) => {
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString)
     if (loading.a) {
-        sort.value  = last;
+        sort.value = last;
         return;
     }
     last = sort.value
@@ -79,38 +79,39 @@ sort.addEventListener("change", (e) => {
 })
 
 window.addEventListener("scroll", () => {
-    setCookie("scroll:"+location.search.slice("?path=".length), window.scrollY, location.href)
+    setCookie("scroll:" + location.search.slice("?path=".length), window.scrollY, location.href)
 })
 
 const logoutButton = document.getElementById("logout")
 logoutButton.addEventListener("click", () => {
     fetch('/backend/logout', {
-        headers: {
-            "content-type" : "application/json; charset=UTF-8"
-        },
-        body: JSON.stringify({
-            "token" : loadCookie("token")
-        }),
-        method: "POST"
-    }).then(data => data.json())
-    .then(res => {
-        if (res["status"] === true)
-            document.location.href = "/"
-        else
-            alert("Something went wrong")
-    })
+            headers: {
+                "content-type": "application/json; charset=UTF-8"
+            },
+            body: JSON.stringify({
+                "token": loadCookie("token")
+            }),
+            method: "POST"
+        }).then(data => data.json())
+        .then(res => {
+            if (res["status"] === true)
+                document.location.href = "/"
+            else
+                alert("Something went wrong")
+        })
 })
 
 getFiles(urlParams.get('path'))
+
 function getFiles(path, type = null) {
     loading.a = true
     fetchBackend('/backend/getFiles/', {
         headers: {
-            "content-type" : "application/json; charset=UTF-8"
+            "content-type": "application/json; charset=UTF-8"
         },
         body: JSON.stringify({
-            "token" : loadCookie("token"),
-            "path" : path,
+            "token": loadCookie("token"),
+            "path": path,
             "type": type
         }),
         method: "POST"
@@ -125,15 +126,6 @@ function loadData(input) {
         container.removeChild(container.lastChild)
 
     data = input["files"];
-    data.sort(function(a, b) {
-        if (a["type"] === "video" && b["type"] === "video")
-            if(a["name"].match(/\d+/g) != null && b["name"].match(/\d+/g) != null)
-                return a["name"].match(/\d+/g)[0] - b["name"].match(/\d+/g)[0];
-            else 
-                a["name"].localeCompare(b["name"]);
-        else
-            return 0;
-    })
 
     data = data.filter(a => a["name"].toLowerCase().includes(filter.toLowerCase()))
 
@@ -143,7 +135,7 @@ function loadData(input) {
 
 
         div.className = "Item"
-        
+
         let tubDiv = document.createElement("div")
 
 
@@ -160,14 +152,14 @@ function loadData(input) {
             let pathToFetch = "/backend/" + (add.classList.contains("already") ? "removeWatchList" : "addWatchList/");
             fetchBackend(pathToFetch, {
                 headers: {
-                    "content-type" : "application/json; charset=UTF-8"
+                    "content-type": "application/json; charset=UTF-8"
                 },
                 body: JSON.stringify({
-                    "token" : loadCookie("token"),
-                    "path" : file["Path"]
+                    "token": loadCookie("token"),
+                    "path": file["Path"]
                 }),
                 method: "POST"
-            },(data) => {
+            }, (data) => {
                 if (data === "added") {
                     add.classList.remove("add")
                     add.classList.add("already")
@@ -176,7 +168,7 @@ function loadData(input) {
                     add.classList.add("add")
                 }
             }, false, true)
-        })   
+        })
 
         tubDiv.style.position = "relative"
         tubDiv.appendChild(tub)
@@ -202,8 +194,8 @@ function loadData(input) {
 
         text.innerText = textToDisplay;
 
-        div.addEventListener("click", function(e) {
-            if (!(e.target === this || e.target === tub || e.target === text))  {
+        div.addEventListener("click", function (e) {
+            if (!(e.target === this || e.target === tub || e.target === text)) {
                 return;
             }
 
@@ -234,7 +226,7 @@ document.getElementById("server").addEventListener("click", () => {
 })
 
 function setScroll() {
-    let cookie = loadCookie("scroll:"+location.search.slice("?path=".length))
+    let cookie = loadCookie("scroll:" + location.search.slice("?path=".length))
     window.scrollTo({
         top: cookie
     })
@@ -244,7 +236,7 @@ let lastSearch = ""
 
 document.getElementById("search").addEventListener("input", (e) => {
     filter = e.target.value
-    
+
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString)
     if (loading.a) {
@@ -260,7 +252,7 @@ document.getElementById("search").addEventListener("input", (e) => {
 document.getElementById("searchForm").addEventListener("submit", (e) => {
     e.preventDefault();
     filter = new FormData(e.target).get("search")
-    
+
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString)
     if (loading.a) {
@@ -269,16 +261,16 @@ document.getElementById("searchForm").addEventListener("submit", (e) => {
     }
     lastSearch = filter;
     getFiles(urlParams.get('path'), sort.value)
-}) 
+})
 
 
 function loadCookie(name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
+    for (var i = 0; i < ca.length; i++) {
         var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
     }
     return null;
 }
@@ -289,7 +281,7 @@ function loadCookie(name) {
  * @param {String} path
  */
 function setCookie(name, cookie, path) {
-    document.cookie = name + "=" + cookie + ";path="+path;
+    document.cookie = name + "=" + cookie + ";path=" + path;
 }
 
 /**
@@ -299,7 +291,7 @@ function setCookie(name, cookie, path) {
  * @param {string} path
  */
 function setTimeCookie(name, cookie, expires, path) {
-    document.cookie = name + "=" + cookie + "; expires=" + expires.toUTCString() + ";path="+path;
+    document.cookie = name + "=" + cookie + "; expires=" + expires.toUTCString() + ";path=" + path;
 }
 
 /**
@@ -312,15 +304,15 @@ function setTimeCookie(name, cookie, expires, path) {
  */
 function fetchBackend(url, options, callback, sendBack = true, doAlert = false) {
     fetch(url, options).then(data => data.json())
-    .then(res => {
-        if (!res["status"]) {
-            if (sendBack)
-                document.location.href = "/"
-            else
+        .then(res => {
+            if (!res["status"]) {
+                if (sendBack)
+                    document.location.href = "/"
+                else
                 if (doAlert)
                     alert("Something went wrong\n" + res["reason"])
-        } else
-            callback(res["data"])
-    })
-    .catch(error => console.log(error))
+            } else
+                callback(res["data"])
+        })
+        .catch(error => console.log(error))
 }
