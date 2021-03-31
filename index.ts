@@ -41,12 +41,12 @@ export {
     fileIndex
 }
 
-backupCacheRegual()
+backupCacheRegular()
 
-function backupCacheRegual() {
+function backupCacheRegular() {
     backup()
     setTimeout(() => {
-        backupCacheRegual();
+        backupCacheRegular();
     }, 1000 * 60 * 10);
 }
 

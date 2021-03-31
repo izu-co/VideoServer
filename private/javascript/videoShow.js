@@ -170,7 +170,49 @@ function loadData(input) {
             }, false, true)
         })
 
+        const stars = buildStarSVG();
+        stars.classList.add("rating")
+
+        const singleStars = stars.getElementsByTagNameNS("http://www.w3.org/2000/svg", "path")
+
+        for (let i = 0; i < singleStars.length; i++) {
+            const singleStar = singleStars.item(i);
+            if (i < file["stars"])
+                singleStar.classList.add("starSelected")
+            else 
+                singleStar.classList.add("notSelected")
+            singleStar.addEventListener("mouseenter", (e) => {
+                for (let a = 0; a < singleStars.length; a++)
+                    singleStars.item(a).classList.add(a <= i ? "tempSelected" : "tempNotSelected")
+            })
+
+            singleStar.addEventListener("click", () => {
+                fetchBackend("/backend/setStars", {
+                    headers: {
+                        "content-type": "application/json; charset=UTF-8"
+                    },
+                    body: JSON.stringify({
+                        "token": loadCookie("token"),
+                        "path": file["Path"],
+                        "stars": (i+1)
+                    }),
+                    method: "POST"
+                }, (data) => {
+                    for (let k = 0; k < singleStars.length; k++) {
+                        singleStars.item(k).classList = []
+                        singleStars.item(k).classList.add(k < data ? "starSelected" : "notSelected")
+                    }
+                }, false, true)
+            })
+
+            singleStar.addEventListener("mouseleave", (e) => {
+                for (let a = 0; a < singleStars.length ; a++)
+                    singleStars.item(a).classList.remove("tempSelected", "tempNotSelected")
+            })
+        }
+
         tubDiv.style.position = "relative"
+        tubDiv.appendChild(stars);
         tubDiv.appendChild(tub)
         tubDiv.appendChild(add)
         div.appendChild(tubDiv)
@@ -213,6 +255,7 @@ function loadData(input) {
         header.className = "showItem";
         container.appendChild(header);
     })
+
     loading.a = false
 }
 
@@ -315,4 +358,27 @@ function fetchBackend(url, options, callback, sendBack = true, doAlert = false) 
                 callback(res["data"])
         })
         .catch(error => console.log(error))
+}
+
+/**
+ * @returns {HTMLElement}
+ */
+function buildStarSVG() {
+    const svg = getNode("svg", {"width": 500, "height": 100, "viewBox": "0 0 500 100", "xmlsn": "http://www.w3.org/2000/svg"})
+    const g = getNode("g", {})
+    g.appendChild(getNode("path", {"id": "path1", "d": "M50 0L61.2257 34.5491H97.5528L68.1636 55.9017L79.3893 90.4509L50 69.0983L20.6107 90.4509L31.8364 55.9017L2.44717 34.5491H38.7743L50 0Z"}))
+    g.appendChild(getNode("path", {"id": "path2", "d": "M150 0L161.226 34.5491H197.553L168.164 55.9017L179.389 90.4509L150 69.0983L120.611 90.4509L131.836 55.9017L102.447 34.5491H138.774L150 0Z"}))
+    g.appendChild(getNode("path", {"id": "path3", "d": "M250 0L261.226 34.5491H297.553L268.164 55.9017L279.389 90.4509L250 69.0983L220.611 90.4509L231.836 55.9017L202.447 34.5491H238.774L250 0Z"}))
+    g.appendChild(getNode("path", {"id": "path4", "d": "M350 0L361.226 34.5491H397.553L368.164 55.9017L379.389 90.4509L350 69.0983L320.611 90.4509L331.836 55.9017L302.447 34.5491H338.774L350 0Z"}))
+    g.appendChild(getNode("path", {"id": "path5", "d": "M450 0L461.226 34.5491H497.553L468.164 55.9017L479.389 90.4509L450 69.0983L420.611 90.4509L431.836 55.9017L402.447 34.5491H438.774L450 0Z"}))
+    
+    svg.appendChild(g);
+    return svg;
+}
+
+function getNode(n, v) {
+    n = document.createElementNS("http://www.w3.org/2000/svg", n);
+    for (var p in v)
+      n.setAttributeNS(null, p, v[p]);
+    return n
 }
