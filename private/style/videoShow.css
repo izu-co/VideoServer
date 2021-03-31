@@ -235,3 +235,27 @@ input[type="search"] {
     font-weight: 900; 
     content: "\f002";
 }
+
+.rating {
+    background-color: transparent;
+    width: 30%;
+    position: absolute;
+    right: 0;
+    height: 10%;
+}
+
+.starSelected {
+    fill: yellow;
+}
+
+.tempSelected {
+    fill: yellow !important;
+}
+
+.tempNotSelected {
+    fill: gray !important;
+}
+
+.notSelected {
+    fill: gray;
+}

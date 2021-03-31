@@ -5,5 +5,6 @@ import { saveTime } from "./videoServing/saveTime";
 import { getFileData } from "./videoServing/getFileData";
 import { getSortTypes } from "./videoServing/getSortTypes";
 import { addToWatchList, IsOnWatchList, removeFromWatchList } from "./videoServing/watchlist";
+import { getStars, setStars } from "./videoServing/stars";
 
-export { createImages, loadTime, getFiles, saveTime, getFileData, getSortTypes, addToWatchList, IsOnWatchList, removeFromWatchList };
+export { createImages, loadTime, getFiles, saveTime, getFileData, getSortTypes, addToWatchList, IsOnWatchList, removeFromWatchList, getStars, setStars };

@@ -25,6 +25,8 @@ import getWatcherRoute from "./getWatchers"
 import getSortTypesRoute from "./getSortTypes"
 import addToWatchListRoute from "./addWatchList"
 import removeFromWatchListRoute from "./removeWatchList"
+import setStarsRoute from "./setStars"
+import getStarsRoute from "./getStars"
 
 /**Post Routes Start */
 router.use('/' + dirname, 
@@ -48,7 +50,9 @@ logoutRoute,
 getWatcherRoute,
 getSortTypesRoute,
 addToWatchListRoute,
-removeFromWatchListRoute)
+removeFromWatchListRoute,
+setStarsRoute,
+getStarsRoute)
 
 /** Post Routes End */
 
