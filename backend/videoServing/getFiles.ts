@@ -68,7 +68,7 @@ function getFilesFromWatchList(token:string, ip:string) {
             "type" : fs.lstatSync(path).isDirectory() ? "folder" : "video",
             "image" : (path + ".jpg").replace(index.argv["Video Directory"], ""),
             "watchList": true,
-            "stars": getStars(token, ip, file["path"]).data
+            "stars": getStars(token, ip, path).data
         }
         if (push["type"] === "video") 
             push["timeStemp"] = loadTime(path, token, ip, Users)          
