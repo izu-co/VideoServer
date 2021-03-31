@@ -32,7 +32,7 @@ getAllFiles(argv["Video Directory"]).forEach(file => {
 chok.watch(argv["Video Directory"], {
 	alwaysStat: true,
 	persistent: false,
-	ignored: /(^|[\/\\])\../,
+	ignored: null,
 	atomic: 100
 }).on("all", (name, path, stats) => {
 	switch (name) {

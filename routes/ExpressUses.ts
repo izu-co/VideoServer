@@ -36,7 +36,9 @@ export function init() {
         })
 
         next();
-    }, express.static(argv["Video Directory"]))
+    }, express.static(argv["Video Directory"], {
+        dotfiles: "allow"
+    }))
     app.use("/icon.png", express.static(path.join(argv["Working Directory"], "Icon.png")))
     app.use('/private/style', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "style")))
     app.use('/private/html', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "html")))
