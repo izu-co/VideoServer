@@ -102,7 +102,6 @@ if (!fileExists) {
 	}
 }
 
-
 function backup() {
 	db.backup(path.join(__dirname, "..", "data", "database-backup.db"))
 }
@@ -117,8 +116,6 @@ function getAllFiles(path: string): Array < string > {
 	let ret: Array < string > = [];
 
 	let content: Array < string > = fs.readdirSync(path);
-	
-
 	content.forEach(subPath => {
 		if (fs.lstatSync(join(path, subPath)).isDirectory()) {
 			if (!fs.existsSync(join(path, subPath) + ".jpg"))

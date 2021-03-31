@@ -67,7 +67,7 @@ function getFilesFromWatchList(token:string, ip:string) {
             "Path" : path.replace(index.argv["Video Directory"], ""),
             "type" : fs.lstatSync(path).isDirectory() ? "folder" : "video",
             "image" : (path + ".jpg").replace(index.argv["Video Directory"], ""),
-            "watchList": true,
+            "watchList": true
             "stars": getStars(token, ip, file["path"]).data
         }
         if (push["type"] === "video") 
@@ -131,6 +131,10 @@ function getFileFromCreated(path:string, token:string, ip:string) {
     })
     
     return retarr;
+}
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
 }
 
 function escapeRegExp(string) {
