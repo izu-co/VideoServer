@@ -125,6 +125,15 @@ input:checked + .slider:before {
   display: block;
 }
 
+button, input[type="button"] {
+  background: rgba(128, 128, 128, 0.3);
+  color: white;
+  border: none;
+  padding: 2px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
 #permDiv {
   position: relative;
   display: inline-block;
