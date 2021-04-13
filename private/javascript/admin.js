@@ -69,7 +69,7 @@ users.forEach(user => {
 
     var checkavtive = document.createElement("input")
     checkavtive.type = "checkbox";
-    checkavtive.checked = user["active"] === "true"
+    checkavtive.checked = user["active"]
 
     checkavtive.addEventListener("change", function() {
     fetchBackend("/backend/changeActive/", {
