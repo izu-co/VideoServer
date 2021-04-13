@@ -76,13 +76,3 @@ checkCookies();
 
 if (!argv.debug)
     fileStuff.createImages(argv["Video Directory"], false, false);
-
-function exit() {
-    process.exit(0)
-}
-
-process.on('SIGINT', exit)
-process.on('exit', exit)
-process.on('SIGTERM', exit)
-process.on('SIGHUP', () => exit)
-process.on('SIGBREAK', () => exit)

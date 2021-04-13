@@ -1,22 +1,22 @@
-var video = document.querySelector('video');
-var container = document.getElementById("c-video")
-var bar = document.getElementById('orange-juice');
-var barContainer = document.getElementById('orange-bar')
-var buttonPlay = document.getElementById('play-pause');
-var sound = document.getElementById('volume');
-var soundbar = document.getElementById('volumeSlider');
-var time = document.getElementById('timeText');
-var TimeTooltipBar = document.getElementById('TimeBar')
-var tooltip = document.getElementById('tooltiptext')
-var fullScreenButton = document.getElementById('fullscreen')
+const video = document.querySelector('video');
+const container = document.getElementById("c-video")
+const bar = document.getElementById('orange-juice');
+const barContainer = document.getElementById('orange-bar')
+const buttonPlay = document.getElementById('play-pause');
+const sound = document.getElementById('volume');
+const soundbar = document.getElementById('volumeSlider');
+const time = document.getElementById('timeText');
+const TimeTooltipBar = document.getElementById('TimeBar')
+const tooltip = document.getElementById('tooltiptext')
+const fullScreenButton = document.getElementById('fullscreen')
+const skipButton = document.getElementById('SkipButton')
+const next = document.getElementById('next')
+const controls = document.getElementById('controls')
 var mouseDown = 0;
 var standartLaustärke = 30;
 var skiped = false;
-var skipButton = document.getElementById('SkipButton')
 var timer;
-var controls = document.getElementById('controls')
 var WaitToHideTime = 1000;
-var next = document.getElementById('next')
 
 document.body.onmousedown = function() { 
     ++mouseDown;
@@ -75,12 +75,9 @@ function loadData(res) {
         next.addEventListener("click", function() {
             document.location.href = document.location.href.split("?")[0] + "?path=" + res["next"];
         })
-    } else {
-        next.style.opacity = 0.4
-        next.addEventListener("click", function() {
-            alert("Es wurde keine nächste Folge gefunden!")
-        })
-    }
+    } else 
+        next.disabled = true
+    
 }
 
 document.body.onkeyup = function(e){
@@ -106,6 +103,10 @@ function loadCookie(name) {
         if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
     }
     return null;
+}
+
+video.onplay = function() {
+    buttonPlay.className = video.paused ? 'pause' : 'play';
 }
 
 function togglePlayPause() {
@@ -290,12 +291,8 @@ video.addEventListener("loadeddata", function () {
         }, res => {
             console.log(res)
             if (res !== 0) {
-                togglePlayPause()
-                if (window.confirm("Möchtest du da weitermachen wo du das letzte mal aufgehört hast?")) {
-                    video.currentTime = (video.duration * res)
-                    skiped = true;
-                    togglePlayPause()
-                }
+                video.currentTime = (video.duration * res)
+                skiped = true;
             }
         }, true, false)
 })

@@ -1,5 +1,15 @@
+@font-face {
+    font-family: Axis;
+    src: url(/private/font/AXIS_Extra_Bold_800.otf);
+    font-weight: bold;
+}
+
 * {
-    background-color: darkslategray;
+    font-family: Axis;
+}
+
+body {
+    background-color: #262626;
 }
 
 label {
@@ -7,10 +17,12 @@ label {
     font-size: x-large;
     margin-top: 5px;
     width: 60px;
+    color: white;
 }
 
 table, th, td {
-    border: 1px solid black;
+    color: white;
+    border: 1px solid white;
     border-collapse: collapse;
 }
 

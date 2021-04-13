@@ -11,12 +11,12 @@ function getUserFromToken (token:string, ip:string): UserRequestAnswer {
     let User = db.prepare("SELECT * FROM users WHERE UUID=?").get(tokenUser["UUID"])
 
     if (User === undefined) return { status : false, reason : "Can't get the user assosiated with the token. Please report to an admin!"}
-    if (!User["active"]) return { status: false, reason: "Der Account wurd deaktiviert!"}
+    if (User["active"] !== "true") return { status: false, reason: "The account has been disabled!"}
 
     return {
         status: true,
         data: {
-            active: new Boolean(User["active"]).valueOf(),
+            active: User["active"] === "true" ? true : false,
             password: User["password"],
             perm: User["perm"],
             username: User["username"],

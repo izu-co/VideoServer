@@ -17,6 +17,7 @@ export function init() {
      */
     app.use('/public/js', express.static(path.join(argv["Working Directory"], "public", "javascript")))
     app.use('/public/style', express.static(path.join(argv["Working Directory"], "public", "style")))
+    app.use('/public/font', express.static(path.join(argv["Working Directory"], "public", "font")))
 
     /**
      * Private Uses

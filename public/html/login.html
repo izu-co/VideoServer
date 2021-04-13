@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html>
-   <head>
+  <head>
      <title>Loginformular</title>
      <link rel="stylesheet" href="/public/style/login.css" type="text/css"></link>
-    </head>
-<body>
-<div class="container">
-  <div id="header">
-    <img src="/icon.png" id="favIco">
-    <h1>Login</h1>
-  </div>
-    <input type="text" id="username" name="user" placeholder="Benutzername">
-    <input type="password" id="password" name="password" placeholder="Passwort"><br>
-    <button type="submit" name="submit" id="submit" class="button">Login</button>
-    <div class="wrongPass" id="wrongPass">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  </head>
+  <body>
+    <div class="container">
+      <div id="header">
+        <img src="/icon.png" id="favIco">
+        <h1>Login</h1>
+      </div>
+      <input type="text" id="username" name="user" placeholder="Benutzername"><br>
+      <input type="password" id="password" name="password" placeholder="Passwort"><br>
+      <button type="submit" name="submit" id="submit" class="button">Login</button>
+      <div class="wrongPass" id="wrongPass">
         <b id="wrongPassText">Das Passwort oder der Benutzername ist falsch!</b>
+      </div>
+      <script type="text/javascript" src="/public/js/login.js"></script>
     </div>
-  <script type="text/javascript" src="/public/js/login.js"></script>
-</div>
-
-</body>
+  </body>
 </html>

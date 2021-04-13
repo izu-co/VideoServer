@@ -6,7 +6,7 @@ function changeActiveState (state:boolean, uuid:string, token:string, ip:string)
     var user = getUserFromToken(token, ip);
     if (!user["status"])
         return user;
-    if (user["data"]["perm"] !== "Admin") return {status: false, reason: "Unzureichende Rechte"}
+    if (user["data"]["perm"] !== "Admin") return {status: false, reason: "Unauthorized "}
    
     let tochange = db.prepare("SELECT * FROM users WHERE UUID=?").get(uuid);
 
@@ -14,7 +14,6 @@ function changeActiveState (state:boolean, uuid:string, token:string, ip:string)
         return {"status" : false, "reason": "UUID User not found"}
 
     db.prepare("UPDATE users SET active=? WHERE UUID=?").run(state ? "true" : "false", uuid)
-
     return {status: true}
 }
 

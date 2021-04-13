@@ -6,6 +6,7 @@
 
 * {
     background-color: #262626;
+    font-family: Axis;
 }
 
 b {
@@ -13,10 +14,20 @@ b {
     text-align: center;
 }
 
+h2 {
+    margin: 0;
+}
+
+#header {
+    display: flex;
+    align-items: baseline;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
 .showItem {
     margin: 5px;
-    margin-left: 15px;
-    margin-right: 15px;
+    margin-bottom: 15px;
     display: inline-block;
 }
 
@@ -39,49 +50,43 @@ b {
     grid-row-end: 3;
 }
 
-.Headline {
-    position: fixed;
+#headline {
+    flex: 0 0 auto;
     text-align: center;
-    font-family: Axis;
     background-color: transparent;
     color: #fff;
     margin: 0;
     padding: 0;
-    top: -15px;
-    width: 100%;
 }
 
 #container {
-    position: absolute;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
+    width: 100%;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 0px 0px;
-    top: 50px;
+    left: 0;
 }
 
 .text {
     color: white;
-	font-family: "AXIS";
     background-color: transparent;
 }
 
-#buttons {
+#buttonsL, #buttonsR {
+    flex: 1 1 0;
+    background-color: transparent;
     display: flex;
-    position: fixed;
-    height: 20px;
-    top: 5px;
-    left: 20px;
-    width: 100%;
-    background-color: transparent;
 }
 
-#buttons::before {
-    display: inline-block;
+#buttonsL::before, #buttonsR::before {
     font-style: normal;
     font-variant: normal;
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
+}
+
+#buttonsR {
+    flex-direction: row-reverse;
 }
 
 #settings::before {
@@ -92,8 +97,6 @@ b {
 }
 
 #settings {
-    position: absolute;
-    right: 35px;
     color: #fff;
 }
 
@@ -109,8 +112,6 @@ b {
 }
 
 #admin {
-    position: absolute;
-    right: 120px;
     color: #fff;
 }
 
@@ -119,21 +120,16 @@ b {
 }
 
 #sortDiv {
-    height: 28px;    
-    width: 10%;
-    position: absolute;
-    right: 160px;
-    display: block;
+    display: flex;
 }
 
 #sort {
-    position: absolute;
-    right: 0;
+    border-radius: 0;
+    -webkit-appearance: none;
     border: none;
     border-bottom: 1px solid white;
     overflow: hidden; 
     color: white;
-    width: 80%;
     height: 100%;
 }
 
@@ -161,11 +157,11 @@ b {
 }
 
 #running.invis {
-    opacity: 0;
+    display: none;
 }
 
 #running.vis {
-    opacity: 1;
+    display: inherit;
 }
 
 #running::before {
@@ -179,7 +175,6 @@ b {
 }
 
 #logout {
-    position: absolute;
     color: #fff;
 }
 
@@ -191,8 +186,6 @@ b {
 }
 
 #server {
-    position: absolute;
-    right: 80px;
     color: #fff;
 }
 
@@ -212,17 +205,27 @@ button {
 #searchForm {
     border-bottom: 1px solid white;
     display: flex;
-    flex-flow: row wrap;
     align-items: center;
-    position: absolute;
-    left: 45px;
     height: 28px;
+    width: 100%;
+    min-width: 100px;
+    max-width: 200px;
 }
 
 input[type="search"] {
     border: none;
-    height: 100%;
     color: white;
+    width: 100%;
+}
+
+input[type="search"]:focus {
+    border: none;
+    outline: 0 !important;
+    color: white;
+}
+
+option {
+    font-family: Axis, sans-serif;
 }
 
 #search {
@@ -238,10 +241,10 @@ input[type="search"] {
 
 .rating {
     background-color: transparent;
-    width: 30%;
+    width: 40%;
     position: absolute;
     right: 0;
-    height: 10%;
+    height: 20%;
 }
 
 .starSelected {
@@ -258,4 +261,67 @@ input[type="search"] {
 
 .notSelected {
     fill: gray;
+}
+
+#sortArrow {
+    position: relative;
+    display: inline-block;
+    margin-right: 20px;
+    width: fit-content;
+}
+  
+sortArrow::-ms-expand {
+    display: none;
+}
+  
+#sortArrow:after {
+    content: '<>';
+    font: 17px "Consolas", monospace;
+    color: white;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+    padding: 5px 0 2px;
+    border-bottom: 1px solid white;
+    position: absolute;
+    pointer-events: none;
+}
+  
+#sortArrow select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+}
+
+@media (max-width: 680px) {
+    #header {
+        flex-direction: column;
+    }
+
+    #headline {
+        order: -1;
+        align-self: center;
+    }
+
+    #searchForm {
+        max-width: none;
+    }
+
+    #sortDiv, #sort, #buttonsR, #buttonsL {
+        width: 100%;
+    }
+
+    #buttonsL, #buttonsR {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    .showItem {
+        margin-left: 0;
+        margin-right: 0;
+    }
 }

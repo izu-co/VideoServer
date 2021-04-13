@@ -1,3 +1,7 @@
+:root {
+    --nextColor: white;
+}
+
 body {
     margin: 0;
 }
@@ -195,20 +199,17 @@ body {
     padding: 5px 0;
     border-radius: 6px;
     
-    /* Position the tooltip text */
     position: absolute;
     z-index: 1;
     bottom: 125%;
     left: 50%;
     margin-left: -60px;
   
-    /* Fade in tooltip */
     opacity: 0;
     transition: opacity 0.3s;
   }
   
   
-  /* Show the tooltip text when you mouse over the tooltip container */
 .TimeBar:hover .tooltiptext {
     visibility: visible;
     opacity: 1;
@@ -301,6 +302,10 @@ body {
     cursor: pointer;
 }
 
+#next:disabled {
+    --nextColor: rgba(255, 255, 255, 0.5);
+}
+
 #next::before {
     content: '\f101';
     font-family: 'Font Awesome 5 Free';
@@ -309,6 +314,6 @@ body {
     font-weight: 900;
     display: inline-block;
     font-size: 22px;
-    color: white;
+    color: var(--nextColor);
     -webkit-font-smoothing: antialiased;
 }
