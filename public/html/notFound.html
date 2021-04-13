@@ -2,9 +2,33 @@
 <html>
     <head>
         <title>404 Not Found</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <style>
+            b {
+                color: white;
+                position: absolute;
+                text-align:center;
+                left: 50%;
+                top: 50%;
+                transform: translateX(-50%) translateY(-50%);
+                font-size: 50px;
+            }
+
+            @media (max-width: 680px) {
+                b {
+                    font-size: 30px;
+                }
+            }
+
+            @media (max-height: 500px) {
+                b {
+                    font-size: 30px;
+                }
+            }
+        </style>
     </head>
-    <body style="background-color: darkslategray;">
-        <b style="color: white; position: absolute; text-align:center; left: 50%; top: 50%; transform: translateX(-50%) translateY(-50%); font-size: 50px;">
+    <body style="background-color: #262626;">
+        <b>
             The site you are trying to enter does not exist or you dont have permission to enter!
         </b>
     </body>
