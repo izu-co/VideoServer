@@ -12,7 +12,8 @@ With the Video Server you can stream your videos anywhere in the world
 :heavy_check_mark: File indexing to reduce file operations\
 :heavy_check_mark: Watchlist\
 :heavy_check_mark: Sorting types\
-:heavy_check_mark: Search for video
+:heavy_check_mark: Search for video\
+:heavy_check_mark: Responsive Design
 
 ## :rocket: Technologies ##
 
