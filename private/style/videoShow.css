@@ -2,6 +2,7 @@
     font-family: Axis;
     src: url(/private/font/AXIS_Extra_Bold_800.otf);
     font-weight: bold;
+    font-display: swap;
 }
 
 * {
@@ -33,6 +34,7 @@ h2 {
 
 .tumb {
     max-width: 100%;
+    width: 100%;
     margin: auto;
 }
 

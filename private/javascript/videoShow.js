@@ -122,6 +122,7 @@ let fileData = {
 
             var tub = document.createElement("img");
             tub.className = "tumb"
+            tub.alt = "Thumbnail"
             tub.src = "/video/" + encodeURI(file["image"]);
             if (index === data.length - 1)
                 tub.addEventListener("load", () => setScroll())
@@ -208,8 +209,7 @@ let fileData = {
             var text = document.createElement("b");
 
             text.className = "text"
-            document.title = urlParams.get('path').split(this.fileData["pathSep"]).pop()
-
+            
             let textToDisplay = file["name"];
             if (textToDisplay.startsWith(this.fileData["pathSep"])) textToDisplay = textToDisplay.substring(this.fileData["pathSep"].length)
 
