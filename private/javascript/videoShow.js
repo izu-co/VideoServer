@@ -14,10 +14,11 @@ fetchBackend('/backend/checkToken/', {
 }, true, false)
 
 var queryString = window.location.search;
-var urlParams = new URLSearchParams(queryString)
-var container = document.getElementById('container')
+let urlParams = new URLSearchParams(queryString)
+const container = document.getElementById('container')
+const loadMore = document.getElementById('loadMore')
+let filter = ""
 
-var filter = ""
 
 document.getElementById("admin").addEventListener("click", () => {
     location.href = "/admin"
@@ -48,6 +49,200 @@ loading.registerListener(function (val) {
     document.getElementById("running").classList.add(toset)
 })
 
+let fileData = {
+    fileData: undefined,
+    showAmount: 10,
+    /**
+     * @returns {boolean}
+     */
+    hasMore: function () {
+        if (!this.fileData)
+            return false;
+        return this.fileData["files"].length > this.showAmount
+    },
+    loadMore: function() {
+        if (this.hasMore()) {
+            this.showAmount+=10;
+            this.showData();
+        }
+
+        if (!this.hasMore())
+            loadMore.style.display = "none";
+    },
+    /**
+     * @returns {Promise<void>}
+     */
+    loadData: async function (path, type = null) {
+        loading.a = true
+        this.showAmount = 10
+        let k = await fetchBackendPromise('/backend/getFiles/', {
+            headers: {
+                "content-type": "application/json; charset=UTF-8"
+            },
+            body: JSON.stringify({
+                "token": loadCookie("token"),
+                "path": path,
+                "type": type
+            }),
+            method: "POST"
+        })
+        k = await k.json();
+        if (!k["status"])
+            document.location.href = "/"
+        else 
+            this.fileData = k["data"]
+        loading.a = false;
+    },
+    /**
+     * @returns {void}
+     */
+    showData: function() {  
+        loading.a = true;
+        while (container.lastChild != null)
+            container.removeChild(container.lastChild)
+
+        if (this.hasMore())
+            loadMore.style.display = "inline"
+        else 
+            loadMore.style.display = "none"
+        
+        let data = this.fileData["files"];
+
+        data = data.filter(a => a["name"].toLowerCase().includes(filter.toLowerCase()))
+        data = data.filter((_, i) => i < this.showAmount)
+
+        data.forEach((file, index) => {
+            var header = document.createElement("div");
+            var div = document.createElement("div");
+
+            div.className = "Item"
+
+            let tubDiv = document.createElement("div")
+
+
+            var tub = document.createElement("img");
+            tub.className = "tumb"
+            tub.src = "/video/" + encodeURI(file["image"]);
+            if (index === data.length - 1)
+                tub.addEventListener("load", () => setScroll())
+
+            let add = document.createElement("button")
+            add.classList.add("watchList")
+            add.classList.add(file["watchList"] ? "already" : "add")
+            add.addEventListener("click", () => {
+                let pathToFetch = "/backend/" + (add.classList.contains("already") ? "removeWatchList" : "addWatchList/");
+                fetchBackend(pathToFetch, {
+                    headers: {
+                        "content-type": "application/json; charset=UTF-8"
+                    },
+                    body: JSON.stringify({
+                        "token": loadCookie("token"),
+                        "path": file["Path"]
+                    }),
+                    method: "POST"
+                }, (data) => {
+                    if (data === "added") {
+                        add.classList.remove("add")
+                        add.classList.add("already")
+                    } else {
+                        add.classList.remove("already")
+                        add.classList.add("add")
+                    }
+                }, false, true)
+            })
+
+            const stars = buildStarSVG();
+            stars.classList.add("rating")
+
+            const singleStars = stars.getElementsByTagNameNS("http://www.w3.org/2000/svg", "path")
+
+            for (let i = 0; i < singleStars.length; i++) {
+                const singleStar = singleStars.item(i);
+                if (i < file["stars"])
+                    singleStar.classList.add("starSelected")
+                else 
+                    singleStar.classList.add("notSelected")
+                singleStar.addEventListener("mouseenter", (e) => {
+                    for (let a = 0; a < singleStars.length; a++)
+                        singleStars.item(a).classList.add(a <= i ? "tempSelected" : "tempNotSelected")
+                })
+
+                singleStar.addEventListener("click", () => {
+                    fetchBackend("/backend/setStars", {
+                        headers: {
+                            "content-type": "application/json; charset=UTF-8"
+                        },
+                        body: JSON.stringify({
+                            "token": loadCookie("token"),
+                            "path": file["Path"],
+                            "stars": (i+1)
+                        }),
+                        method: "POST"
+                    }, (data) => {
+                        for (let k = 0; k < singleStars.length; k++) {
+                            singleStars.item(k).classList = []
+                            singleStars.item(k).classList.add(k < data ? "starSelected" : "notSelected")
+                        }
+                    }, false, true)
+                })
+
+                singleStar.addEventListener("mouseleave", (e) => {
+                    for (let a = 0; a < singleStars.length ; a++)
+                        singleStars.item(a).classList.remove("tempSelected", "tempNotSelected")
+                })
+            }
+
+            tubDiv.style.position = "relative"
+            tubDiv.appendChild(stars);
+            tubDiv.appendChild(tub)
+            tubDiv.appendChild(add)
+            div.appendChild(tubDiv)
+
+            if (file["type"] === "video") {
+                var fortschritt = document.createElement("div")
+                fortschritt.className = "fortschritt"
+                fortschritt.style.width = (file["timeStemp"] * 100) + "%"
+                div.appendChild(fortschritt)
+            }
+
+            var text = document.createElement("b");
+
+            text.className = "text"
+            document.title = urlParams.get('path').split(this.fileData["pathSep"]).pop()
+
+            let textToDisplay = file["name"];
+            if (textToDisplay.startsWith(this.fileData["pathSep"])) textToDisplay = textToDisplay.substring(this.fileData["pathSep"].length)
+
+            textToDisplay = textToDisplay.substring(textToDisplay.lastIndexOf(this.fileData["pathSep"]) + 1)
+
+            text.innerText = textToDisplay;
+
+            div.addEventListener("click", function (e) {
+                if (!(e.target === this || e.target === tub || e.target === text)) {
+                    return;
+                }
+
+                if (file["type"] === "folder") {
+                    urlParams.set('path', file["Path"])
+                    location.href = location.pathname + "?" + urlParams.toString();
+                } else {
+                    urlParams.set('path', file["Path"])
+                    location.href = location.origin + "/player/player.html?" + urlParams.toString();
+                }
+            })
+
+            div.appendChild(text);
+            header.appendChild(div)
+            header.className = "showItem";
+            container.appendChild(header);
+        })
+
+        loading.a = false
+    }
+}
+
+fileData.loadData(urlParams.get('path')).then(_ => fileData.showData()).catch((er) => alert("An error occured:\n" + er))
+
 fetchBackend('/backend/getSortTypes/', {
     headers: {
         "content-type": "application/json; charset=UTF-8"
@@ -74,8 +269,8 @@ sort.addEventListener("change", (e) => {
         sort.value = last;
         return;
     }
-    last = sort.value
-    getFiles(urlParams.get('path'), e.target.value)
+    last = sort.value;
+    fileData.loadData(urlParams.get('path'), e.target.value).then(_ => fileData.showData())
 })
 
 window.addEventListener("scroll", () => {
@@ -100,165 +295,6 @@ logoutButton.addEventListener("click", () => {
                 alert("Something went wrong")
         })
 })
-
-getFiles(urlParams.get('path'))
-
-function getFiles(path, type = null) {
-    loading.a = true
-    fetchBackend('/backend/getFiles/', {
-        headers: {
-            "content-type": "application/json; charset=UTF-8"
-        },
-        body: JSON.stringify({
-            "token": loadCookie("token"),
-            "path": path,
-            "type": type
-        }),
-        method: "POST"
-    }, res => loadData(res), true, false)
-}
-/**
- * @param {Object} input 
- */
-function loadData(input) {
-
-    while (container.lastChild != null)
-        container.removeChild(container.lastChild)
-
-    data = input["files"];
-
-    data = data.filter(a => a["name"].toLowerCase().includes(filter.toLowerCase()))
-
-    data.forEach((file, index) => {
-        var header = document.createElement("div");
-        var div = document.createElement("div");
-
-
-        div.className = "Item"
-
-        let tubDiv = document.createElement("div")
-
-
-        var tub = document.createElement("img");
-        tub.className = "tumb"
-        tub.src = "/video/" + encodeURI(file["image"]);
-        if (index === data.length - 1)
-            tub.addEventListener("load", () => setScroll())
-
-        let add = document.createElement("button")
-        add.classList.add("watchList")
-        add.classList.add(file["watchList"] ? "already" : "add")
-        add.addEventListener("click", () => {
-            let pathToFetch = "/backend/" + (add.classList.contains("already") ? "removeWatchList" : "addWatchList/");
-            fetchBackend(pathToFetch, {
-                headers: {
-                    "content-type": "application/json; charset=UTF-8"
-                },
-                body: JSON.stringify({
-                    "token": loadCookie("token"),
-                    "path": file["Path"]
-                }),
-                method: "POST"
-            }, (data) => {
-                if (data === "added") {
-                    add.classList.remove("add")
-                    add.classList.add("already")
-                } else {
-                    add.classList.remove("already")
-                    add.classList.add("add")
-                }
-            }, false, true)
-        })
-
-        const stars = buildStarSVG();
-        stars.classList.add("rating")
-
-        const singleStars = stars.getElementsByTagNameNS("http://www.w3.org/2000/svg", "path")
-
-        for (let i = 0; i < singleStars.length; i++) {
-            const singleStar = singleStars.item(i);
-            if (i < file["stars"])
-                singleStar.classList.add("starSelected")
-            else 
-                singleStar.classList.add("notSelected")
-            singleStar.addEventListener("mouseenter", (e) => {
-                for (let a = 0; a < singleStars.length; a++)
-                    singleStars.item(a).classList.add(a <= i ? "tempSelected" : "tempNotSelected")
-            })
-
-            singleStar.addEventListener("click", () => {
-                fetchBackend("/backend/setStars", {
-                    headers: {
-                        "content-type": "application/json; charset=UTF-8"
-                    },
-                    body: JSON.stringify({
-                        "token": loadCookie("token"),
-                        "path": file["Path"],
-                        "stars": (i+1)
-                    }),
-                    method: "POST"
-                }, (data) => {
-                    for (let k = 0; k < singleStars.length; k++) {
-                        singleStars.item(k).classList = []
-                        singleStars.item(k).classList.add(k < data ? "starSelected" : "notSelected")
-                    }
-                }, false, true)
-            })
-
-            singleStar.addEventListener("mouseleave", (e) => {
-                for (let a = 0; a < singleStars.length ; a++)
-                    singleStars.item(a).classList.remove("tempSelected", "tempNotSelected")
-            })
-        }
-
-        tubDiv.style.position = "relative"
-        tubDiv.appendChild(stars);
-        tubDiv.appendChild(tub)
-        tubDiv.appendChild(add)
-        div.appendChild(tubDiv)
-
-        if (file["type"] === "video") {
-            var fortschritt = document.createElement("div")
-            fortschritt.className = "fortschritt"
-            fortschritt.style.width = (file["timeStemp"] * 100) + "%"
-            div.appendChild(fortschritt)
-        }
-
-        var text = document.createElement("b");
-
-        text.className = "text"
-        document.title = urlParams.get('path').split(input["pathSep"]).pop()
-
-        let textToDisplay = file["name"];
-        if (textToDisplay.startsWith(input["pathSep"])) textToDisplay = textToDisplay.substring(input["pathSep"].length)
-
-        textToDisplay = textToDisplay.substring(textToDisplay.lastIndexOf(input["pathSep"]) + 1)
-
-        text.innerText = textToDisplay;
-
-        div.addEventListener("click", function (e) {
-            if (!(e.target === this || e.target === tub || e.target === text)) {
-                return;
-            }
-
-            if (file["type"] === "folder") {
-                urlParams.set('path', file["Path"])
-                location.href = location.pathname + "?" + urlParams.toString();
-            } else {
-                urlParams.set('path', file["Path"])
-                location.href = location.origin + "/player/player.html?" + urlParams.toString();
-            }
-        })
-
-        div.appendChild(text);
-        header.appendChild(div)
-        header.className = "showItem";
-        container.appendChild(header);
-    })
-
-    loading.a = false
-}
-
 
 document.getElementById("settings").addEventListener("click", () => {
     location.href = "/settings"
@@ -286,8 +322,7 @@ document.getElementById("search").addEventListener("input", (e) => {
         e.target.value = lastSearch;
         return;
     }
-    lastSearch = filter;
-    getFiles(urlParams.get('path'), sort.value)
+    fileData.loadData(urlParams.get('path'), sort.value).then(_ => fileData.showData())
 })
 
 
@@ -343,7 +378,6 @@ function setTimeCookie(name, cookie, expires, path) {
  * @param {boolean} sendBack
  * @param {boolean} doAlert
  * @param {Function} callback
- * @returns {Promise<any>}
  */
 function fetchBackend(url, options, callback, sendBack = true, doAlert = false) {
     fetch(url, options).then(data => data.json())
@@ -359,6 +393,15 @@ function fetchBackend(url, options, callback, sendBack = true, doAlert = false) 
         })
         .catch(error => console.log(error))
 }
+
+/**
+ * @param {string} url 
+ * @param {object} options 
+ */
+ function fetchBackendPromise(url, options) {
+    return fetch(url, options)
+}
+
 
 /**
  * @returns {HTMLElement}

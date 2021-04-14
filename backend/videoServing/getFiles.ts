@@ -81,6 +81,8 @@ function getFilesFromWatchList(token:string, ip:string) {
 function getFileFromFolder(path:string, token:string, ip:string) {
     var retarr = [];
     let Users = getUserFromToken(token, ip);
+    if (!Users.status)
+        return [];
     index.fileIndex.prepare("SELECT * FROM files").all().filter(a => {
         return new RegExp(escapeRegExp(path + Path.sep) + "[^" + escapeRegExp(Path.sep) + "]*(" + escapeRegExp(Path.sep) + "|(" + index.VideoNameExtensions.join("|") + "))$").test(a["isDir"] ? a["path"] + Path.sep : a["path"])
     }).forEach(file => { 
