@@ -1,0 +1,16 @@
+{
+    "name": "Serv_ Player",
+    "short_name": "Serv_ Player",
+    "description": "A videoplayer that streams your videos around the world",
+    "icons": [
+      {
+        "src": "Icon.png",
+        "sizes": "2000x2000",
+        "type": "image/png"
+      }
+    ],
+    "start_url": "/login",
+    "display": "fullscreen",
+    "theme_color": "#fff",
+    "background_color": "#262626"
+}

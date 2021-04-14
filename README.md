@@ -41,7 +41,7 @@ $ npm i
 # Run the project
 $ node index.js --vd [Video directory]
 
-# The server will initialize in the <http://localhost:3000>
+# The server will initialize at <http://localhost> and <https://loalhost> if you provide the SSL keys
 ```
 
 ## 💳 Credits ##

@@ -11,6 +11,8 @@ export function init() {
     app.use(json())
     app.locals.streams = {};
     app.use("/favicon.ico", express.static(path.join(argv["Working Directory"], "favicon.ico")))
+    app.use("/icon.png", express.static(path.join(argv["Working Directory"], "Icon.png")))
+    app.use("/manifest", express.static(path.join(argv["Working Directory"], "pwa.webmanifest")))
 
     /**
      * Public Uses
@@ -40,7 +42,6 @@ export function init() {
     }, express.static(argv["Video Directory"], {
         dotfiles: "allow"
     }))
-    app.use("/icon.png", express.static(path.join(argv["Working Directory"], "Icon.png")))
     app.use('/private/style', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "style")))
     app.use('/private/html', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "html")))
     app.use("/private/font", GetUserGET, express.static(path.join(argv["Working Directory"], "private", "font")))

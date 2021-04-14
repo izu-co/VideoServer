@@ -62,16 +62,6 @@ import {
 import * as fileStuff from "./backend/fileStuff";
 import * as loginBackend from "./backend/UserMangement";
 
-init()
-
-app.use("/", router)
-
-const httpRouter = express();
-
-httpRouter.get('*', (req, res, next) => {
-    const hostSplit = req.headers.host.split(":")
-    res.redirect('https://' + hostSplit[0] + ":3001" + req.url);
-})
 
 let options;
 
@@ -84,24 +74,28 @@ if (fs.existsSync(path.join(__dirname, "SSL", "key.pem")) && fs.existsSync(path.
 
 const httpsEnabled: boolean = options;
 
+if (httpsEnabled)
+    app.use((req, res, next) => {
+        if (!req.secure) {
+            return res.redirect('https://' + req.headers.host + req.url);
+        }
+        next();
+    })
+
+init()
+app.use("/", router)
+
 if (httpsEnabled) {
     const httpsServer = options ? https.createServer(options, app) : https.createServer(app)
-    const httpServer = http.createServer(httpRouter)
-    
-    httpServer.listen(3000, () => {
-        console.log("[INFO] Http-Routing enabled (Port 3000)")
-    })
-    
-    httpsServer.listen(3001, () => {
-        console.log("[INFO] Listening on http://%s:%d/", "localhost", 3001)
-    })
-} else {
-    const httpServer = http.createServer(app);
-    
-    httpServer.listen(3000, () => {
-        console.log("[INFO] Listening on http://%s:%d/", "localhost", 3000)
+
+    httpsServer.listen(443, () => {
+        console.log("[INFO] Listening on https://localhost/")
     })
 }
+    
+app.listen(80, () => {
+    console.log("[INFO] Listening on http://localhost/")
+})
 
 export {
     httpsEnabled
