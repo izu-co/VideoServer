@@ -241,7 +241,10 @@ let fileData = {
     }
 }
 
-fileData.loadData(urlParams.get('path')).then(_ => fileData.showData()).catch((er) => alert("An error occured:\n" + er))
+fileData.loadData(urlParams.get('path')).then(_ => fileData.showData()).catch((er) => {
+    document.getElementById("offline").classList.remove("false")
+    console.log(er)
+})
 
 fetchBackend('/backend/getSortTypes/', {
     headers: {
@@ -252,6 +255,8 @@ fetchBackend('/backend/getSortTypes/', {
     }),
     method: "POST"
 }, res => {
+    while (sort.lastChild != null)
+        sort.removeChild(sort.lastChild)
     res.forEach(a => {
         let option = document.createElement("option")
         option.value = a;
@@ -325,8 +330,6 @@ document.getElementById("search").addEventListener("input", (e) => {
     fileData.loadData(urlParams.get('path'), sort.value).then(_ => fileData.showData())
 })
 
-
-
 document.getElementById("searchForm").addEventListener("submit", (e) => {
     e.preventDefault();
     filter = new FormData(e.target).get("search")
@@ -340,67 +343,6 @@ document.getElementById("searchForm").addEventListener("submit", (e) => {
     lastSearch = filter;
     getFiles(urlParams.get('path'), sort.value)
 })
-
-
-function loadCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-}
-
-/**
- * @param {string} cookie The cokkie
- * @param {string} key The string
- * @param {String} path
- */
-function setCookie(name, cookie, path) {
-    document.cookie = name + "=" + cookie + ";path=" + path;
-}
-
-/**
- * @param {Date} expires The date
- * @param {string} cookie The cokkie
- * @param {string} key The string
- * @param {string} path
- */
-function setTimeCookie(name, cookie, expires, path) {
-    document.cookie = name + "=" + cookie + "; expires=" + expires.toUTCString() + ";path=" + path;
-}
-
-/**
- * @param {string} url 
- * @param {object} options 
- * @param {boolean} sendBack
- * @param {boolean} doAlert
- * @param {Function} callback
- */
-function fetchBackend(url, options, callback, sendBack = true, doAlert = false) {
-    fetch(url, options).then(data => data.json())
-        .then(res => {
-            if (!res["status"]) {
-                if (sendBack)
-                    document.location.href = "/"
-                else
-                if (doAlert)
-                    alert("Something went wrong\n" + res["reason"])
-            } else
-                callback(res["data"])
-        })
-        .catch(error => console.log(error))
-}
-
-/**
- * @param {string} url 
- * @param {object} options 
- */
- function fetchBackendPromise(url, options) {
-    return fetch(url, options)
-}
 
 
 /**

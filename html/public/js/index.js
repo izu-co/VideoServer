@@ -40,7 +40,6 @@ if (loadCookie("token")) {
 }
 
 async function login() {
-
     if (username.value && password.value) {
             fetch('/backend/login/', {
                 headers: {
@@ -66,55 +65,13 @@ async function login() {
                     setTimeout(() => { wrongPassText.className = "unvis" }, 600);
                 }
             })
-            .catch(error => console.log(error))
+            .catch(error => {
+                document.getElementById("offline").classList.remove("false")
+                console.log(error)
+            })
             return;
     } else {
         wrongPassText.className = "vis"
         setTimeout(() => { wrongPassText.className = "unvis" }, 600);
     }
-}
-
-
-function loadCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;
-}
-
-
-/**
- * @param {Date} expires The date
- * @param {string} cookie The cokkie
- * @param {string} key The string
- */
-function setCookie(name, cookie, expires) {
-    document.cookie = name + "=" + cookie + "; expires=" + expires.toUTCString() + ";path=/";
-}
-
-/**
- * @param {string} url 
- * @param {object} options 
- * @param {boolean} sendBack
- * @param {boolean} doAlert
- * @param {Function} callback
- * @returns {Promise<any>}
- */
-function fetchBackend(url, options, callback, sendBack = true, doAlert = false) {
-    fetch(url, options).then(data => data.json())
-    .then(res => {
-        if (!res["status"]) {
-            if (sendBack)
-                document.location.href = "/"
-            else
-                if (doAlert)
-                    alert("Something went wrong\n" + res["reason"])
-        } else
-            callback(res["data"])
-    })
-    .catch(error => console.log(error))
 }

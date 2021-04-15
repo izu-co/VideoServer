@@ -24,9 +24,9 @@ export function GetUserGET (req:Request, res:Response, next:NextFunction) {
                 res.locals.user = user["data"]
                 next()
             } else
-                res.redirect("/login")
+                res.redirect("/")
         } else
-            res.redirect("/login")
+            res.redirect("/")
     else
         next()
 }

@@ -3,8 +3,10 @@
     <head>
         <title>Serv_ Player</title>
         <link href="https://kit-free.fontawesome.com/releases/latest/css/free.min.css" media="all" rel="stylesheet">
-        <link rel="stylesheet" type="text/css" href="css.css">
-        <link rel="stylesheet" type="text/css" href="footer.css">
+        <link rel="stylesheet" href="/style/generalStyle.css" type="text/css">
+        <script type="text/javascript" src="/js/generalFunctions.js"></script>
+        <link rel="stylesheet" type="text/css" href="/style/videoSelector.css">
+        <link rel="stylesheet" type="text/css" href="/style/videoSelectorFooter.css">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         <meta name="description" content="Displays one folder of videos">
         <link rel="manifest" href="/manifest">
@@ -26,7 +28,9 @@
                 <div id="sortDiv">
                     <button id="running" class="fa-spin invis"></button>
                     <div id="sortArrow">
-                        <select id="sort"></select>
+                        <select id="sort">
+                            <option selected>Waiting for options...</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -37,11 +41,16 @@
                 Load more
             </button>
         </div>
-        <script>
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register("worker.js")
-            }
-        </script>
-        <script type="text/javascript" src="js.js"></script>
+        <script type="text/javascript" src="/js/videoSelector.js"></script>
     </body>
+    <div id="offline" class="false">
+        <b>
+            <div>
+                You are currently
+            </div>
+            <div class="important">
+                OFFLINE
+            </div>
+        </b>
+    </div>
 </html>

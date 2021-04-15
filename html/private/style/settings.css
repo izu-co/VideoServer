@@ -1,12 +1,5 @@
-@font-face {
-    font-family: Axis;
-    src: url(/fonts/AXIS_Extra_Bold_800.otf);
-    font-weight: bold;
-}
-
 * {
     background-color: #262626;
-    font-family: Axis;
 }
 
 b {

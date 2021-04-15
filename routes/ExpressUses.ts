@@ -12,9 +12,10 @@ export function init() {
     app.use('/', limiter)
     app.locals.streams = {};
     app.use("/favicon.ico", express.static(path.join(argv["Working Directory"], "icons", "favicon.ico")))
-    app.use("/icon.png", express.static(path.join(argv["Working Directory"], "icons", "Icon.png")))
+    app.use("/icon", express.static(path.join(argv["Working Directory"], "icons", "Icon.png")))
     app.use("/manifest", express.static(path.join(argv["Working Directory"], "pwa.webmanifest")))
     app.use("/icons", express.static(path.join(argv["Working Directory"], "icons")))
+    app.use('/fonts', express.static(path.join(argv["Working Directory"], "fonts")))
 
     app.use('/', express.static(path.join(argv["Working Directory"], "html", "public")))
     app.use('/', GetUserGET, express.static(path.join(argv["Working Directory"], "html", "private")))
@@ -36,5 +37,4 @@ export function init() {
         dotfiles: "allow"
     }))
     
-    app.use('/fonts', express.static(path.join(argv["Working Directory"], "fonts")))
 }

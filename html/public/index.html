@@ -2,14 +2,16 @@
 <html>
   <head>
      <title>Loginformular</title>
-     <link rel="stylesheet" href="style.css" type="text/css"></link>
+     <link rel="stylesheet" href="/style/generalStyle.css" type="text/css">
+     <script type="text/javascript" src="/js/generalFunctions.js"></script>
+     <link rel="stylesheet" href="/style/index.css" type="text/css">
      <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
      <link rel="manifest" href="/manifest">
   </head>
   <body>
     <div class="container">
       <div id="header">
-        <img src="/icon.png" id="favIco">
+        <img src="/icon" id="favIco" alt="Website Logo">
         <h1>Login</h1>
       </div>
       <input type="text" id="username" name="user" placeholder="Benutzername"><br>
@@ -18,7 +20,24 @@
       <div class="wrongPass" id="wrongPass">
         <b id="wrongPassText">Das Passwort oder der Benutzername ist falsch!</b>
       </div>
-      <script type="text/javascript" src="js.js"></script>
+      <script>
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register("worker.js", {
+            scope: '/'
+          })
+        }
+      </script>
+      <script type="text/javascript" src="/js/index.js"></script>
     </div>
   </body>
+  <div id="offline" class="false">
+    <b>
+        <div>
+            You are currently
+        </div>
+        <div class="important">
+            OFFLINE
+        </div>
+    </b>
+  </div>
 </html>
