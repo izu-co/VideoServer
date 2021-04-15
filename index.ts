@@ -6,7 +6,6 @@ import {
     Updater
 } from "./backend/updater";
 
-import http from "http"
 import https from "https"
 
 const updater = new Updater("anappleforlife", "videoplayer", new Map < string, FileSettings > ()
@@ -15,10 +14,13 @@ const updater = new Updater("anappleforlife", "videoplayer", new Map < string, F
 
 updater.checkForUpdates()
 
-
 import express from "express"
 import * as fs from "fs";
 import path from "path"
+
+if (fs.existsSync("temp"))
+    fs.rmSync("temp", {recursive: true, force: true})
+fs.mkdirSync("temp")
 
 const app = express();
 

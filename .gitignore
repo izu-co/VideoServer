@@ -17,3 +17,4 @@ build
 update.zip
 SSL/key.pem
 SSL/server.crt
+temp/

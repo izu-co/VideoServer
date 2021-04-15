@@ -12,24 +12,40 @@ const fullScreenButton = document.getElementById('fullscreen')
 const skipButton = document.getElementById('SkipButton')
 const next = document.getElementById('next')
 const controls = document.getElementById('controls')
-var mouseDown = 0;
-var standartLaustärke = 30;
-var skiped = false;
-var timer;
-var WaitToHideTime = 1000;
+const info = document.getElementById("info")
+let mouseDown = false;
+let standartLaustärke = 30;
+let skiped = false;
+let timer;
+let WaitToHideTime = 1000;
 
 document.body.onmousedown = function() { 
-    ++mouseDown;
+    mouseDown = true;;
 }
+
 document.body.onmouseup = function() {
-    --mouseDown;
+    mouseDown = false;
 }
 
+let queryString = window.location.search;
+let urlParams = new URLSearchParams(queryString)
 
-var queryString = window.location.search;
-var urlParams = new URLSearchParams(queryString)
+const videoMainSource = document.createElement("source")
+const fallbackSource = document.createElement("source")
 
-video.src = "/video/" + urlParams.get("path");
+videoMainSource.src = "/video/" + urlParams.get("path")
+fallbackSource.src = "/video/" + urlParams.get("path") + ".mp4"
+
+
+//video.appendChild(videoMainSource)
+if (!urlParams.get("path").endsWith(".mp4"))
+    video.appendChild(fallbackSource)
+
+video.addEventListener("loadeddata", (e) => {
+    if (video.currentSrc.endsWith(urlParams.get("path").split("\.").pop() + ".mp4")) {
+        info.style.display = "inherit"
+    }
+})
 
 fetchBackend('/backend/checkToken/', {
     headers: {
@@ -39,7 +55,7 @@ fetchBackend('/backend/checkToken/', {
         "token" : loadCookie("token")
     }),
     method: "POST"
-}, () => {}, true, false)
+}, undefined, true, false)
 
 fetchBackend('/backend/FileData/', {
     headers: {
@@ -54,6 +70,8 @@ fetchBackend('/backend/FileData/', {
 
 function loadData(res) {
     document.title = res["current"].split(res["pathSep"]).pop()
+
+
     if (res["skip"]["startTime"] !== -1 && res["skip"]["startTime"] !== -1) {
         skipButton.addEventListener("click", function() {
             video.currentTime = res["skip"]["stopTime"];
@@ -267,6 +285,7 @@ document.addEventListener("fullscreenchange", function() {
 })
 
 video.addEventListener("loadeddata", function () {
+    info.style.display = "none"
     if (!skiped)
         fetchBackend('/backend/getTime/', {
             headers: {
@@ -278,7 +297,6 @@ video.addEventListener("loadeddata", function () {
             }),
             method: "POST"
         }, res => {
-            console.log(res)
             if (res !== 0) {
                 video.currentTime = (video.duration * res)
                 skiped = true;

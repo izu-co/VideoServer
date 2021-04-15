@@ -22,6 +22,7 @@ The following tools were used in this project:
 - [Node.js](https://nodejs.org/en/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Java](https://java.com/)
+- [FFmpeg](https://ffmpeg.org/)
 
 ## :white_check_mark: Requirements ##
 

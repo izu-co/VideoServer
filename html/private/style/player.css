@@ -19,7 +19,7 @@ body {
 
 #c-video {
     width: 100vw;
-    height: 100vh;
+    height: fit-content;
     position: relative;
     overflow: hidden;
 }
@@ -316,4 +316,14 @@ body {
     font-size: 22px;
     color: var(--nextColor);
     -webkit-font-smoothing: antialiased;
+}
+
+#info {
+    position: absolute;
+    top: 50%;
+    margin-left: 10%;
+    margin-right: 10%;
+    transform: translateY(-50%);
+    font-size: 120%;
+    text-align: center;
 }

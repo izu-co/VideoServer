@@ -4,6 +4,9 @@ import * as path from "path";
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { GetUserGET, limiter } from "./Routes";
+import fs from "fs"
+import ffmpeg from "fluent-ffmpeg"
+import { checkPath } from "../backend/util";
 
 export function init() {
     app.use(express.json())
@@ -32,9 +35,64 @@ export function init() {
             app.locals.streams[res.locals.user.username]--;
         })
 
-        next();
+        let urlPath = req.url.split("\.")
+        if (urlPath.pop() === "mp4" && VideoNameExtensions.includes(urlPath.pop())) {
+            let pathCheck = checkPath(req.path.replace('/video/', ''))
+            if (!pathCheck.status) {
+                res.status(400).end()
+                return;
+            }
+            
+            let streamPath = pathCheck.data.split("\.").reverse().slice(1).reverse().join("\.")
+
+            var stream = fs.createReadStream(decodeURIComponent(streamPath), {
+                autoClose: true,
+            })
+
+            if (fs.existsSync("./temp/" + decodeURIComponent(pathCheck.data).split(path.sep).pop())) {
+                res.locals.tempVideo = path.resolve("./temp/" + decodeURIComponent(pathCheck.data).split(path.sep).pop())
+                return next()
+            }
+
+            ffmpeg()
+                .input(stream)
+                .outputOptions([ '-preset veryfas', '-c:v copy', '-y'])
+                .output("./temp/" + decodeURIComponent(pathCheck.data).split(path.sep).pop())
+                .on("end", () => {
+                    res.locals.tempVideo = path.resolve("./temp/" + decodeURIComponent(pathCheck.data).split(path.sep).pop())
+                    return next()
+                })
+                .run()
+        } else
+            next();
     }, express.static(argv["Video Directory"], {
         dotfiles: "allow"
     }))
     
+    app.use("/video", (req, res, next) => {
+        if (!res.locals.tempVideo)
+            return next();
+        const stat = fs.statSync(res.locals.tempVideo);
+        const total = stat.size;
+
+        if (req.headers.range) {
+            const range = req.headers.range;
+            const parts = range.replace(/bytes=/, "").split("-");
+            const partialstart = parts[0];
+            const partialend = parts[1];
+
+            const start = parseInt(partialstart, 10);
+            const end = partialend ? parseInt(partialend, 10) : total-1;
+            const chunksize = (end-start)+1;
+
+            const file = fs.createReadStream(res.locals.tempVideo, {start: start, end: end});
+            res.writeHead(206, { 'Content-Range': 'bytes ' + start + '-' + end + '/' + total, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/mp4' });
+            file.pipe(res);
+
+        } else {
+            res.writeHead(200, { 'Content-Length': total, 'Content-Type': 'video/mp4' });
+            fs.createReadStream(res.locals.tempVideo).pipe(res);
+        }
+    })
+
 }

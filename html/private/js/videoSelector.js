@@ -227,7 +227,7 @@ let fileData = {
                     location.href = location.pathname + "?" + urlParams.toString();
                 } else {
                     urlParams.set('path', file["Path"])
-                    location.href = location.origin + "/player/player.html?" + urlParams.toString();
+                    location.href = location.origin + "/player?" + urlParams.toString();
                 }
             })
 
@@ -279,7 +279,7 @@ sort.addEventListener("change", (e) => {
 })
 
 window.addEventListener("scroll", () => {
-    setCookie("scroll:" + location.search.slice("?path=".length), window.scrollY, location.href)
+    setCookie("scroll:" + location.search.slice("?path=".length), window.scrollY, undefined, location.href)
 })
 
 const logoutButton = document.getElementById("logout")

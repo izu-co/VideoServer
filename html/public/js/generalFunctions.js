@@ -22,8 +22,8 @@ function fetchBackendPromise(url, options) {
  * @param {string} cookie The cokkie
  * @param {string} key The string
  */
-function setCookie(name, cookie, expires) {
-    document.cookie = name + "=" + cookie + "; expires=" + expires.toUTCString() + ";path=/";
+function setCookie(name, cookie, expires, path = "/") {
+    document.cookie = name + "=" + cookie + ";" + (expires ? "expires=" + expires.toUTCString() + ";" : "") + "path=" + path;
 }
 
 /**
