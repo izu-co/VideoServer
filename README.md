@@ -1,5 +1,7 @@
 <h1 align="center">Video Server</h1>
 
+![Code Grade](https://www.code-inspector.com/project/15078/status/svg)
+![Code Quality](https://www.code-inspector.com/project/15078/score/svg)
 ## :dart: About ##
 
 With the Video Server you can stream your videos anywhere in the world
