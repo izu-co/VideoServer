@@ -34,51 +34,43 @@ chok.watch(argv["Video Directory"], {
 	persistent: false,
 	ignored: null,
 	atomic: 100
-}).on("all", (name, path, stats) => {
-	switch (name) {
-		case "add":
-			if (path.substring(path.lastIndexOf(".") + 1) == "jpg" && fs.existsSync(path.substring(0, path.lastIndexOf(".")))) {
-				if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path.substring(0, path.lastIndexOf("."))) == null) {
-					fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path.substring(0, path.lastIndexOf(".")), fs.lstatSync(path.substring(0, path.lastIndexOf("."))).mtimeMs, fs.lstatSync(path.substring(0, path.lastIndexOf("."))).isDirectory() ? 1 : 0)
-				}
-			} else {
-				if (VideoNameExtensions.includes(path.substring(path.lastIndexOf(".") + 1)) &&
-					fs.existsSync(path + ".jpg")) {
-					if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) == null) {
-						fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path, stats ? stats.mtimeMs : 0, 0)
-					}
-				}
+}).on("add", (path, stats) => {
+	if (path.substring(path.lastIndexOf(".") + 1) == "jpg" && fs.existsSync(path.substring(0, path.lastIndexOf(".")))) {
+		if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path.substring(0, path.lastIndexOf("."))) == null) {
+			fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path.substring(0, path.lastIndexOf(".")), fs.lstatSync(path.substring(0, path.lastIndexOf("."))).mtimeMs, fs.lstatSync(path.substring(0, path.lastIndexOf("."))).isDirectory() ? 1 : 0)
+		}
+	} else {
+		if (VideoNameExtensions.includes(path.substring(path.lastIndexOf(".") + 1)) &&
+			fs.existsSync(path + ".jpg")) {
+			if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) == null) {
+				fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path, stats ? stats.mtimeMs : 0, 0)
 			}
-			break;
-		case "unlink":
-			if (path.substring(path.lastIndexOf(".") + 1) == "jpg") {
-				if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path.substring(0, path.lastIndexOf("."))) != null) {
-					fileIndex.prepare("DELETE FROM files WHERE path=?").run(path.substring(0, path.lastIndexOf(".")))
-				}
-			} else {
-				if (VideoNameExtensions.includes(path.substring(path.lastIndexOf(".") + 1))) {
-					if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) != null) {
-						fileIndex.prepare("DELETE FROM files WHERE path=?").run(path)
-					}
-				}
-			}
-			break;
-		case "addDir":
-			if (fs.existsSync(path + ".jpg")) {
-				if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) == null) {
-					fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path, stats ? stats.mtimeMs : 0, 1)
-				}
-			}
-			break;
-		case "unlinkDir":
-			if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) != null)
-				fileIndex.prepare("DELETE FROM files WHERE path=?").run(path)
-			break;
-		case "change":
-			if (stats && fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) != null)
-				fileIndex.prepare("UPDATE files SET created=? WHERE path=?").run(stats.mtimeMs, path)
-			break;
+		}
 	}
+}).on("unlink", (path) => {
+	if (path.substring(path.lastIndexOf(".") + 1) == "jpg") {
+		if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path.substring(0, path.lastIndexOf("."))) != null) {
+			fileIndex.prepare("DELETE FROM files WHERE path=?").run(path.substring(0, path.lastIndexOf(".")))
+		}
+	} else {
+		if (VideoNameExtensions.includes(path.substring(path.lastIndexOf(".") + 1))) {
+			if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) != null) {
+				fileIndex.prepare("DELETE FROM files WHERE path=?").run(path)
+			}
+		}
+	}
+}).on("addDir", (path, stats) => {
+	if (fs.existsSync(path + ".jpg")) {
+		if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) == null) {
+			fileIndex.prepare("INSERT INTO files VALUES(?,?,?)").run(path, stats ? stats.mtimeMs : 0, 1)
+		}
+	}
+}).on("unlinkDir", (path) => {
+	if (fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) != null)
+		fileIndex.prepare("DELETE FROM files WHERE path=?").run(path)
+}).on("change", (path, stats) => {
+	if (stats && fileIndex.prepare("SELECT * FROM files WHERE path=?").get(path) != null)
+				fileIndex.prepare("UPDATE files SET created=? WHERE path=?").run(stats.mtimeMs, path)
 })
 
 console.log("[INFO] Finished indexing!")
