@@ -3,28 +3,21 @@ import * as express from "express";
 import * as path from "path";
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
-import { GetUserGET } from "./Routes";
+import { GetUserGET, limiter } from "./Routes";
 
 export function init() {
     app.use(express.json())
     app.use(cookieParser())
     app.use(json())
+    app.use('/', limiter)
     app.locals.streams = {};
-    app.use("/favicon.ico", express.static(path.join(argv["Working Directory"], "favicon.ico")))
-    app.use("/icon.png", express.static(path.join(argv["Working Directory"], "Icon.png")))
+    app.use("/favicon.ico", express.static(path.join(argv["Working Directory"], "icons", "favicon.ico")))
+    app.use("/icon.png", express.static(path.join(argv["Working Directory"], "icons", "Icon.png")))
     app.use("/manifest", express.static(path.join(argv["Working Directory"], "pwa.webmanifest")))
+    app.use("/icons", express.static(path.join(argv["Working Directory"], "icons")))
 
-    /**
-     * Public Uses
-     */
-    app.use('/public/js', express.static(path.join(argv["Working Directory"], "public", "javascript")))
-    app.use('/public/style', express.static(path.join(argv["Working Directory"], "public", "style")))
-    app.use('/public/font', express.static(path.join(argv["Working Directory"], "public", "font")))
-
-    /**
-     * Private Uses
-     */
-    app.use('/private/js', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "javascript")))
+    app.use('/', express.static(path.join(argv["Working Directory"], "html", "public")))
+    app.use('/', GetUserGET, express.static(path.join(argv["Working Directory"], "html", "private")))
     app.use('/video', GetUserGET,  (req, res, next) => {
         if (!VideoNameExtensions.includes(req.url.split("\.").pop())) return next()
         if (app.locals.streams.hasOwnProperty(res.locals.user.username)) {
@@ -42,9 +35,6 @@ export function init() {
     }, express.static(argv["Video Directory"], {
         dotfiles: "allow"
     }))
-    app.use('/private/style', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "style")))
-    app.use('/private/html', GetUserGET, express.static(path.join(argv["Working Directory"], "private", "html")))
-    app.use("/private/font", GetUserGET, express.static(path.join(argv["Working Directory"], "private", "font")))
-    app.use("/player/player.html", GetUserGET, express.static(path.join(argv["Working Directory"], "private", "html", "player.html")))
-    app.use("/player/videoShow.html", GetUserGET, express.static(path.join(argv["Working Directory"], "private", "html", "videoShow.html")))
+    
+    app.use('/fonts', express.static(path.join(argv["Working Directory"], "fonts")))
 }

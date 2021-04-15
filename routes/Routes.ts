@@ -51,7 +51,7 @@ export function requireArgumentsPost (Arguments:Array<string>) {
 }
 
 const limiter = slowDown({
-    delayAfter: 5,
+    delayAfter: 5000,
     maxDelayMs: 60 * 1000,
     delayMs: 1000
 })

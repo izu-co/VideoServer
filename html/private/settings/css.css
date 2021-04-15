@@ -1,0 +1,70 @@
+@font-face {
+    font-family: Axis;
+    src: url(/fonts/AXIS_Extra_Bold_800.otf);
+    font-weight: bold;
+}
+
+* {
+    background-color: #262626;
+    font-family: Axis;
+}
+
+b {
+    padding: 1px;
+    color: white;
+    background-color: transparent;
+    height: 20px;
+    border: none;
+}
+
+label {
+    color: white;
+    font-weight: bold;
+    display: block;
+    margin: 5px;
+    margin-left: 0px;
+}
+
+button, input[type="button"] {
+    background: rgba(128, 128, 128, 0.3);
+    color: white;
+    border: none;
+    padding: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+input[type="text"], input[type="password"] {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    border-bottom: 1px solid white;
+}
+  
+input[type="text"]:focus, input[type="password"]:focus {
+    -webkit-appearance: none;
+    outline: 0 !important;
+}
+  
+div.category {
+    margin: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#container {
+    margin: 10px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+  color: white;
+  border: none;
+  border-bottom: solid 1px white;
+}
