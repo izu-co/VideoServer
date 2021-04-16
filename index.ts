@@ -18,9 +18,10 @@ import express from "express"
 import * as fs from "fs";
 import path from "path"
 
-if (fs.existsSync("temp"))
-    fs.rmSync("temp", {recursive: true, force: true})
-fs.mkdirSync("temp")
+if (!fs.existsSync("temp"))
+    fs.mkdirSync("temp")
+
+//TODO Clear temp
 
 const app = express();
 
@@ -63,7 +64,6 @@ import {
 } from "./routes/ExpressUses";
 import * as fileStuff from "./backend/fileStuff";
 import * as loginBackend from "./backend/UserMangement";
-
 
 let options;
 

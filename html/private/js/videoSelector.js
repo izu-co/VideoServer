@@ -299,6 +299,7 @@ logoutButton.addEventListener("click", () => {
             else
                 alert("Something went wrong")
         })
+    setCookie("token", "", new Date(0))
 })
 
 document.getElementById("settings").addEventListener("click", () => {

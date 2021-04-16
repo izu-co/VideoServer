@@ -3,33 +3,12 @@ const cacheName = 'Serv_ Player Cache'
 const assetsToCache = [
     '/icon',
     '',
-    '/css.css',
-    '/js.js',
+    '/js/generalFunctions.js',
+    '/style/index.css',,
+    '/style/generalStyle.css',
+    '/js/index.js',
     '/fonts/AXIS_Extra_Bold_800.otf'
 ]
-
-self.addEventListener('fetch', function(event) {
-    if (event.request.method !== "GET")
-        return;
-    event.respondWith(
-        caches.open(cacheName).then(function(cache) {
-            return cache.match(event.request).then(function (response) {
-                return response || fetch(event.request).then(function(response) {
-                    if (response.status === 206)
-                        return response;
-                    cache.put(event.request, response.clone());
-                    return response;
-                }).catch((er) => {
-                    console.error('Cant fetch', er, event)
-                })
-            }).catch((er) => {
-                console.error('Cant match', er, event)
-            })
-        }).catch((er) => {
-            console.error('Cant open cache', er, event)
-        })
-    );
-});
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();

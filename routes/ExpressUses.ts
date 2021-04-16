@@ -49,6 +49,9 @@ export function init() {
                 autoClose: true,
             })
 
+            if (fs.existsSync(decodeURIComponent(pathCheck.data)))
+                return next()
+
             if (fs.existsSync("./temp/" + decodeURIComponent(pathCheck.data).split(path.sep).pop())) {
                 res.locals.tempVideo = path.resolve("./temp/" + decodeURIComponent(pathCheck.data).split(path.sep).pop())
                 return next()
@@ -74,7 +77,7 @@ export function init() {
             return next();
         const stat = fs.statSync(res.locals.tempVideo);
         const total = stat.size;
-
+        console.log(req.headers.range)
         if (req.headers.range) {
             const range = req.headers.range;
             const parts = range.replace(/bytes=/, "").split("-");
@@ -84,10 +87,12 @@ export function init() {
             const start = parseInt(partialstart, 10);
             const end = partialend ? parseInt(partialend, 10) : total-1;
             const chunksize = (end-start)+1;
-
             const file = fs.createReadStream(res.locals.tempVideo, {start: start, end: end});
             res.writeHead(206, { 'Content-Range': 'bytes ' + start + '-' + end + '/' + total, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/mp4' });
             file.pipe(res);
+            file.on("close", () => {
+                console.log("data sent", start ,end)
+            })
 
         } else {
             res.writeHead(200, { 'Content-Length': total, 'Content-Type': 'video/mp4' });

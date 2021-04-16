@@ -34,18 +34,15 @@ const videoMainSource = document.createElement("source")
 const fallbackSource = document.createElement("source")
 
 videoMainSource.src = "/video/" + urlParams.get("path")
+videoMainSource.type = "video/" + getVideoType(urlParams.get("path").split("\.").pop())
 fallbackSource.src = "/video/" + urlParams.get("path") + ".mp4"
+fallbackSource.type = "video/mp4"
 
 
-//video.appendChild(videoMainSource)
-if (!urlParams.get("path").endsWith(".mp4"))
-    video.appendChild(fallbackSource)
-
-video.addEventListener("loadeddata", (e) => {
-    if (video.currentSrc.endsWith(urlParams.get("path").split("\.").pop() + ".mp4")) {
-        info.style.display = "inherit"
-    }
-})
+//video.appendChild(video.canPlayType(videoMainSource.type) ? videoMainSource : fallbackSource)
+video.appendChild(fallbackSource)
+if (!video.canPlayType(videoMainSource.type))
+    info.style.display = "inherit"
 
 fetchBackend('/backend/checkToken/', {
     headers: {
@@ -303,3 +300,14 @@ video.addEventListener("loadeddata", function () {
             }
         }, true, false)
 })
+
+function getVideoType(filenameExtension) {
+    switch (filenameExtension) {
+        case "ogg":
+            return "application/ogg"
+        case "ogv":
+            return "video/ogg"
+        default:
+            return filenameExtension
+    }
+}
