@@ -15,6 +15,6 @@ test.ts
 tsconfig.json
 build
 update.zip
-SSL/key.pem
+SSL/server.key
 SSL/server.crt
 temp/

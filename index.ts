@@ -67,10 +67,10 @@ import * as loginBackend from "./backend/UserMangement";
 
 let options;
 
-if (fs.existsSync(path.join(__dirname, "SSL", "key.pem")) && fs.existsSync(path.join(__dirname, "SSL", "server.crt"))) {
+if (fs.existsSync(path.join(__dirname, "SSL", "server.key")) && fs.existsSync(path.join(__dirname, "SSL", "server.crt"))) {
     options = {
-        key: fs.readFileSync(path.join(__dirname, "SSL", "key.pem"), "utf-8").toString(),
-        cert: fs.readFileSync(path.join(__dirname, "SSL", "server.crt"), "utf8").toString()
+        key: fs.readFileSync(path.join(__dirname, "SSL", "server.key"), "utf-8").toString(),
+        cert: fs.readFileSync(path.join(__dirname, "SSL", "server.crt"), "utf8").toString(),
     }
 }
 
@@ -111,6 +111,9 @@ function checkCookies() {
 }
 
 checkCookies();
+
+if (!argv.shutup)
+    console.log("[INFO] If you like the programm, please star the github repo :)")
 
 if (!argv.debug)
     fileStuff.createImages(argv["Video Directory"], false, false);

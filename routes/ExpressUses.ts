@@ -13,7 +13,8 @@ export function init() {
     app.use(cookieParser())
     app.use(json())
     app.use('/', limiter)
-    app.locals.streams = {};
+    app.locals.streams = {}
+    app.locals.converting = []
     app.use("/favicon.ico", express.static(path.join(argv["Working Directory"], "icons", "favicon.ico")))
     app.use("/icon", express.static(path.join(argv["Working Directory"], "icons", "Icon.png")))
     app.use("/manifest", express.static(path.join(argv["Working Directory"], "pwa.webmanifest")))
@@ -36,12 +37,16 @@ export function init() {
         })
 
         let urlPath = req.url.split("\.")
+        let pathCheck = checkPath(req.path.replace('/video/', ''))
+        if (!pathCheck.status) {
+            res.status(400).end()
+            return;
+        }
+
+        if (app.locals.converting.indexOf(decodeURIComponent(pathCheck.data)) > -1) 
+            return res.end()
+
         if (urlPath.pop() === "mp4" && VideoNameExtensions.includes(urlPath.pop())) {
-            let pathCheck = checkPath(req.path.replace('/video/', ''))
-            if (!pathCheck.status) {
-                res.status(400).end()
-                return;
-            }
             
             let streamPath = pathCheck.data.split("\.").reverse().slice(1).reverse().join("\.")
 
@@ -59,11 +64,25 @@ export function init() {
 
             ffmpeg()
                 .input(stream)
-                .outputOptions([ '-preset veryfas', '-c:v copy', '-y'])
+                .outputOptions([ '-preset veryfast', '-vcodec libx264', '-threads 0', '-y'])
                 .output("./temp/" + decodeURIComponent(pathCheck.data).split(path.sep).pop())
                 .on("end", () => {
                     res.locals.tempVideo = path.resolve("./temp/" + decodeURIComponent(pathCheck.data).split(path.sep).pop())
+                    let index = app.locals.converting.indexOf(decodeURIComponent(pathCheck.data))
+                    if (index > -1) {
+                        app.locals.converting.splice(index, 1);
+                    }
                     return next()
+                    //TODO Websocket here
+                })
+                .on("error", () => {
+                    let index = app.locals.converting.indexOf(decodeURIComponent(pathCheck.data))
+                    if (index > -1) {
+                        app.locals.converting.splice(index, 1);
+                    }
+                })
+                .on("start", () => {
+                    app.locals.converting.push(decodeURIComponent(pathCheck.data))
                 })
                 .run()
         } else
@@ -77,7 +96,7 @@ export function init() {
             return next();
         const stat = fs.statSync(res.locals.tempVideo);
         const total = stat.size;
-        console.log(req.headers.range)
+        return res.sendFile(res.locals.tempVideo)
         if (req.headers.range) {
             const range = req.headers.range;
             const parts = range.replace(/bytes=/, "").split("-");

@@ -24,7 +24,7 @@ The following tools were used in this project:
 - [Node.js](https://nodejs.org/en/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Java](https://java.com/)
-- [FFmpeg](https://ffmpeg.org/)
+- [FFmpeg](https://ffmpeg.org/) (make sure it includes libx264)
 
 ## :white_check_mark: Requirements ##
 
