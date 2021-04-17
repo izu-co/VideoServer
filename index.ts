@@ -6,8 +6,6 @@ import {
     Updater
 } from "./backend/updater";
 
-import https from "https"
-
 const updater = new Updater("anappleforlife", "videoplayer", new Map < string, FileSettings > ()
     .set("data", FileSettings.DontOverride), argv.beta
 )
@@ -64,6 +62,11 @@ import {
 } from "./routes/ExpressUses";
 import * as fileStuff from "./backend/fileStuff";
 import * as loginBackend from "./backend/UserMangement";
+import {
+    Server
+} from "socket.io";
+import http from "http"
+import https from "https"
 
 let options;
 
@@ -75,32 +78,39 @@ if (fs.existsSync(path.join(__dirname, "SSL", "server.key")) && fs.existsSync(pa
 }
 
 const httpsEnabled: boolean = options;
+let httpsServer: https.Server | undefined;
+let httpServer = http.createServer(app)
 
-if (httpsEnabled)
+if (httpsEnabled) {
     app.use((req, res, next) => {
         if (!req.secure) {
             return res.redirect('https://' + req.headers.host + req.url);
         }
         next();
     })
+    httpsServer = options ? https.createServer(options, app) : https.createServer(app)
+}
+
+const socketIO = httpsEnabled ? new Server(httpsServer, {}) : new Server(httpServer, {})
+
+export {
+    socketIO
+}
 
 init()
 app.use("/", router)
 
-if (httpsEnabled) {
-    const httpsServer = options ? https.createServer(options, app) : https.createServer(app)
 
-    httpsServer.listen(443, () => {
-        console.log("[INFO] Listening on https://localhost/")
-    })
-}
-    
-app.listen(80, () => {
+httpServer.listen(80, () => {
     console.log("[INFO] Listening on http://localhost/")
 })
 
+httpsServer.listen(443, () => {
+    console.log("[INFO] Listening on https://localhost/")
+})
+
 export {
-    httpsEnabled
+    httpsEnabled, httpServer, httpsServer
 }
 
 function checkCookies() {

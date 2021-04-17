@@ -14,6 +14,7 @@
     "node-fetch": "^2.6.1",
     "progress-stream": "^2.0.0",
     "request": "^2.88.2",
+    "socket.io": "^4.0.1",
     "unzipper": "^0.10.11",
     "yargs": "^16.2.0"
   },
@@ -27,6 +28,7 @@
     "@types/node-fetch": "^2.5.8",
     "@types/progress-stream": "^2.0.1",
     "@types/request": "^2.48.5",
+    "@types/socket.io": "^2.1.13",
     "@types/unzipper": "^0.10.3",
     "@types/yargs": "^15.0.13"
   },

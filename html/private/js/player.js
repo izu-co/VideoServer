@@ -18,6 +18,8 @@ let standartLaustärke = 30;
 let skiped = false;
 let timer;
 let WaitToHideTime = 1000;
+const socket = io();
+
 
 document.body.onmousedown = function() { 
     mouseDown = true;;
@@ -38,11 +40,41 @@ videoMainSource.type = "video/" + getVideoType(urlParams.get("path").split("\.")
 fallbackSource.src = "/video/" + urlParams.get("path") + ".mp4"
 fallbackSource.type = "video/mp4"
 
+console.log(fallbackSource.src)
+
+
 
 //video.appendChild(video.canPlayType(videoMainSource.type) ? videoMainSource : fallbackSource)
 video.appendChild(fallbackSource)
-if (!video.canPlayType(videoMainSource.type))
+if (true) {//!video.canPlayType(videoMainSource.type)) {
     info.style.display = "inherit"
+    let infoProgress
+    socket.on(fallbackSource.src, (data) => {
+        switch (data.type) {
+            case "error":
+                console.log(data.data)
+                while (info.lastChild != null)
+                    info.removeChild(info.lastChild)
+                let title = document.createElement("p")
+                time.className = "important"
+                title.innerHTML = "An error occured"
+                title.style.fontSize = "150%"
+                let msg = document.createElement("P")
+                msg.innerHTML = "You may now reload the page"
+                info.appendChild(title)
+                info.appendChild(msg)
+                break;
+            case "progress":
+                if (!infoProgress) {
+                    infoProgress = document.createElement("p")
+                    info.appendChild(infoProgress)
+                }
+
+                infoProgress.innerHTML = Math.ceil(data.data * 100) / 100 + "%"
+                break;
+        }
+    });
+}
 
 fetchBackend('/backend/checkToken/', {
     headers: {

@@ -19,6 +19,7 @@ body {
 
 #c-video {
     width: 100vw;
+    height: 100vh;
     height: fit-content;
     position: relative;
     overflow: hidden;

@@ -1,4 +1,4 @@
-import { app, argv, VideoNameExtensions } from "../index";
+import { app, argv, VideoNameExtensions, socketIO } from "../index";
 import * as express from "express";
 import * as path from "path";
 import { json } from 'body-parser';
@@ -31,7 +31,6 @@ export function init() {
             app.locals.streams[res.locals.user.username] = 1;
         }
 
-
         req.on("close", () => {
             app.locals.streams[res.locals.user.username]--;
         })
@@ -48,11 +47,7 @@ export function init() {
 
         if (urlPath.pop() === "mp4" && VideoNameExtensions.includes(urlPath.pop())) {
             
-            let streamPath = pathCheck.data.split("\.").reverse().slice(1).reverse().join("\.")
-
-            var stream = fs.createReadStream(decodeURIComponent(streamPath), {
-                autoClose: true,
-            })
+            let streamPath = decodeURIComponent(pathCheck.data.split("\.").reverse().slice(1).reverse().join("\."))
 
             if (fs.existsSync(decodeURIComponent(pathCheck.data)))
                 return next()
@@ -63,7 +58,7 @@ export function init() {
             }
 
             ffmpeg()
-                .input(stream)
+                .input(streamPath)
                 .outputOptions([ '-preset veryfast', '-vcodec libx264', '-threads 0', '-y'])
                 .output("./temp/" + decodeURIComponent(pathCheck.data).split(path.sep).pop())
                 .on("end", () => {
@@ -73,50 +68,34 @@ export function init() {
                         app.locals.converting.splice(index, 1);
                     }
                     return next()
-                    //TODO Websocket here
                 })
-                .on("error", () => {
+                .on("error", (err) => {
                     let index = app.locals.converting.indexOf(decodeURIComponent(pathCheck.data))
                     if (index > -1) {
                         app.locals.converting.splice(index, 1);
                     }
+                    socketIO.emit(`${req.protocol}://${req.get('host')}${req.originalUrl}`, {
+                        type: "error",
+                        data: err.message
+                    })
                 })
                 .on("start", () => {
                     app.locals.converting.push(decodeURIComponent(pathCheck.data))
+                })
+                .on("progress", (pro) => {
+                    socketIO.emit(`${req.protocol}://${req.get('host')}${req.originalUrl}`, {
+                        type: "progress",
+                        data: pro.percent
+                    })
                 })
                 .run()
         } else
             next();
     }, express.static(argv["Video Directory"], {
         dotfiles: "allow"
-    }))
-    
-    app.use("/video", (req, res, next) => {
+    }), (req, res, next) => {
         if (!res.locals.tempVideo)
             return next();
-        const stat = fs.statSync(res.locals.tempVideo);
-        const total = stat.size;
         return res.sendFile(res.locals.tempVideo)
-        if (req.headers.range) {
-            const range = req.headers.range;
-            const parts = range.replace(/bytes=/, "").split("-");
-            const partialstart = parts[0];
-            const partialend = parts[1];
-
-            const start = parseInt(partialstart, 10);
-            const end = partialend ? parseInt(partialend, 10) : total-1;
-            const chunksize = (end-start)+1;
-            const file = fs.createReadStream(res.locals.tempVideo, {start: start, end: end});
-            res.writeHead(206, { 'Content-Range': 'bytes ' + start + '-' + end + '/' + total, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/mp4' });
-            file.pipe(res);
-            file.on("close", () => {
-                console.log("data sent", start ,end)
-            })
-
-        } else {
-            res.writeHead(200, { 'Content-Length': total, 'Content-Type': 'video/mp4' });
-            fs.createReadStream(res.locals.tempVideo).pipe(res);
-        }
     })
-
 }
