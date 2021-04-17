@@ -127,9 +127,10 @@ httpServer.listen(80, () => {
     console.log("[INFO] Listening on http://localhost/")
 })
 
-httpsServer.listen(443, () => {
-    console.log("[INFO] Listening on https://localhost/")
-})
+if (httpsServer)
+    httpsServer.listen(443, () => {
+        console.log("[INFO] Listening on https://localhost/")
+    })
 
 export {
     httpsEnabled, httpServer, httpsServer

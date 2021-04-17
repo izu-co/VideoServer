@@ -32,16 +32,7 @@ document.body.onmouseup = function() {
 let queryString = window.location.search;
 let urlParams = new URLSearchParams(queryString)
 
-const videoMainSource = document.createElement("source")
-const fallbackSource = document.createElement("source")
-
-videoMainSource.type = "video/" + getVideoType(urlParams.get("path").split("\.").pop())
-fallbackSource.src = "/video/" + urlParams.get("path") + ".mp4"
-fallbackSource.type = "video/mp4"
-
-console.log(fallbackSource.src)
-
-if (true) {//!video.canPlayType(getVideoType(urlParams.get("path").split("\.").pop()))) {
+if (!video.canPlayType(getVideoType(urlParams.get("path").split("\.").pop()))) {
     socket.on(urlParams.get("path") + ".mp4", (data) => {
         switch (data.type) {
             case "error":
@@ -344,7 +335,7 @@ function getVideoType(filenameExtension) {
         case "ogv":
             return "video/ogg"
         default:
-            return filenameExtension
+            return "video/" + filenameExtension
     }
 }
 
