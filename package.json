@@ -1,6 +1,6 @@
 {
   "name": "videoplayer",
-  "version": "2.3.1",
+  "version": "3.0.0",
   "description": "A Video Player",
   "main": "index.js",
   "dependencies": {
@@ -35,7 +35,7 @@
   "scripts": {
     "prebuild": "IF EXIST build (rmdir .\\build /Q /S)",
     "build": "tsc",
-    "postbuild": "robocopy . .\\build /e /xf *.ts settings.json tsconfig.json jsbeautifyrc done.txt *.log .gitignore update.zip temp server.key server.crt /xd test data build .git* node_modules || 7z a ./build/build.zip ./build/* || exit 0"
+    "postbuild": "robocopy . .\\build /e /xf *.ts settings.json tsconfig.json jsbeautifyrc done.txt *.log .gitignore update.zip temp server.key server.crt /xd test data build .git* temp node_modules || 7z a ./build/build.zip ./build/* || exit 0"
   },
   "repository": {
     "type": "git",
