@@ -1,0 +1,321 @@
+* {
+    background-color: #262626;
+}
+
+b {
+    margin-top: 5px;
+    text-align: center;
+}
+
+h2 {
+    margin: 0;
+}
+
+#header {
+    display: flex;
+    align-items: baseline;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.showItem {
+    margin: 5px;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.tumb {
+    max-width: 100%;
+    width: 100%;
+    margin: auto;
+}
+
+.fortschritt {
+    background-color: aqua;
+    height: 3px;
+    transform: translateY(-3px);
+}
+
+.Item {
+    display: grid;
+    grid-column-start: 2;
+    grid-column-end: five;
+    grid-row-start: row1-start;
+    grid-row-end: 3;
+}
+
+#headline {
+    flex: 0 0 auto;
+    text-align: center;
+    background-color: transparent;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+#container {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 0px 0px;
+    left: 0;
+}
+
+.text {
+    color: white;
+    background-color: transparent;
+}
+
+#buttonsL, #buttonsR {
+    flex: 1 1 0;
+    background-color: transparent;
+    display: flex;
+}
+
+#buttonsL::before, #buttonsR::before {
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+
+#buttonsR {
+    flex-direction: row-reverse;
+}
+
+#settings::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f4fe";
+}
+
+#settings {
+    color: #fff;
+}
+
+#back.notFound {
+    color: rgba(0, 0, 0, 0.3);
+}
+
+#admin::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f508";
+}
+
+#admin {
+    color: #fff;
+}
+
+#admin.hidden {
+    visibility: hidden;
+}
+
+#sortDiv {
+    display: flex;
+}
+
+#sort {
+    border-radius: 0;
+    -webkit-appearance: none;
+    border: none;
+    border-bottom: 1px solid white;
+    overflow: hidden; 
+    color: white;
+    height: 100%;
+}
+
+.watchList {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 5px;
+}
+
+.watchList.add::before {
+    content: "\f067";
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    color: #fff;
+}
+
+.watchList.already::before {
+    content: "\f00c";
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    color: #fff;
+}
+
+#running.invis {
+    display: none;
+}
+
+#running.vis {
+    display: inherit;
+}
+
+#running::before {
+    content: "\f110";
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    color: #fff;
+    width: 20%;
+    height: 100%;
+}
+
+#logout {
+    color: #fff;
+}
+
+#logout::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f2f5";
+}
+
+#server {
+    color: #fff;
+}
+
+#server::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f233";
+}
+
+button {
+    background: none;
+    border: none;
+    outline: none;
+}
+
+#searchForm {
+    border-bottom: 1px solid white;
+    display: flex;
+    align-items: center;
+    height: 28px;
+    width: 100%;
+    min-width: 100px;
+    max-width: 200px;
+}
+
+input[type="search"] {
+    border: none;
+    color: white;
+    width: 100%;
+}
+
+input[type="search"]:focus {
+    border: none;
+    outline: 0 !important;
+    color: white;
+}
+
+option {
+    font-family: Axis, sans-serif;
+}
+
+#search {
+    color: #fff;
+}
+
+#search::before {
+    font-size: 25px;
+    font-family: "Font Awesome 5 Free"; 
+    font-weight: 900; 
+    content: "\f002";
+}
+
+.rating {
+    background-color: transparent;
+    width: 40%;
+    position: absolute;
+    right: 0;
+    height: 20%;
+}
+
+.starSelected {
+    fill: yellow;
+}
+
+.tempSelected {
+    fill: yellow !important;
+}
+
+.tempNotSelected {
+    fill: gray !important;
+}
+
+.notSelected {
+    fill: gray;
+}
+
+#sortArrow {
+    position: relative;
+    display: inline-block;
+    margin-right: 20px;
+    width: fit-content;
+}
+  
+#sortArrow::-ms-expand {
+    display: none;
+}
+  
+#sortArrow:after {
+    content: '<>';
+    font: 17px "Consolas", monospace;
+    color: white;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+    padding: 5px 0 2px;
+    border-bottom: 1px solid white;
+    position: absolute;
+    pointer-events: none;
+}
+  
+#sortArrow select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+}
+
+@media (max-width: 680px) {
+    #header {
+        flex-direction: column;
+    }
+
+    #headline {
+        order: -1;
+        align-self: center;
+    }
+
+    #searchForm {
+        max-width: none;
+    }
+
+    #sortDiv, #sort, #buttonsR, #buttonsL {
+        width: 100%;
+    }
+
+    #buttonsL, #buttonsR {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    .showItem {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}

@@ -26,6 +26,12 @@ const argv = yargs
         default: false,
         describe: "Set this to true if you want to download beta versions!"
     })
+    .option("shutup", {
+        boolean: true,
+        default: false,
+        describe: "Don't want the star advert? Remove it with this flag!",
+        alias: "s",
+    })
     .argv;
 let data:settingsInterface
 if (fs.existsSync("settings.json")) 

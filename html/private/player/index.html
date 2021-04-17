@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8">
+        <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap" rel="stylesheet">
+        <title>VideoPlayer</title>
+        <link rel="stylesheet" href="/style/generalStyle.css" type="text/css">
+        <script type="text/javascript" src="/js/generalFunctions.js"></script>
+        <link href="https://kit-free.fontawesome.com/releases/latest/css/free.min.css" media="all" rel="stylesheet">
+        <script src="//www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+        <link rel="stylesheet" type="text/css" href="/style/player.css">
+    </head>
+    <body>
+        <div class="container"> 
+            <div id="c-video">
+                <video class="video" id="video" autoplay></video>
+                <div class="skip">
+                    <button id="SkipButton"> Skip Intro </button>
+                </div>
+                <div id="info">
+                    <p style="color: red; font-size: 150%;">Do not reload the site!</p>
+                    If you see this message, we are still waiting on the video.<br>
+                    If the video format is not supported by your browser the video will get transcoded which takes time.<br>
+                    On that note, in order to deliver the video as fast as possible the quality may be reduced.
+                </div>
+                <div id="controls">
+                    <div class="orange-bar" id ="orange-bar">
+                        <div class="TimeBar" id="TimeBar">
+                            <div class="orange-juice" id="orange-juice"></div>
+                            <span class="tooltiptext" id="tooltiptext">Tooltip text</span>
+                        </div>
+                        <div class="buttons">
+                            <div class="button-container">  
+                                <button id="play-pause"></button>
+                                <div class="time">
+                                    <b id="timeText">0:00 / 0:00</b>
+                                </div>
+                                <button id="volume" class="volume-button"></button>
+                                    <div class="volumeSliderDiv">
+                                    <input type="range" min="1" max="100" value="50" class="slider" id="volumeSlider">
+                                </div>
+                                <button id="next"></button>
+                                <button id ="fullscreen"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="/js/player.js"></script>
+    </body>
+    <div id="offline" class="false">
+        <b>
+            <div>
+                You are currently
+            </div>
+            <div class="important">
+                OFFLINE
+            </div>
+        </b>
+    </div>
+</html>

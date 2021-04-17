@@ -1,0 +1,106 @@
+body {
+    margin: 0 auto; 
+    background-size: cover;
+    background-color: #262626;
+    color: #FFFFFF;
+}
+
+a {
+    color:#fff;
+    font-weight: bolder;
+}
+a:visited {
+    color:#fff;
+}
+
+.wrongPass {
+    margin-top: 20px;
+}
+
+#wrongPassText {
+    opacity: 0;
+    color: red;
+    font-size: 20px;
+    transition: opacity .3s;
+}
+
+#wrongPassText.vis {
+    opacity: 1;
+}
+
+#wrongPassText.unvis {
+    opacity: 0;
+}
+
+.container {
+    width:500px; 
+    height: 450px; 
+    margin: 130px auto; 
+    padding-top: 20px;
+    text-align: center;
+    background-color: gray;
+    border-radius:10px;
+}
+
+input[type="text"], input[type="password"] {
+    width: 80%;
+    height: 50px;
+    font-size: 18px;
+    margin-bottom: 20px;
+    padding-left:5px;
+    background-color: #262626;
+    color: #FFFFFF;
+}
+
+input::placeholder {
+    color: #fff;
+}
+
+.button {
+    width:150px;
+    height: 50px;
+    font-size:18px;
+    background-color:#262626;
+    color:#fff;
+    border:#fff solid 1px;
+}
+
+.button:hover {
+    background-color: #fff;
+    color:#262626;
+    cursor: pointer;
+}
+
+#favIco {
+    width: 15%;
+    height: 15%;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    padding: 0;
+    margin: 0;
+    margin-bottom: 25px;
+}
+
+@media (max-width: 680px) {
+    .container {
+        margin: 0;
+        width: 80%;
+        position: absolute;
+        left: 50%;
+        top: 15%;
+        height: 70%;
+        bottom: 15%;
+        transform: translateX(-50%);
+    }
+}
+
+@media (max-height: 500px) {
+    .container {
+        top: 5%;
+        height: 90%;
+        bottom: 5%;
+    }
+}
