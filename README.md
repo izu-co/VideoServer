@@ -15,7 +15,9 @@ With the Video Server you can stream your videos anywhere in the world
 :heavy_check_mark: Watchlist\
 :heavy_check_mark: Sorting types\
 :heavy_check_mark: Search for video\
-:heavy_check_mark: Responsive Design
+:heavy_check_mark: Responsive Design\
+:heavy_check_mark: Rating system\
+:heavy_check_mark: On the fly video conversationn
 
 ## :rocket: Technologies ##
 
