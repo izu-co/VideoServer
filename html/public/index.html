@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+     <title>Loginformular</title>
+     <link rel="stylesheet" href="/style/generalStyle.css" type="text/css">
+     <script type="text/javascript" src="/js/generalFunctions.js"></script>
+     <link rel="stylesheet" href="/style/index.css" type="text/css">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+     <link rel="manifest" href="/manifest">
+  </head>
+  <body>
+    <div class="container">
+      <div id="header">
+        <img src="/icon" id="favIco" alt="Website Logo">
+        <h1>Login</h1>
+      </div>
+      <input type="text" id="username" name="user" placeholder="Benutzername"><br>
+      <input type="password" id="password" name="password" placeholder="Passwort"><br>
+      <button type="submit" name="submit" id="submit" class="button">Login</button>
+      <div class="wrongPass" id="wrongPass">
+        <b id="wrongPassText">Das Passwort oder der Benutzername ist falsch!</b>
+      </div>
+      <script>
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register("worker.js", {
+            scope: '/'
+          })
+        }
+      </script>
+      <script type="text/javascript" src="/js/index.js"></script>
+    </div>
+  </body>
+  <div id="offline" class="false">
+    <b>
+        <div>
+            You are currently
+        </div>
+        <div class="important">
+            OFFLINE
+        </div>
+    </b>
+  </div>
+</html>

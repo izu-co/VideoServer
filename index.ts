@@ -12,9 +12,37 @@ const updater = new Updater("anappleforlife", "videoplayer", new Map < string, F
 
 updater.checkForUpdates()
 
-
 import express from "express"
 import * as fs from "fs";
+import path from "path"
+
+if (!fs.existsSync("temp"))
+    fs.mkdirSync("temp")
+
+
+function clearCacheRecur(p: string) {
+    let stats = fs.lstatSync(p)
+    if (stats.isDirectory()) {
+        let files = fs.readdirSync(p)
+        if (files.length === 0)
+            fs.rmdirSync(p)
+        files.forEach(f => clearCacheRecur(path.join(p,f)))
+    } else {
+        if (stats.mtime.getTime() + 30 * 60 * 1000 > new Date().getTime()) {
+            fs.unlinkSync(p)
+        }
+    }
+}
+
+function clearCache() {
+    clearCacheRecur(path.join(__dirname, "temp"))
+    setTimeout(() => {
+        clearCache()
+    }, 10 * 60 * 1000);
+}
+
+clearCache()
+
 const app = express();
 
 if (!fs.existsSync(argv["Video Directory"])) {
@@ -56,14 +84,56 @@ import {
 } from "./routes/ExpressUses";
 import * as fileStuff from "./backend/fileStuff";
 import * as loginBackend from "./backend/UserMangement";
+import {
+    Server
+} from "socket.io";
+import http from "http"
+import https from "https"
+
+let options;
+
+if (fs.existsSync(path.join(__dirname, "SSL", "server.key")) && fs.existsSync(path.join(__dirname, "SSL", "server.crt"))) {
+    options = {
+        key: fs.readFileSync(path.join(__dirname, "SSL", "server.key"), "utf-8").toString(),
+        cert: fs.readFileSync(path.join(__dirname, "SSL", "server.crt"), "utf8").toString(),
+    }
+}
+
+const httpsEnabled: boolean = options;
+let httpsServer: https.Server | undefined;
+let httpServer = http.createServer(app)
+
+if (httpsEnabled) {
+    app.use((req, res, next) => {
+        if (!req.secure) {
+            return res.redirect('https://' + req.headers.host + req.url);
+        }
+        next();
+    })
+    httpsServer = options ? https.createServer(options, app) : https.createServer(app)
+}
+
+const socketIO = httpsEnabled ? new Server(httpsServer, {}) : new Server(httpServer, {})
+
+export {
+    socketIO
+}
 
 init()
-
 app.use("/", router)
 
-app.listen(3000, () => {
-    console.log("[INFO] Listening on http://%s:%d/", "localhost", 3000)
+
+httpServer.listen(80, () => {
+    console.log("[INFO] Listening on http://localhost/")
 })
+
+httpsServer.listen(443, () => {
+    console.log("[INFO] Listening on https://localhost/")
+})
+
+export {
+    httpsEnabled, httpServer, httpsServer
+}
 
 function checkCookies() {
     loginBackend.checkTokenForValid();
@@ -73,6 +143,9 @@ function checkCookies() {
 }
 
 checkCookies();
+
+if (!argv.shutup)
+    console.log("[INFO] If you like the programm, please star the github repo :)")
 
 if (!argv.debug)
     fileStuff.createImages(argv["Video Directory"], false, false);

@@ -24,9 +24,9 @@ export function GetUserGET (req:Request, res:Response, next:NextFunction) {
                 res.locals.user = user["data"]
                 next()
             } else
-                res.redirect("/login")
+                res.redirect("/")
         } else
-            res.redirect("/login")
+            res.redirect("/")
     else
         next()
 }
@@ -51,7 +51,7 @@ export function requireArgumentsPost (Arguments:Array<string>) {
 }
 
 const limiter = slowDown({
-    delayAfter: 5,
+    delayAfter: 5000,
     maxDelayMs: 60 * 1000,
     delayMs: 1000
 })

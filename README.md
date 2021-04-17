@@ -15,7 +15,9 @@ With the Video Server you can stream your videos anywhere in the world
 :heavy_check_mark: Watchlist\
 :heavy_check_mark: Sorting types\
 :heavy_check_mark: Search for video\
-:heavy_check_mark: Responsive Design
+:heavy_check_mark: Responsive Design\
+:heavy_check_mark: Rating system\
+:heavy_check_mark: On the fly video conversationn
 
 ## :rocket: Technologies ##
 
@@ -24,6 +26,7 @@ The following tools were used in this project:
 - [Node.js](https://nodejs.org/en/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Java](https://java.com/)
+- [FFmpeg](https://ffmpeg.org/) (make sure it includes libx264)
 
 ## :white_check_mark: Requirements ##
 
@@ -43,7 +46,7 @@ $ npm i
 # Run the project
 $ node index.js --vd [Video directory]
 
-# The server will initialize in the <http://localhost:3000>
+# The server will initialize at <http://localhost> and <https://loalhost> if you provide the SSL keys
 ```
 
 ## 💳 Credits ##
