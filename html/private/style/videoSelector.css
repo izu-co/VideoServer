@@ -264,7 +264,7 @@ option {
     width: fit-content;
 }
   
-sortArrow::-ms-expand {
+#sortArrow::-ms-expand {
     display: none;
 }
   

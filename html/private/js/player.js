@@ -18,8 +18,8 @@ let standartLaustärke = 30;
 let skiped = false;
 let timer;
 let WaitToHideTime = 1000;
+let infoProgress
 const socket = io();
-
 
 document.body.onmousedown = function() { 
     mouseDown = true;;
@@ -35,45 +35,48 @@ let urlParams = new URLSearchParams(queryString)
 const videoMainSource = document.createElement("source")
 const fallbackSource = document.createElement("source")
 
-videoMainSource.src = "/video/" + urlParams.get("path")
 videoMainSource.type = "video/" + getVideoType(urlParams.get("path").split("\.").pop())
 fallbackSource.src = "/video/" + urlParams.get("path") + ".mp4"
 fallbackSource.type = "video/mp4"
 
 console.log(fallbackSource.src)
 
-
-
-//video.appendChild(video.canPlayType(videoMainSource.type) ? videoMainSource : fallbackSource)
-video.appendChild(fallbackSource)
-if (true) {//!video.canPlayType(videoMainSource.type)) {
-    info.style.display = "inherit"
-    let infoProgress
-    socket.on(fallbackSource.src, (data) => {
+if (true) {//!video.canPlayType(getVideoType(urlParams.get("path").split("\.").pop()))) {
+    socket.on(urlParams.get("path") + ".mp4", (data) => {
         switch (data.type) {
             case "error":
-                console.log(data.data)
-                while (info.lastChild != null)
-                    info.removeChild(info.lastChild)
-                let title = document.createElement("p")
-                time.className = "important"
-                title.innerHTML = "An error occured"
-                title.style.fontSize = "150%"
-                let msg = document.createElement("P")
-                msg.innerHTML = "You may now reload the page"
-                info.appendChild(title)
-                info.appendChild(msg)
+                console.error(data.data)
+                showError()
                 break;
             case "progress":
                 if (!infoProgress) {
                     infoProgress = document.createElement("p")
                     info.appendChild(infoProgress)
                 }
-
                 infoProgress.innerHTML = Math.ceil(data.data * 100) / 100 + "%"
                 break;
+            case "finish":
+                if (!video.src)
+                    video.src = "/video/" + urlParams.get("path") + ".mp4"
         }
-    });
+    })
+
+    socket.emit("transcodeStatus", encodeURIComponent(urlParams.get("path")) + ".mp4", (res) => {
+        console.log(res.type)
+        switch (res.type) {
+            case "error":
+                showError()
+                break;
+            case "ready":
+                video.src = "/video/" + urlParams.get("path") + ".mp4"
+                break;
+            case "notFound":
+                socket.emit("startTranscoding", urlParams.get("path") + ".mp4")
+                break;
+        }
+    })
+} else {
+    video.src = "/video/" + urlParams.get("path")
 }
 
 fetchBackend('/backend/checkToken/', {
@@ -331,6 +334,7 @@ video.addEventListener("loadeddata", function () {
                 skiped = true;
             }
         }, true, false)
+    video.play()
 })
 
 function getVideoType(filenameExtension) {
@@ -342,4 +346,19 @@ function getVideoType(filenameExtension) {
         default:
             return filenameExtension
     }
+}
+
+function showError(message = undefined) {
+    while (info.lastChild != null)
+        info.removeChild(info.lastChild)
+    let title = document.createElement("p")
+    title.style.color = "red"
+    title.innerHTML = "An error occured"
+    title.style.fontSize = "150%"
+    let msg = document.createElement("P")
+    msg.innerHTML = "You may now reload the page"
+    if (message)
+        msg.innerHTML = msg.innerHTML += "\n" + message
+    info.appendChild(title)
+    info.appendChild(msg)
 }

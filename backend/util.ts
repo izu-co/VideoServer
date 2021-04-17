@@ -95,6 +95,7 @@ function isEmptyObject(obj:object) {
 function checkPath(path:string): BasicAnswer {
     if (!path.startsWith(index.argv["Video Directory"]))
         path = Path.join(index.argv["Video Directory"], path)
+
     if (!Path.resolve(path).startsWith(Path.resolve(index.argv["Video Directory"])))
         return {
             status: false,
