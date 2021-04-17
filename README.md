@@ -24,10 +24,11 @@ The following tools were used in this project:
 - [Node.js](https://nodejs.org/en/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Java](https://java.com/)
+- [FFmpeg](https://ffmpeg.org/)
 
 ## :white_check_mark: Requirements ##
 
-Before starting, you need to have [Node](https://nodejs.org/en/) and [Java](https://java.com/) installed.
+Before starting, you need to have [Node](https://nodejs.org/en/), [Java](https://java.com/) and [FFmpeg](https://ffmpeg.org/) (make sure it includes libx264)installed.
 
 ## :checkered_flag: Starting ##
 
