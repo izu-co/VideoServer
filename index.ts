@@ -100,13 +100,15 @@ if (fs.existsSync(path.join(__dirname, "SSL", "server.key")) && fs.existsSync(pa
 }
 
 const httpsEnabled: boolean = options;
+
 let httpsServer: https.Server | undefined;
 let httpServer = http.createServer(app)
+
 
 if (httpsEnabled) {
     app.use((req, res, next) => {
         if (!req.secure) {
-            return res.redirect('https://' + req.headers.host + req.url);
+            return res.redirect('https://' + req.headers.host.split(":")[0] + (argv.httpsPort !== 443 ? ":" + argv.httpsPort : "") + req.url);
         }
         next();
     })
@@ -123,14 +125,15 @@ init()
 app.use("/", router)
 
 
-httpServer.listen(80, () => {
-    console.log("[INFO] Listening on http://localhost/")
+httpServer.listen(argv.httpPort, () => {
+    console.log(`[INFO] Listening on http://localhost${argv.httpPort !== 80 ? ":" + argv.httpPort : ""}/`)
 })
 
-if (httpsServer)
-    httpsServer.listen(443, () => {
-        console.log("[INFO] Listening on https://localhost/")
+if (httpsServer) {
+    httpsServer.listen(argv.httpsPort, () => {
+        console.log(`[INFO] Listening on https://localhost${argv.httpsPort !== 443 ? ":" + argv.httpsPort : ""}/`)
     })
+}
 
 export {
     httpsEnabled, httpServer, httpsServer

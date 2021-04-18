@@ -32,6 +32,16 @@ const argv = yargs
         describe: "Don't want the star advert? Remove it with this flag!",
         alias: "s",
     })
+    .option("httpPort", {
+        number: true,
+        default: 80,
+        describe: "The port to pind the http server to"
+    })
+    .option("httpsPort", {
+        number: true,
+        default: 443,
+        describe: "The port to pind the https server to"
+    })
     .argv;
 let data:settingsInterface
 if (fs.existsSync("settings.json")) 
