@@ -24,11 +24,11 @@ function clearCacheRecur(p: string) {
     let stats = fs.lstatSync(p)
     if (stats.isDirectory()) {
         let files = fs.readdirSync(p)
-        if (files.length === 0)
+        if (files.length === 0 && p !== path.join(__dirname, "temp"))
             fs.rmdirSync(p)
         files.forEach(f => clearCacheRecur(path.join(p,f)))
     } else {
-        if (stats.mtime.getTime() + 30 * 60 * 1000 > new Date().getTime()) {
+        if (stats.mtime.getTime() + 30 * 60 * 1000 < new Date().getTime()) {
             fs.unlinkSync(p)
         }
     }
@@ -38,7 +38,7 @@ function clearCache() {
     clearCacheRecur(path.join(__dirname, "temp"))
     setTimeout(() => {
         clearCache()
-    }, 10 * 60 * 1000);
+    }, 1000 * 60 * 30);
 }
 
 clearCache()
