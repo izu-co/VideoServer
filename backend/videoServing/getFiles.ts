@@ -5,12 +5,11 @@ import * as Path from "path"
 import { loadTime, IsOnWatchList, getStars } from "../fileStuff";
 import { getUserFromToken } from "../UserMangement";
 
-function getFiles(path:string, token:string, ip:string, type:string = null): Array<FileData> {
+function getFiles(path:string, token:string, ip:string, type:string|null|SortTypes = null): Array<FileData> {
     let searchType:SortTypes;
     switch (type) {
         case null:
-            searchType = SortTypes.File
-            break
+        case "null":
         case SortTypes.File:
             searchType = SortTypes.File
             break
@@ -22,11 +21,12 @@ function getFiles(path:string, token:string, ip:string, type:string = null): Arr
             break
     }
     if (searchType == null)
-        return [];
+    return [];
     let pathCheck = checkPath(path)
     if (!pathCheck.status)
         return []
     path = pathCheck.data
+    
     if(!fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) return []
     
     switch(searchType) {

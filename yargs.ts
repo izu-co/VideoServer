@@ -1,6 +1,7 @@
 import * as yargs from "yargs";
 import fs from "fs"
 import { settingsInterface } from "./interfaces";
+import path from "path"
 
 const argv = yargs  
     .option('Video Directory', {
@@ -42,15 +43,24 @@ const argv = yargs
         default: 443,
         describe: "The port to pind the https server to"
     })
+    .option("sync", {
+        boolean: true,
+        default: false,
+        describe: "Whether the images should be created before the server starts"
+    })
     .argv;
 let data:settingsInterface
 if (fs.existsSync("settings.json")) 
     data = <settingsInterface> JSON.parse(fs.readFileSync("settings.json").toString())
 if (!fs.existsSync("data"))
     fs.mkdirSync("data")
-argv["Video Directory"] = (data!==undefined&&data["Video Directory"]!==undefined)?data["Video Directory"].toString():false || argv["Video Directory"]
-argv["Working Directory"] = (data!==undefined&&data["Working Directory"]!==undefined)?data["Working Directory"].toString():false || argv["Working Directory"]
-argv.debug = (data)?data.debug:false || argv.debug
 
+if (data !== undefined) {
+    argv["Video Directory"] = (data["Video Directory"] !== undefined) ? path.resolve(data["Video Directory"].toString()) : false || argv["Video Directory"]
+    argv["Working Directory"] = (data["Working Directory"] !== undefined) ? path.resolve(data["Working Directory"].toString()) : false || argv["Working Directory"]
+    
+    argv.sync = data.sync || argv.sync
+    argv.debug = data.debug || argv.debug
+}
 
 export {argv}

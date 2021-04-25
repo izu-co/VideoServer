@@ -10,7 +10,6 @@ java/YouTubeDownloader/output/output.txt
 *.log
 package-lock.json
 settings.json
-test
 test.ts
 tsconfig.json
 build

@@ -3,50 +3,49 @@ import { Request, Response, NextFunction } from "express";
 import * as loginBackend from "../backend/UserMangement"
 import slowDown from "express-slow-down";
 
-export function getUserPOST (req:Request, res:Response, next:NextFunction) {
-    if (req.method === "POST") {
-        let user = loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress)
+/**
+ * @param redirect If true, the user will get redirected to the front page if the auth failed
+ */
+export function getUser(redirect = false) {
+    return function (req:Request, res:Response, next:NextFunction) {
+        console.log(res.locals.apiRequest, req.url)
+        if (res.locals.apiRequest) {
+            res.locals.apiRequest = false
+            return next()
+        }
+        let token = req.body.token || req.cookies["token"] || req.headers["token"] || req.query["token"]
+        if (!token)
+            if (redirect)
+                return res.redirect("/")
+            else
+                return res.status(400).send({"status": false, "reason": "Missing token"})
+        let user = loginBackend.checkToken(token, req.header('x-forwarded-for') || req.socket.remoteAddress)
         if (user["status"]) {
             res.locals.user = user["data"];
             next();
         } else
-            res.send(user)
-    } else 
-        next()
+            if (redirect)
+                return res.redirect("/")
+            else
+                return res.send(user)
+    }
 }
 
-export function GetUserGET (req:Request, res:Response, next:NextFunction) {
-    req.cookies["token"] = req.cookies["token"] || req.headers["token"] || req.query["token"]
-    if (req.method === "GET")
-        if (req["cookies"]["token"]) {
-            let user = loginBackend.checkToken(req["cookies"]["token"], req.header('x-forwarded-for') || req.socket.remoteAddress)
-            if (user["status"]) {
-                res.locals.user = user["data"]
-                next()
-            } else
-                res.redirect("/")
-        } else
-            res.redirect("/")
-    else
-        next()
-}
-
-export function requireArgumentsPost (Arguments:Array<string>) {
+export function requireArguments (Arguments:Array<string>) {
     return function (req:Request, res:Response, next:NextFunction) {
-        if (req.method !== "POST") 
-            next()
-        else {
-            let goOn = true;
-            for(let i = 0; i<Arguments.length; i++) {
-                if (req.body[Arguments[i]] === undefined) {
-                    res.status(400).send({"status" : false, "reason": "Missing Body argument '" + Arguments[i] + "'"})
-                    goOn = false;
-                    break
-                }
+        let arg = (req.method === "GET" || req.method === "HEAD") ? req.query : req.body
+        if (!arg && Arguments.length > 0)
+            return res.status(400).send({"status": false, "reason": "Missing Body arguments '" + Arguments.join(', ')  + "'"})
+        let goOn = true;
+        for(let i = 0; i< Arguments.length; i++) {
+            if (arg[Arguments[i]] === undefined) {
+                res.status(400).send({"status" : false, "reason": "Missing Body argument '" + Arguments[i] + "'"})
+                goOn = false;
+                break
             }
-            if (goOn)
-                next();
         }
+        if (goOn)
+            next();
     }
 }
 

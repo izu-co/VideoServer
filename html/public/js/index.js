@@ -22,7 +22,7 @@ password.addEventListener("keyup", function(e) {
 })
 
 if (loadCookie("token")) {
-    fetchBackend('/backend/checkToken/', {
+    fetchBackend('/api/checkToken/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
@@ -41,7 +41,7 @@ if (loadCookie("token")) {
 
 async function login() {
     if (username.value && password.value) {
-            fetch('/backend/login/', {
+            fetch('/api/login/', {
                 headers: {
                     "content-type" : "application/json; charset=UTF-8"
                 },

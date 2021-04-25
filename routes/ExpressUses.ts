@@ -3,7 +3,7 @@ import * as express from "express";
 import * as path from "path";
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
-import { GetUserGET, limiter } from "./Routes";
+import { getUser, limiter } from "./Routes";
 import fs from "fs"
 import ffmpeg from "fluent-ffmpeg"
 import { checkPath } from "../backend/util";
@@ -24,8 +24,12 @@ export function init() {
     app.use('/fonts', express.static(path.join(argv["Working Directory"], "fonts")))
 
     app.use('/', express.static(path.join(argv["Working Directory"], "html", "public")))
-    app.use('/', GetUserGET, express.static(path.join(argv["Working Directory"], "html", "private")))
-    app.use('/video', GetUserGET,  (req, res, next) => {
+    app.use('/', (req, res, next) => {
+        if (req.path.startsWith('/api'))
+            res.locals.apiRequest = true
+        next()
+    }, getUser(true), express.static(path.join(argv["Working Directory"], "html", "private")))
+    app.use('/video', getUser(true),  (req, res, next) => {
         if (!VideoNameExtensions.includes(req.url.split("\.").pop())) return next()
         if (app.locals.streams.hasOwnProperty(res.locals.user.username)) {
             app.locals.streams[res.locals.user.username]++;
@@ -56,7 +60,7 @@ export function init() {
 
         } else
             next();
-    }, (req, res, next) => {
+    }, (_, res, next) => {
         if (!res.locals.tempVideo)
             return next()
         return res.sendFile(res.locals.tempVideo, {

@@ -3,8 +3,9 @@ const router = express.Router();
 
 import backendRouter from "./backend/index"
 
-router.use('/',
+router.use('/api',
 backendRouter)
+
 router.use(notFound)
 
 function notFound(req:express.Request, res:express.Response) {
