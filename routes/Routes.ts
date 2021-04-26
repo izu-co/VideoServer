@@ -4,18 +4,16 @@ import * as loginBackend from "../backend/UserMangement"
 import slowDown from "express-slow-down";
 
 /**
- * @param redirect If true, the user will get redirected to the front page if the auth failed
+ * @param force If true, the function will enforce its rules upon api requests
  */
-export function getUser(redirect = false) {
+export function getUser(force = false) {
     return function (req:Request, res:Response, next:NextFunction) {
-        console.log(res.locals.apiRequest, req.url)
-        if (res.locals.apiRequest) {
-            res.locals.apiRequest = false
+        let apiRequest = req.originalUrl.startsWith('/api/')
+        if (apiRequest && !force)
             return next()
-        }
         let token = req.body.token || req.cookies["token"] || req.headers["token"] || req.query["token"]
         if (!token)
-            if (redirect)
+            if (apiRequest)
                 return res.redirect("/")
             else
                 return res.status(400).send({"status": false, "reason": "Missing token"})
@@ -24,7 +22,7 @@ export function getUser(redirect = false) {
             res.locals.user = user["data"];
             next();
         } else
-            if (redirect)
+            if (apiRequest)
                 return res.redirect("/")
             else
                 return res.send(user)
@@ -37,7 +35,7 @@ export function requireArguments (Arguments:Array<string>) {
         if (!arg && Arguments.length > 0)
             return res.status(400).send({"status": false, "reason": "Missing Body arguments '" + Arguments.join(', ')  + "'"})
         let goOn = true;
-        for(let i = 0; i< Arguments.length; i++) {
+        for(let i = 0; i < Arguments.length; i++) {
             if (arg[Arguments[i]] === undefined) {
                 res.status(400).send({"status" : false, "reason": "Missing Body argument '" + Arguments[i] + "'"})
                 goOn = false;

@@ -48,6 +48,11 @@ const argv = yargs
         default: false,
         describe: "Whether the images should be created before the server starts"
     })
+    .option("disableUpdate", {
+        boolean: true,
+        default: false,
+        describe: "Wheather the server should check for updates"
+    })
     .argv;
 let data:settingsInterface
 if (fs.existsSync("settings.json")) 
@@ -61,6 +66,7 @@ if (data !== undefined) {
     
     argv.sync = data.sync || argv.sync
     argv.debug = data.debug || argv.debug
+    argv.disableUpdate = data.disableUpdate || argv.disableUpdate
 }
 
 export {argv}

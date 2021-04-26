@@ -10,7 +10,7 @@ let routeName = filename.slice(0, filename.length - 1).join(".");
 
 
 router.route('/' + routeName + '/')
-    .put(getUser, requireArguments(["token", "username", "password", "perm"]), postRouteHandler);
+    .put(getUser(true), requireArguments(["token", "username", "password", "perm"]), postRouteHandler);
 
 function postRouteHandler(req:Request, res:Response) {
     if (res.locals.user["perm"] === "Admin") {

@@ -8,7 +8,7 @@ let filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 1]
 let routeName = filename.slice(0, filename.length - 1).join(".");
 
 router.route('/' + routeName + '/')
-    .get(getUser, requireArguments(["path", "token"]), postRouteHandler);
+    .get(getUser(true), requireArguments(["path", "token"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
     if (!(req.query.token instanceof String) || !(req.query.path instanceof String))

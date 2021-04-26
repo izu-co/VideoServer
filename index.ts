@@ -10,7 +10,8 @@ const updater = new Updater("anappleforlife", "videoplayer", new Map < string, F
     .set("data", FileSettings.DontOverride), argv.beta
 )
 
-updater.checkForUpdates()
+if (!argv.debug && !argv.disableUpdate)
+    updater.checkForUpdates()
 
 import express from "express"
 import * as fs from "fs";

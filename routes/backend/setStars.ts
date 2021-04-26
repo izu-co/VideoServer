@@ -8,7 +8,7 @@ let filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 1]
 let routeName = filename.slice(0, filename.length - 1).join(".");
 
 router.route('/' + routeName + '/')
-    .put(getUser, requireArguments(["path", "token", "stars"]), postRouteHandler);
+    .put(getUser(true), requireArguments(["path", "token", "stars"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
     res.send(fileStuff.setStars(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.path, req.body.stars))

@@ -53,4 +53,5 @@ export interface settingsInterface {
     "debug" ? : boolean,
     "Working Directory" ? : PathLike,
     "sync" ? : boolean
+    "disableUpdate" ? : boolean
 }

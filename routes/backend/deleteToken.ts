@@ -8,7 +8,7 @@ let filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 1]
 let routeName = filename.slice(0, filename.length - 1).join(".");
 
 router.route('/' + routeName + '/')
-    .delete(getUser, requireArguments(["uuid", "token"]), postRouteHandler);
+    .delete(getUser(true), requireArguments(["uuid", "token"]), postRouteHandler);
 
 
 function postRouteHandler(req:express.Request, res:express.Response) {

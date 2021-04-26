@@ -11,7 +11,7 @@ router.route('/' + routeName + '/')
     .get(requireArguments(["path", "token"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    if (!(typeof req.query.token === "string") || !(typeof req.query.path === "string") || !(typeof req.query.type === "string"))
+    if (!(typeof req.query.token === "string") || !(typeof req.query.path === "string") || !(typeof req.query.type === "string" || req.query.type === undefined))
         return res.status(400).send({status: false, reason: "Can't parse query parameters"})
     let files = fileStuff.getFiles(<string> req.query.path, <string> req.query.token, req.header('x-forwarded-for') || req.socket.remoteAddress, <string|null> req.query.type)
     res.send({"status" : true, "data" : {

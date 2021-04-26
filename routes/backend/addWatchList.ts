@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as express from "express"
 import * as fileStuff from "../../backend/fileStuff";
 import * as Path from "path";
-import { requireArguments, getUser } from "../Routes";
+import { requireArguments } from "../Routes";
 const router = express.Router()
 
 let filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 1].split(".");
