@@ -1,13 +1,15 @@
 var container = document.getElementById('container')
 
-fetchBackend("/backend/getUsers/", {
+let url = new URL(window.location.origin + '/api/getUsers/')
+url.search = new URLSearchParams({
+    "token": loadCookie("token")
+})
+
+fetchBackend(url, {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
-    body: JSON.stringify({
-        "token" : loadCookie("token")
-    }),
-    method: "POST"
+    method: "GET"
 }, users => {
 users = users.sort((a,b) => {
     if (a["perm"] !== b["perm"])
@@ -72,7 +74,7 @@ users.forEach(user => {
     checkavtive.checked = user["active"]
 
     checkavtive.addEventListener("change", function() {
-    fetchBackend("/backend/changeActive/", {
+    fetchBackend("/api/changeActive/", {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
@@ -110,7 +112,7 @@ users.forEach(user => {
 
     token.addEventListener("click", function() {
         if (confirm("Wirklick löschen?")) {
-            fetchBackend("/backend/deleteToken/", {
+            fetchBackend("/api/deleteToken/", {
                 headers: {
                     "content-type" : "application/json; charset=UTF-8"
                 },
@@ -151,7 +153,7 @@ document.getElementById("submit").addEventListener("click", function() {
         alert("Please confirm the password!")
     else if (pass !== passCon)
         alert("The passwords are not the same!")
-    fetchBackend('/backend/addUser/', {
+    fetchBackend('/api/addUser/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
@@ -161,7 +163,7 @@ document.getElementById("submit").addEventListener("click", function() {
             "password": pass,
             "perm": perm
         }),
-        method: "POST"
+        method: "PUT"
     }, _ => {
         location.reload();
     }, false, true)

@@ -15,6 +15,10 @@ a:visited {
 
 .wrongPass {
     margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 2vw;
+    margin-right: 2vw;
+    height: 20vh;
 }
 
 #wrongPassText {
@@ -90,9 +94,7 @@ h1 {
         width: 80%;
         position: absolute;
         left: 50%;
-        top: 15%;
-        height: 70%;
-        bottom: 15%;
+        top: 10vh;
         transform: translateX(-50%);
     }
 }

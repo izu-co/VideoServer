@@ -29,8 +29,9 @@ function getFileData (path:string) : SkipData|{"status":true|false, "reason"?:st
     if (current + 1 != files.length) {
         ret["next"] = Path.join(path.substring(0, path.lastIndexOf(Path.sep)).replace(index.argv["Video Directory"], ""), files[current+1]);
     }    
+    
     ret["pathSep"] = Path.sep
-    ret["current"] = path;
+    ret["current"] = path.substring(index.argv["Video Directory"].length);
     if (!isEmptyObject(ret))
         return <SkipData> ret;
     else 

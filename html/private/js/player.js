@@ -70,7 +70,7 @@ if (!video.canPlayType(getVideoType(urlParams.get("path").split("\.").pop()))) {
     video.src = "/video/" + urlParams.get("path")
 }
 
-fetchBackend('/backend/checkToken/', {
+fetchBackend('/api/checkToken/', {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
@@ -80,7 +80,7 @@ fetchBackend('/backend/checkToken/', {
     method: "POST"
 }, undefined, true, false)
 
-fetchBackend('/backend/FileData/', {
+fetchBackend('/api/FileData/', {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
@@ -149,14 +149,16 @@ function togglePlayPause() {
     }
 }
 
-fetchBackend('/backend/getUserData/', {
+let url = new URL(window.location.origin + '/api/getUserData/')
+url.search = new URLSearchParams({
+    "token": loadCookie("token")
+})
+
+fetchBackend(url, {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
-    body: JSON.stringify({
-        "token" : loadCookie("token")
-    }),
-    method: "POST"
+    method: "GET"
 }, res => {
     video.volume = res["volume"] / 100
     soundbar.value = res["volume"]
@@ -253,7 +255,7 @@ video.addEventListener('timeupdate', function() {
     var timePer = Math.floor(video.currentTime / video.duration * 100) / 100;
     if (timePer !== last) {
         last = timePer;
-        fetchBackend('/backend/setTime/', {
+        fetchBackend('/api/setTime/', {
             headers: {
                 "content-type" : "application/json; charset=UTF-8"
             },
@@ -262,7 +264,7 @@ video.addEventListener('timeupdate', function() {
                 "percent" : timePer,
                 "path" : urlParams.get("path")
             }),
-            method: "POST"
+            method: "PUT"
         }, () => {}, false, false)
 
     }
@@ -309,22 +311,24 @@ document.addEventListener("fullscreenchange", function() {
 
 video.addEventListener("loadeddata", function () {
     info.style.display = "none"
-    if (!skiped)
-        fetchBackend('/backend/getTime/', {
+    if (!skiped) {
+        let url = new URL(window.location.origin + '/api/getTime/')
+        url.search = new URLSearchParams({
+            "token": loadCookie("token"),
+            "path": urlParams.get("path")
+        })
+        fetchBackend(url, {
             headers: {
                 "content-type" : "application/json; charset=UTF-8"
             },
-            body: JSON.stringify({
-                "token" : loadCookie("token"),
-                "path" : urlParams.get("path")
-            }),
-            method: "POST"
+            method: "GET"
         }, res => {
             if (res !== 0) {
                 video.currentTime = (video.duration * res)
                 skiped = true;
             }
         }, true, false)
+    }
     video.play()
 })
 
