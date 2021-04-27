@@ -67,6 +67,9 @@ if (data !== undefined) {
     argv.sync = data.sync || argv.sync
     argv.debug = data.debug || argv.debug
     argv.disableUpdate = data.disableUpdate || argv.disableUpdate
+
+    argv.httpPort = 'httpPort' in data && Number.isInteger(data['httpPort']) ? parseInt(data['httpPort']) : argv.httpPort
+    argv.httpsPort = 'httpsPort' in data && Number.isInteger(data['httpsPort']) ? parseInt(data['httpsPort']) : argv.httpsPort
 }
 
 export {argv}
