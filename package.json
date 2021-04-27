@@ -42,7 +42,7 @@
     "prebuild": "IF EXIST build (rmdir .\\build /Q /S)",
     "build": "tsc",
     "postbuild": "robocopy . .\\build /e /xf *.ts settings.json tsconfig.json jsbeautifyrc done.txt *.log .gitignore update.zip temp server.key server.crt /xd test data build .git* temp node_modules || 7z a ./build/build.zip ./build/* || exit 0",
-    "test": ".\\node_modules\\.bin\\mocha --require ts-node/register .\\test\\run.ts --exit --timeout 10000 --no-warnings"
+    "test": "npx mocha --require ts-node/register test/run.ts --exit --timeout 10000 --no-warnings"
   },
   "repository": {
     "type": "git",
