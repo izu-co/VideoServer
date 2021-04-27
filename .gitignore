@@ -17,4 +17,4 @@ update.zip
 SSL/server.key
 SSL/server.crt
 temp/
-test/*.jpg
+test/**/*.jpg
