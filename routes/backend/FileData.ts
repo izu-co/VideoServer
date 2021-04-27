@@ -11,6 +11,8 @@ router.route('/' + routeName + '/')
     .get(getUser(true), requireArguments(["path"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
+    if (req.query.path && typeof req.query.path !== "string")
+        return res.status(400).send({status: false, reason: "Can't parse query parameters"})
     let answer = fileStuff.getFileData(<string|undefined|null> req.query.path)
     res.send(answer===null?{"status": false} : {"status": true, "data": answer})
 }
