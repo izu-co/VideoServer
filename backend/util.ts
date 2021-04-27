@@ -130,6 +130,9 @@ function saveUserData (token:string, ip:string, data:SettingsDataInterface) : St
     let user = loginBackend.getUserFromToken(token, ip)
     if (!user.status) return user;
 
+    if (!('volume' in data && Number.isInteger(data.volume) && data.volume >= 0 && data.volume <= 100 )) 
+        return { status: false }
+
     let exists = db.prepare("SELECT * FROM settings WHERE UUID=?").get(user.data.uuid)
     let answer:RunResult;
     if (exists)

@@ -11,7 +11,7 @@ router.route('/' + routeName + '/')
     .get(getUser(true), requireArguments(["path"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    let answer = fileStuff.getFileData(req.body.path)
+    let answer = fileStuff.getFileData(<string|undefined|null> req.query.path)
     res.send(answer===null?{"status": false} : {"status": true, "data": answer})
 }
 

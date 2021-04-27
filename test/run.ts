@@ -2,6 +2,7 @@ import { describe, it } from "mocha";
 import { expect, use, request } from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs"
+import path from "path"
 
 if (fs.existsSync("data/data.db"))
     fs.unlinkSync("data/data.db")
@@ -9,6 +10,11 @@ if (fs.existsSync("data/database-backup.db"))
     fs.unlinkSync("data/database-backup.db")
 use(chaiHttp)
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+
+getAllFiles("test").forEach(f => {
+    if (f.endsWith(".jpg"))
+        fs.unlinkSync(f)
+})
 
 //TODO check settings file
 
@@ -26,6 +32,14 @@ describe("File Tests", () => {
 
     it("Temp folder has been created", () => {
         expect(fs.existsSync("temp")).to.be.true
+    })
+
+    it("Settings", () => {
+        expect(argv.debug).to.be.false
+        expect(argv["Video Directory"]).to.equal(path.resolve("test", "videos"))
+        expect(argv.disableUpdate).to.be.true
+        expect(argv.sync).to.be.true
+        expect(argv["Working Directory"]).to.equal(path.resolve("."))
     })
 })
 
@@ -131,7 +145,7 @@ describe("Test requests", () => {
                 })
         })
 
-        it("Check changes active state", async () => {
+        it("Check changed active state", async () => {
             return await requester.get('getUsers/').query({ token: token }).send()
                 .then(data => {
                     return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.find(a => a.username === "Testi").active).to.equal('false')]
@@ -169,14 +183,166 @@ describe("Test requests", () => {
         })
     })
 
-    describe("delete Token", () => {
+    describe("Delete Token", () => {
         before(async () => {
+            let acc = await requester.get('getUsers/').query({ token: token }).send()
+            expect(acc.status).to.be.equal(200)
+            expect(acc.body.status).to.be.true
+            expect(acc.body.data).to.have.lengthOf(2)
+            let data = await requester.delete('deleteToken/').set('Content-Type', 'application/json').send({ token: token, uuid: acc.body.data.find(a => a.username === "Admin").UUID })
+            expect(data.status).to.be.equal(200)
+            expect(data.body.status).to.be.true
+        })
 
+        it("Check token", async () => {
+            return await requester.post('checkToken/').set('Content-Type', 'application/json').send({ token: token })
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false, expect(data.body.reason).to.equal("User not Found")]
+                })
         })
 
         after(async () => {
-
+            let data = await requester.post('login/').set('Content-Type', 'application/json').send({ Username: 'Admin', Passwort: 't' })
+            expect(data.status).to.equal(200)
+            expect(data.body["status"]).to.be.true
+            expect(data.body["data"]).to.have.lengthOf(20)
+            expect(data.body["data"]).to.match(/[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]{20}/)
+            token = data.body["data"]
         })
     })
 
+    describe("Filedata", () => {
+        it("1.mp4", async () => {
+            return await requester.get('FileData/').query({ token: token, path: '1.mp4' }).send()
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.skip.startTime).to.equal(-1),
+                        expect(data.body.data.skip.stopTime).to.equal(-1), expect(data.body.data.pathSep).to.equal(path.sep),
+                        expect(data.body.data.current).to.equal(path.sep + "1.mp4"), expect(data.body.data.next).to.equal("2.webm")
+                    ]
+                })
+        })
+
+        it("subFolder" + path.sep + "3.webm", async () => {
+            return await requester.get('FileData/').query({ token: token, path: 'subFolder' + path.sep + '3.webm' }).send()
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.skip.startTime).to.equal(-1),
+                        expect(data.body.data.skip.stopTime).to.equal(-1), expect(data.body.data.pathSep).to.equal(path.sep),
+                        expect(data.body.data.current).to.equal(path.sep + "subFolder" + path.sep + "3.webm"),
+                        expect(data.body.data.next).to.equal(path.sep + "subFolder" + path.sep + "4.mp4")
+                    ]
+                })
+        })
+
+        it("Set time", async () => {
+            return await requester.put('setTime/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", percent: 0.67 })
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
+                })
+        })
+
+        it("Check time", async () => {
+            return await requester.get('getTime/').query({ token: token, path: "1.mp4" }).send()
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal(0.67)]
+                })
+        })
+
+        it("Invalid time", async () => {
+            return (await requester.put('setTime/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", percent: -1 })
+            .then(data => {
+                return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
+            })).concat(await requester.put('setTime/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", percent: 2 })
+            .then(data => {
+                return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
+            }))
+        })
+
+        it("Set stars", async () => {
+            return await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", stars: 4 })
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
+                })
+        })
+
+        it("Check stars", async () => {
+            return await requester.get('getStars/').query({ token: token, path: "1.mp4" }).send()
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal(4)]
+                })
+        })
+
+        it("Invalid stars", async () => {
+            return (await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", stars: -1 })
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
+                })).concat(await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", stars: 6 })
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
+                })).concat(await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", stars: 4.31 })
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
+                }))
+        })
+    })
+
+    describe("Userdata", async () => {
+        it("Check user data", async () => {
+            return await requester.get('getUserData/').query({ token: token }).send()
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.volume).to.equal(30)]
+                })
+        })
+
+        it("Max volume", async () => {
+            return await requester.put('setUserData/').set('Content-Type', 'application/json').send({ token: token, data: { volume: 100 } })
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
+                })
+        })
+
+        it("Check user data", async () => {
+            return await requester.get('getUserData/').query({ token: token }).send()
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.volume).to.equal(100)]
+                })
+        })
+
+        describe("Invalid user data", () => {
+            it("No volume", async () => {
+                return await requester.put('setUserData/').set('Content-Type', 'application/json').send({ token: token, data: {  } })
+                    .then(data => {
+                        return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
+                    })
+            })
+    
+            it("To much volume", async () => {
+                return await requester.put('setUserData/').set('Content-Type', 'application/json').send({ token: token, data: { volume: 101 } })
+                    .then(data => {
+                        return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
+                    })
+            })
+    
+            it("Not enough volume", async () => {
+                return await requester.put('setUserData/').set('Content-Type', 'application/json').send({ token: token, data: { volume: 101 } })
+                    .then(data => {
+                        return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
+                    })
+            })
+        })
+    })
 })
+
+
+function getAllFiles(check : string) : string[] {
+    let files = []
+    if (fs.existsSync(check) && fs.statSync(check).isDirectory()) {
+        for (let testPath of fs.readdirSync(check)) {
+            let stats = fs.statSync(path.join(check, testPath))
+            if (stats.isDirectory()) {
+                files = files.concat(getAllFiles(path.join(check, testPath)))
+            } else
+                files.push(path.join(check, testPath))
+        }
+    }
+    return files
+}

@@ -11,7 +11,7 @@ router.route('/' + routeName + '/')
     .get(getUser(true), requireArguments(["path", "token"]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    if (!(req.query.token instanceof String) || !(req.query.path instanceof String))
+    if (typeof req.query.token !== "string" || typeof req.query.path !== "string")
         return res.status(400).send({status: false, reason: "Can't parse query parameters"})
     res.send(fileStuff.getStars(<string> req.query.token, req.header('x-forwarded-for') || req.socket.remoteAddress, <string> req.query.path))
 }

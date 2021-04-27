@@ -10,6 +10,9 @@ function setStars(token: string, ip:string, path:string, stars:number) : BasicAn
 
     if (!user.status) return user
 
+    if (stars < 0 || stars > 5 || !Number.isInteger(stars))
+        return { status: false, reason: 'The stars has to be an integer between 0 and 5' }
+
     const checkedPath = checkPath(path);
 
     if (!checkedPath.status)
