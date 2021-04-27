@@ -9,8 +9,10 @@ import { Status } from "../util";
 function createImages(path:string, override:boolean, writeOutput:boolean, sync = false): Status {
     console.log("[INFO][ImageCreation] Startet creating of Images!")
     if (sync) {
-        child_process.spawnSync("java", ["-jar", "./java/ThumbnailGenerator-1.2.jar",  path, "" + override])
-        console.log(`[INFO][ImageCreation] Image Creation done`);
+        let spawn = child_process.spawnSync("java", ["-jar", "./java/ThumbnailGenerator-1.2.jar",  path, "" + override])
+        console.log(`[INFO][ImageCreation] Image Creation done`)
+        if (spawn.error)
+            console.log(`[INFO][ImageCration] Image Cration failed`)
         return {status: true}
     } else {
         let proc = child_process.spawn("java", ["-jar", "./java/ThumbnailGenerator-1.2.jar",  path, "" + override])
