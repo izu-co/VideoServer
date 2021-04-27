@@ -1,0 +1,8 @@
+{
+    "Video Directory": "./test/videos",
+    "debug": false,
+    "sync": true,
+    "disableUpdate": true,
+    "httpPort": 3000,
+    "httpsPort": 3001
+}

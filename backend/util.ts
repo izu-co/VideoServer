@@ -93,6 +93,8 @@ function isEmptyObject(obj:object) {
 }
 
 function checkPath(path:string): BasicAnswer {
+    if (!path)
+        path = index.argv["Video Directory"]
     if (!path.startsWith(index.argv["Video Directory"]))
         path = Path.join(index.argv["Video Directory"], path)
 
@@ -127,6 +129,9 @@ function getUserData (token:string, ip:string): UserDataAnswer {
 function saveUserData (token:string, ip:string, data:SettingsDataInterface) : Status{
     let user = loginBackend.getUserFromToken(token, ip)
     if (!user.status) return user;
+
+    if (!('volume' in data && Number.isInteger(data.volume) && data.volume >= 0 && data.volume <= 100 )) 
+        return { status: false }
 
     let exists = db.prepare("SELECT * FROM settings WHERE UUID=?").get(user.data.uuid)
     let answer:RunResult;

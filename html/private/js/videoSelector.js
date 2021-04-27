@@ -1,4 +1,4 @@
-fetchBackend('/backend/checkToken/', {
+fetchBackend('/api/checkToken/', {
     headers: {
         "content-type": "application/json; charset=UTF-8"
     },
@@ -75,16 +75,17 @@ let fileData = {
     loadData: async function (path, type = null) {
         loading.a = true
         this.showAmount = 10
-        let k = await fetchBackendPromise('/backend/getFiles/', {
+        let url = new URL(window.location.origin + '/api/getFiles/')
+        url.search = new URLSearchParams({
+            "token": loadCookie("token"),
+            "path": path,
+            "type": type
+        })
+        let k = await fetchBackendPromise(url, {
             headers: {
                 "content-type": "application/json; charset=UTF-8"
             },
-            body: JSON.stringify({
-                "token": loadCookie("token"),
-                "path": path,
-                "type": type
-            }),
-            method: "POST"
+            method: "GET"
         })
         k = await k.json();
         if (!k["status"])
@@ -131,7 +132,7 @@ let fileData = {
             add.classList.add("watchList")
             add.classList.add(file["watchList"] ? "already" : "add")
             add.addEventListener("click", () => {
-                let pathToFetch = "/backend/" + (add.classList.contains("already") ? "removeWatchList" : "addWatchList/");
+                let pathToFetch = "/api/" + (add.classList.contains("already") ? "removeWatchList" : "addWatchList/");
                 fetchBackend(pathToFetch, {
                     headers: {
                         "content-type": "application/json; charset=UTF-8"
@@ -140,7 +141,7 @@ let fileData = {
                         "token": loadCookie("token"),
                         "path": file["Path"]
                     }),
-                    method: "POST"
+                    method: (add.classList.contains("already") ? "REMOVE" : "PUT")
                 }, (data) => {
                     if (data === "added") {
                         add.classList.remove("add")
@@ -169,7 +170,7 @@ let fileData = {
                 })
 
                 singleStar.addEventListener("click", () => {
-                    fetchBackend("/backend/setStars", {
+                    fetchBackend("/api/setStars", {
                         headers: {
                             "content-type": "application/json; charset=UTF-8"
                         },
@@ -178,7 +179,7 @@ let fileData = {
                             "path": file["Path"],
                             "stars": (i+1)
                         }),
-                        method: "POST"
+                        method: "PUT"
                     }, (data) => {
                         for (let k = 0; k < singleStars.length; k++) {
                             singleStars.item(k).classList = []
@@ -245,15 +246,15 @@ fileData.loadData(urlParams.get('path')).then(_ => fileData.showData()).catch((e
     document.getElementById("offline").classList.remove("false")
     console.log(er)
 })
-
-fetchBackend('/backend/getSortTypes/', {
+let url = new URL(window.location.origin + '/api/getSortTypes/')
+url.search = new URLSearchParams({
+    "token": loadCookie("token")
+})
+fetchBackend(url, {
     headers: {
         "content-type": "application/json; charset=UTF-8"
     },
-    body: JSON.stringify({
-        "token": loadCookie("token")
-    }),
-    method: "POST"
+    method: "GET"
 }, res => {
     while (sort.lastChild != null)
         sort.removeChild(sort.lastChild)
@@ -284,7 +285,7 @@ window.addEventListener("scroll", () => {
 
 const logoutButton = document.getElementById("logout")
 logoutButton.addEventListener("click", () => {
-    fetch('/backend/logout', {
+    fetch('/api/logout', {
             headers: {
                 "content-type": "application/json; charset=UTF-8"
             },

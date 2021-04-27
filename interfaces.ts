@@ -52,4 +52,6 @@ export interface settingsInterface {
     "Video Directory" ? : PathLike,
     "debug" ? : boolean,
     "Working Directory" ? : PathLike,
+    "sync" ? : boolean
+    "disableUpdate" ? : boolean
 }

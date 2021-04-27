@@ -1,4 +1,4 @@
-fetchBackend('/backend/checkToken/', {
+fetchBackend('/api/checkToken/', {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
@@ -9,7 +9,7 @@ fetchBackend('/backend/checkToken/', {
 }, res => {}, true, false)
 
 
-fetchBackend('/backend/checkToken/', {
+fetchBackend('/api/checkToken/', {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
@@ -18,14 +18,15 @@ fetchBackend('/backend/checkToken/', {
     }),
     method: "POST"
 }, user => {
-    fetchBackend('/backend/getUserData/', {
+    let url = new URL(window.location.origin + '/api/getUserData/')
+    url.search = new URLSearchParams({
+        "token": loadCookie("token")
+    })
+    fetchBackend(url, {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
-        body: JSON.stringify({
-            "token" : loadCookie("token")
-        }),
-        method: "POST"
+        method: "GET"
     }, userData => {
         updateData({
             "user" : user,
@@ -49,7 +50,7 @@ function updateData(data) {
     sendButton.addEventListener("click", function() {
         if (oldPass.value !== "" && newPass.value !== "" && newPassConfirm.value !== "") {
             if (newPass.value === newPassConfirm.value) {
-                fetchBackend('/backend/changePass/', {
+                fetchBackend('/api/changePass/', {
                     headers: {
                         "content-type" : "application/json; charset=UTF-8"
                     },
@@ -82,7 +83,7 @@ function updateData(data) {
  * @param {Number} volume 
  */
 function sendData(volume) {
-    fetchBackend('/backend/setUserData/', {
+    fetchBackend('/api/setUserData/', {
         headers: {
             "content-type" : "application/json; charset=UTF-8"
         },
@@ -92,6 +93,6 @@ function sendData(volume) {
                 "volume" : volume
             }
         }),
-        method: "POST"
+        method: "PUT"
     }, () => alert("Lautstärke wurde geändert!"), false, true)
 }

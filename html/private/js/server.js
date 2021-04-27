@@ -1,11 +1,12 @@
-fetchBackend("/backend/getWatchers/", {
+let url = new URL(window.location.origin + '/api/getWatchers/')
+url.search = new URLSearchParams({
+    "token": loadCookie("token")
+})
+fetchBackend(url, {
     headers: {
         "content-type" : "application/json; charset=UTF-8"
     },
-    body: JSON.stringify({
-        "token" : loadCookie("token")
-    }),
-    method: "POST"
+    method: "GET"
 }, answer => {
     let table = document.getElementById("activeUser")
 

@@ -10,7 +10,8 @@ const updater = new Updater("anappleforlife", "videoplayer", new Map < string, F
     .set("data", FileSettings.DontOverride), argv.beta
 )
 
-updater.checkForUpdates()
+if (!argv.debug && !argv.disableUpdate)
+    updater.checkForUpdates()
 
 import express from "express"
 import * as fs from "fs";
@@ -90,6 +91,9 @@ import {
 import http from "http"
 import https from "https"
 
+if (!argv.debug)
+    fileStuff.createImages(argv["Video Directory"], false, false, argv.sync);
+
 let options;
 
 if (fs.existsSync(path.join(__dirname, "SSL", "server.key")) && fs.existsSync(path.join(__dirname, "SSL", "server.crt"))) {
@@ -99,7 +103,7 @@ if (fs.existsSync(path.join(__dirname, "SSL", "server.key")) && fs.existsSync(pa
     }
 }
 
-const httpsEnabled: boolean = options;
+const httpsEnabled: boolean = options ? true : false;
 
 let httpsServer: https.Server | undefined;
 let httpServer = http.createServer(app)
@@ -108,7 +112,7 @@ let httpServer = http.createServer(app)
 if (httpsEnabled) {
     app.use((req, res, next) => {
         if (!req.secure) {
-            return res.redirect('https://' + req.headers.host.split(":")[0] + (argv.httpsPort !== 443 ? ":" + argv.httpsPort : "") + req.url);
+            return res.redirect(308, 'https://' + req.headers.host.split(":")[0] + (argv.httpsPort !== 443 ? ":" + argv.httpsPort : "") + req.url);
         }
         next();
     })
@@ -127,11 +131,13 @@ app.use("/", router)
 
 httpServer.listen(argv.httpPort, () => {
     console.log(`[INFO] Listening on http://localhost${argv.httpPort !== 80 ? ":" + argv.httpPort : ""}/`)
+    httpServer.emit("started")
 })
 
 if (httpsServer) {
     httpsServer.listen(argv.httpsPort, () => {
         console.log(`[INFO] Listening on https://localhost${argv.httpsPort !== 443 ? ":" + argv.httpsPort : ""}/`)
+        httpsServer.emit("started")
     })
 }
 
@@ -150,6 +156,3 @@ checkCookies();
 
 if (!argv.shutup)
     console.log("[INFO] If you like the programm, please star the github repo :)")
-
-if (!argv.debug)
-    fileStuff.createImages(argv["Video Directory"], false, false);

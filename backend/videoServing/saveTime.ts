@@ -10,6 +10,8 @@ function saveTime (path:string, token:string, percent:number, ip:string) : boole
     let answer = loginBackend.getUserFromToken(token, ip);
     if (!answer.status)
         return false;
+    if (percent < 0 || percent > 1)
+        return false;
     let old = db.prepare("SELECT * FROM status WHERE UUID=? AND path=?").get(answer.data.uuid, path)
 
     if (old === undefined) {

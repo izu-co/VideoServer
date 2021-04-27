@@ -68,6 +68,6 @@
   },
   "exclude": [
     "test.ts",
-    "interfaces.ts"
+    "test/**/*"
   ]
 }
