@@ -1,16 +1,10 @@
 node_modules
-start.bat
-test.js
 data
-backup
 README.md
 done.txt
-java/YouTubeDownloader/output/error.txt
-java/YouTubeDownloader/output/output.txt
 *.log
 package-lock.json
 test.ts
-tsconfig.json
 build
 update.zip
 SSL/server.key

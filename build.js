@@ -15,7 +15,8 @@ const buildOptions = {
         "*.log",
         ".github",
         ".git",
-        "build"
+        "build",
+        "update.zip"
     ]
 }
 
@@ -54,7 +55,7 @@ tsc.on("close", () => {
 
     console.log(`Copyed files`)
 
-    const output = fs.createWriteStream(path.join("build", "update.zip"))
+    const output = fs.createWriteStream("update.zip")
     output.on("close", () => {
         console.log(`Done. Total size: ${archiver.pointer()} bytes`)
     })
