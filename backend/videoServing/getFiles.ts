@@ -21,7 +21,7 @@ function getFiles(path:string, token:string, ip:string, type:string|null|SortTyp
             break
     }
     if (searchType == null)
-    return [];
+        return [];
     let pathCheck = checkPath(path)
     if (!pathCheck.status)
         return []
