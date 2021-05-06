@@ -75,18 +75,42 @@ chok.watch(argv["Video Directory"], {
 
 console.log("[INFO] Finished indexing!")
 
+db.exec("CREATE TABLE IF NOT EXISTS properties (name STRING, val TEXT)")
+db.exec("CREATE TABLE IF NOT EXISTS users (UUID TEXT PRIMARY KEY, username TEXT, password TEXT, perm TEXT, active BOOLEAN) WITHOUT ROWID")
+db.exec("CREATE TABLE IF NOT EXISTS status (UUID Text, path TEXT, data DOUBLE)")
+db.exec("CREATE TABLE IF NOT EXISTS intros (path TEXT PRIMARY KEY, startTime INT, endTime INT)")
+db.exec("CREATE TABLE IF NOT EXISTS settings (UUID TEXT PRIMARY KEY, volume INT)")
+db.exec("CREATE TABLE IF NOT EXISTS tokens (token TEXT PRIMARY KEY, UUID TEXT, created INTEGER, until INTEGER, ip TEXT)")
+db.exec("CREATE TABLE IF NOT EXISTS watchlist (UUID TEXT, path TEXT)")
+db.exec("CREATE TABLE IF NOT EXISTS stars (UUID TEXT, path TEXT, stars INT)")
+
+const properties = db.prepare("SELECT * FROM properties").all()
+const packageJSON = JSON.parse(fs.readFileSync(path.resolve("package.json")).toString())
+
+if (!properties.find((a => a.name === "version"))) {
+	db.prepare("INSERT INTO properties VALUES(?,?)").run("version", packageJSON.databaseVersion)
+	properties.push({ name: "version", val: packageJSON.databaseVersion })
+}
+
+const version = properties.find(a => a.name === "version")
+while (version.val < packageJSON.databaseVersion) {
+	version.val++
+	if (!fs.existsSync(path.resolve("updates", version.val + ".sql"))) {
+		console.log(`[ERROR] Can't find the database update file for version ${version.val}`)
+		process.exit(1)
+	}
+	const update = fs.readFileSync(path.resolve("updates", version.val + ".sql")).toString()
+
+	db.exec(update.split("\n").join(';'))
+
+	db.prepare("UPDATE properties SET val=? WHERE name=?").run(version.val, "version")
+}
+
 if (!fileExists) {
 	if (existsBackup) {
 		fs.copyFileSync(backupFile, file)
 		db = sqlite.default(file)
 	} else {
-		db.exec("CREATE TABLE IF NOT EXISTS users (UUID TEXT PRIMARY KEY, username TEXT, password TEXT, perm TEXT, active BOOLEAN) WITHOUT ROWID")
-		db.exec("CREATE TABLE IF NOT EXISTS status (UUID Text, path TEXT, data DOUBLE)")
-		db.exec("CREATE TABLE IF NOT EXISTS intros (path TEXT PRIMARY KEY, startTime INT, endTime INT)")
-		db.exec("CREATE TABLE IF NOT EXISTS settings (UUID TEXT PRIMARY KEY, volume INT)")
-		db.exec("CREATE TABLE IF NOT EXISTS tokens (token TEXT PRIMARY KEY, UUID TEXT, created INTEGER, until INTEGER, ip TEXT)")
-		db.exec("CREATE TABLE IF NOT EXISTS watchlist (UUID TEXT, path TEXT)")
-		db.exec("CREATE TABLE IF NOT EXISTS stars (UUID TEXT, path TEXT, stars INT)")
 		let prep = db.prepare("INSERT INTO settings VALUES (?, ?)")
 		prep.run("default", 30)
 		prep = db.prepare("INSERT INTO users VALUES (?, ?, ?, ?, ?)")
