@@ -1,348 +1,348 @@
-import { describe, it } from "mocha";
-import { expect, use, request } from "chai";
-import chaiHttp from "chai-http";
-import fs from "fs"
-import path from "path"
+import { describe, it } from 'mocha';
+import { expect, use, request } from 'chai';
+import chaiHttp from 'chai-http';
+import fs from 'fs';
+import path from 'path';
 
-if (fs.existsSync("data/data.db"))
-    fs.unlinkSync("data/data.db")
-if (fs.existsSync("data/database-backup.db"))
-    fs.unlinkSync("data/database-backup.db")
-use(chaiHttp)
-process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+if (fs.existsSync('data/data.db'))
+    fs.unlinkSync('data/data.db');
+if (fs.existsSync('data/database-backup.db'))
+    fs.unlinkSync('data/database-backup.db');
+use(chaiHttp);
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
-getAllFiles("test").forEach(f => {
-    if (f.endsWith(".jpg"))
-        fs.unlinkSync(f)
-})
+getAllFiles('test').forEach(f => {
+    if (f.endsWith('.jpg'))
+        fs.unlinkSync(f);
+});
 
 //TODO check settings file
 
-import { argv } from "../index"
+import { argv } from '../index';
 
-describe("File Tests", () => {
-    it("Node_modules installed", () => {
-        expect(fs.existsSync("node_modules")).to.be.true
-    })
+describe('File Tests', () => {
+    it('Node_modules installed', () => {
+        expect(fs.existsSync('node_modules')).to.be.true;
+    });
 
-    it("Database files has been created", () => {
-        expect(fs.existsSync("data/data.db")).to.be.true
-        expect(fs.existsSync("data/database-backup.db")).to.be.true
-    })
+    it('Database files has been created', () => {
+        expect(fs.existsSync('data/data.db')).to.be.true;
+        expect(fs.existsSync('data/database-backup.db')).to.be.true;
+    });
 
-    it("Temp folder has been created", () => {
-        expect(fs.existsSync("temp")).to.be.true
-    })
+    it('Temp folder has been created', () => {
+        expect(fs.existsSync('temp')).to.be.true;
+    });
 
-    it("Settings", () => {
-        expect(argv.debug).to.be.false
-        expect(argv["Video Directory"]).to.equal(path.resolve("test", "videos"))
-        expect(argv.disableUpdate).to.be.true
-        expect(argv.sync).to.be.true
-        expect(argv["Working Directory"]).to.equal(path.resolve("."))
-    })
-})
+    it('Settings', () => {
+        expect(argv.debug).to.be.false;
+        expect(argv['Video Directory']).to.equal(path.resolve('test', 'videos'));
+        expect(argv.disableUpdate).to.be.true;
+        expect(argv.sync).to.be.true;
+        expect(argv['Working Directory']).to.equal(path.resolve('.'));
+    });
+});
 
 
-describe("Test requests", () => {
-    const requester = request(`http://localhost:${argv.httpPort}/api/`).keepOpen()
-    let token
+describe('Test requests', () => {
+    const requester = request(`http://localhost:${argv.httpPort}/api/`).keepOpen();
+    let token;
     before(async () => {
-        let data = await requester.post('login/').set('Content-Type', 'application/json').send({ Username: 'Admin', Passwort: 'pass' })
-        expect(data.status).to.equal(200)
-        expect(data.body["status"]).to.be.true
-        expect(data.body["data"]).to.have.lengthOf(20)
-        expect(data.body["data"]).to.match(/[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]{20}/)
-        token = data.body["data"]
-    })
+        const data = await requester.post('login/').set('Content-Type', 'application/json').send({ Username: 'Admin', Passwort: 'pass' });
+        expect(data.status).to.equal(200);
+        expect(data.body['status']).to.be.true;
+        expect(data.body['data']).to.have.lengthOf(20);
+        expect(data.body['data']).to.match(/[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]{20}/);
+        token = data.body['data'];
+    });
 
-    it("Add user", async () => {
+    it('Add user', async () => {
         return requester.put('addUser/').set('Content-Type', 'application/json').send({ token: token, username: 'Testi', password: 'pass', perm: 'User' })
             .then(data => {
-                return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
-            })
-    })
+                return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true];
+            });
+    });
 
-    describe("Get files", () => {
+    describe('Get files', () => {
         let testFile;
         before(async () => {
-            let data = await requester.get('getFiles/').query({ token: token, path: '' }).send()
-            expect(data.status).to.be.equal(200)
-            expect(data.body.status).to.be.true
-            expect(data.body.data.files).to.have.lengthOf(3)
-            testFile = data.body.data.files[2].Path
-        })
+            const data = await requester.get('getFiles/').query({ token: token, path: '' }).send();
+            expect(data.status).to.be.equal(200);
+            expect(data.body.status).to.be.true;
+            expect(data.body.data.files).to.have.lengthOf(3);
+            testFile = data.body.data.files[2].Path;
+        });
         
-        it("Subfolder", async () => {
+        it('Subfolder', async () => {
             return requester.get('getFiles/').query({ token: token, path: testFile }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.files).to.have.lengthOf(2)]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.files).to.have.lengthOf(2)];
+                });
+        });
 
-        it("WatchList", async () => {
+        it('WatchList', async () => {
             return requester.get('getFiles/').query({ token: token, path: '', type: 'Watchlist' }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.files).to.have.lengthOf(0)]
-                })
-        })
-    })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.files).to.have.lengthOf(0)];
+                });
+        });
+    });
 
-    describe("Sorttypes", () => {
-        it("Get sort type", async () => {
+    describe('Sorttypes', () => {
+        it('Get sort type', async () => {
             return requester.get('getSortTypes/').query({ token: token }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.have.lengthOf(3)]
-                })
-        })
-    })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.have.lengthOf(3)];
+                });
+        });
+    });
 
-    describe("Watchlist", () => {
-        it("Add to Watchlist", async () => {
+    describe('Watchlist', () => {
+        it('Add to Watchlist', async () => {
             return requester.put('addWatchList/').set('Content-Type', 'application/json').send({ token: token, path: '1.mp4' })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal("added")]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal('added')];
+                });
+        });
 
-        it("Check watchlist", async () => {
+        it('Check watchlist', async () => {
             return requester.get('getFiles/').query({ token: token, path: '' }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.files.find(a => a.name === "1").watchList).to.be.true]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.files.find(a => a.name === '1').watchList).to.be.true];
+                });
+        });
 
-        it("Remove from watchlist", async () => {
+        it('Remove from watchlist', async () => {
             return requester.delete('removeWatchList/').set('Content-Type', 'application/json').send({ token: token, path: '1.mp4' })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal("removed")]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal('removed')];
+                });
+        });
 
-        it("Check watchlist", async () => {
+        it('Check watchlist', async () => {
             return requester.get('getFiles/').query({ token: token, path: '' }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.files.find(a => a.name === "1").watchList).to.be.false]
-                })
-        })
-    })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.files.find(a => a.name === '1').watchList).to.be.false];
+                });
+        });
+    });
 
-    describe("Manipulate accounts", () => {
+    describe('Manipulate accounts', () => {
         let accounts;
 
         before(async () => {
-            let data = await requester.get('getUsers/').query({ token: token }).send()
-            expect(data.status).to.be.equal(200)
-            expect(data.body.status).to.be.true
-            expect(data.body.data).to.have.lengthOf(2)
-            accounts = data.body.data
-        })
+            const data = await requester.get('getUsers/').query({ token: token }).send();
+            expect(data.status).to.be.equal(200);
+            expect(data.body.status).to.be.true;
+            expect(data.body.data).to.have.lengthOf(2);
+            accounts = data.body.data;
+        });
 
-        it("Change active", async () => {
-            return requester.post('changeActive/').set('Content-Type', 'application/json').send({ token: token, state: false, uuid: accounts.find(a => a.username === "Testi").UUID })
+        it('Change active', async () => {
+            return requester.post('changeActive/').set('Content-Type', 'application/json').send({ token: token, state: false, uuid: accounts.find(a => a.username === 'Testi').UUID })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true];
+                });
+        });
 
-        it("Check changed active state", async () => {
+        it('Check changed active state', async () => {
             return await requester.get('getUsers/').query({ token: token }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.find(a => a.username === "Testi").active).to.equal('false')]
-                })
-        })      
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.find(a => a.username === 'Testi').active).to.equal('false')];
+                });
+        });      
         
-        it("Change password", async () => {
+        it('Change password', async () => {
             return await requester.post('changePass/').set('Content-Type', 'application/json').send({ token: token, newPass: 't', oldPass: 'pass' })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true];
+                });
+        });
 
-        it("Check changed password", async () => {
+        it('Check changed password', async () => {
             return await requester.get('getUsers/').query({ token: token }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.find(a => a.username === "Admin").password).to.have.lengthOf(1)]
-                })
-        }) 
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.find(a => a.username === 'Admin').password).to.have.lengthOf(1)];
+                });
+        }); 
 
-        it("logout", async () => {
+        it('logout', async () => {
             return await requester.post('logout/').set('Content-Type', 'application/json').send({ token: token })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true];
+                });
+        });
 
         after(async () => {
-            let data = await requester.post('login/').set('Content-Type', 'application/json').send({ Username: 'Admin', Passwort: 't' })
-            expect(data.status).to.equal(200)
-            expect(data.body["status"]).to.be.true
-            expect(data.body["data"]).to.have.lengthOf(20)
-            expect(data.body["data"]).to.match(/[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]{20}/)
-            token = data.body["data"]
-        })
-    })
+            const data = await requester.post('login/').set('Content-Type', 'application/json').send({ Username: 'Admin', Passwort: 't' });
+            expect(data.status).to.equal(200);
+            expect(data.body['status']).to.be.true;
+            expect(data.body['data']).to.have.lengthOf(20);
+            expect(data.body['data']).to.match(/[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]{20}/);
+            token = data.body['data'];
+        });
+    });
 
-    describe("Delete Token", () => {
+    describe('Delete Token', () => {
         before(async () => {
-            let acc = await requester.get('getUsers/').query({ token: token }).send()
-            expect(acc.status).to.be.equal(200)
-            expect(acc.body.status).to.be.true
-            expect(acc.body.data).to.have.lengthOf(2)
-            let data = await requester.delete('deleteToken/').set('Content-Type', 'application/json').send({ token: token, uuid: acc.body.data.find(a => a.username === "Admin").UUID })
-            expect(data.status).to.be.equal(200)
-            expect(data.body.status).to.be.true
-        })
+            const acc = await requester.get('getUsers/').query({ token: token }).send();
+            expect(acc.status).to.be.equal(200);
+            expect(acc.body.status).to.be.true;
+            expect(acc.body.data).to.have.lengthOf(2);
+            const data = await requester.delete('deleteToken/').set('Content-Type', 'application/json').send({ token: token, uuid: acc.body.data.find(a => a.username === 'Admin').UUID });
+            expect(data.status).to.be.equal(200);
+            expect(data.body.status).to.be.true;
+        });
 
-        it("Check token", async () => {
+        it('Check token', async () => {
             return await requester.post('checkToken/').set('Content-Type', 'application/json').send({ token: token })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false, expect(data.body.reason).to.equal("User not Found")]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false, expect(data.body.reason).to.equal('User not Found')];
+                });
+        });
 
         after(async () => {
-            let data = await requester.post('login/').set('Content-Type', 'application/json').send({ Username: 'Admin', Passwort: 't' })
-            expect(data.status).to.equal(200)
-            expect(data.body["status"]).to.be.true
-            expect(data.body["data"]).to.have.lengthOf(20)
-            expect(data.body["data"]).to.match(/[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]{20}/)
-            token = data.body["data"]
-        })
-    })
+            const data = await requester.post('login/').set('Content-Type', 'application/json').send({ Username: 'Admin', Passwort: 't' });
+            expect(data.status).to.equal(200);
+            expect(data.body['status']).to.be.true;
+            expect(data.body['data']).to.have.lengthOf(20);
+            expect(data.body['data']).to.match(/[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]{20}/);
+            token = data.body['data'];
+        });
+    });
 
-    describe("Filedata", () => {
-        it("1.mp4", async () => {
+    describe('Filedata', () => {
+        it('1.mp4', async () => {
             return await requester.get('FileData/').query({ token: token, path: '1.mp4' }).send()
                 .then(data => {
                     return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.skip.startTime).to.equal(-1),
                         expect(data.body.data.skip.stopTime).to.equal(-1), expect(data.body.data.pathSep).to.equal(path.sep),
-                        expect(data.body.data.current).to.equal(path.sep + "1.mp4"), expect(data.body.data.next).to.equal("2.webm")
-                    ]
-                })
-        })
+                        expect(data.body.data.current).to.equal(path.sep + '1.mp4'), expect(data.body.data.next).to.equal('2.webm')
+                    ];
+                });
+        });
 
-        it("subFolder" + path.sep + "3.webm", async () => {
+        it('subFolder' + path.sep + '3.webm', async () => {
             return await requester.get('FileData/').query({ token: token, path: 'subFolder' + path.sep + '3.webm' }).send()
                 .then(data => {
                     return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.skip.startTime).to.equal(-1),
                         expect(data.body.data.skip.stopTime).to.equal(-1), expect(data.body.data.pathSep).to.equal(path.sep),
-                        expect(data.body.data.current).to.equal(path.sep + "subFolder" + path.sep + "3.webm"),
-                        expect(data.body.data.next).to.equal(path.sep + "subFolder" + path.sep + "4.mp4")
-                    ]
-                })
-        })
+                        expect(data.body.data.current).to.equal(path.sep + 'subFolder' + path.sep + '3.webm'),
+                        expect(data.body.data.next).to.equal(path.sep + 'subFolder' + path.sep + '4.mp4')
+                    ];
+                });
+        });
 
-        it("Set time", async () => {
-            return await requester.put('setTime/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", percent: 0.67 })
+        it('Set time', async () => {
+            return await requester.put('setTime/').set('Content-Type', 'application/json').send({ token: token, path: '1.mp4', percent: 0.67 })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true];
+                });
+        });
 
-        it("Check time", async () => {
-            return await requester.get('getTime/').query({ token: token, path: "1.mp4" }).send()
+        it('Check time', async () => {
+            return await requester.get('getTime/').query({ token: token, path: '1.mp4' }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal(0.67)]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal(0.67)];
+                });
+        });
 
-        it("Invalid time", async () => {
-            return (await requester.put('setTime/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", percent: -1 })
-            .then(data => {
-                return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
-            })).concat(await requester.put('setTime/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", percent: 2 })
-            .then(data => {
-                return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
-            }))
-        })
+        it('Invalid time', async () => {
+            return (await requester.put('setTime/').set('Content-Type', 'application/json').send({ token: token, path: '1.mp4', percent: -1 })
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false];
+                })).concat(await requester.put('setTime/').set('Content-Type', 'application/json').send({ token: token, path: '1.mp4', percent: 2 })
+                .then(data => {
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false];
+                }));
+        });
 
-        it("Set stars", async () => {
-            return await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", stars: 4 })
+        it('Set stars', async () => {
+            return await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: '1.mp4', stars: 4 })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true];
+                });
+        });
 
-        it("Check stars", async () => {
-            return await requester.get('getStars/').query({ token: token, path: "1.mp4" }).send()
+        it('Check stars', async () => {
+            return await requester.get('getStars/').query({ token: token, path: '1.mp4' }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal(4)]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data).to.equal(4)];
+                });
+        });
 
-        it("Invalid stars", async () => {
-            return (await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", stars: -1 })
+        it('Invalid stars', async () => {
+            return (await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: '1.mp4', stars: -1 })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
-                })).concat(await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", stars: 6 })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false];
+                })).concat(await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: '1.mp4', stars: 6 })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
-                })).concat(await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: "1.mp4", stars: 4.31 })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false];
+                })).concat(await requester.put('setStars/').set('Content-Type', 'application/json').send({ token: token, path: '1.mp4', stars: 4.31 })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
-                }))
-        })
-    })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false];
+                }));
+        });
+    });
 
-    describe("Userdata", async () => {
-        it("Check user data", async () => {
+    describe('Userdata', async () => {
+        it('Check user data', async () => {
             return await requester.get('getUserData/').query({ token: token }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.volume).to.equal(30)]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.volume).to.equal(30)];
+                });
+        });
 
-        it("Max volume", async () => {
+        it('Max volume', async () => {
             return await requester.put('setUserData/').set('Content-Type', 'application/json').send({ token: token, data: { volume: 100 } })
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true];
+                });
+        });
 
-        it("Check user data", async () => {
+        it('Check user data', async () => {
             return await requester.get('getUserData/').query({ token: token }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.volume).to.equal(100)]
-                })
-        })
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.volume).to.equal(100)];
+                });
+        });
 
-        describe("Invalid user data", () => {
-            it("No volume", async () => {
+        describe('Invalid user data', () => {
+            it('No volume', async () => {
                 return await requester.put('setUserData/').set('Content-Type', 'application/json').send({ token: token, data: {  } })
                     .then(data => {
-                        return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
-                    })
-            })
+                        return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false];
+                    });
+            });
     
-            it("To much volume", async () => {
+            it('To much volume', async () => {
                 return await requester.put('setUserData/').set('Content-Type', 'application/json').send({ token: token, data: { volume: 101 } })
                     .then(data => {
-                        return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
-                    })
-            })
+                        return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false];
+                    });
+            });
     
-            it("Not enough volume", async () => {
+            it('Not enough volume', async () => {
                 return await requester.put('setUserData/').set('Content-Type', 'application/json').send({ token: token, data: { volume: 101 } })
                     .then(data => {
-                        return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false]
-                    })
-            })
-        })
-    })
-})
+                        return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.false];
+                    });
+            });
+        });
+    });
+});
 
 
 function getAllFiles(check : string) : string[] {
-    let files = []
+    let files = [];
     if (fs.existsSync(check) && fs.statSync(check).isDirectory()) {
-        for (let testPath of fs.readdirSync(check)) {
-            let stats = fs.statSync(path.join(check, testPath))
+        for (const testPath of fs.readdirSync(check)) {
+            const stats = fs.statSync(path.join(check, testPath));
             if (stats.isDirectory()) {
-                files = files.concat(getAllFiles(path.join(check, testPath)))
+                files = files.concat(getAllFiles(path.join(check, testPath)));
             } else
-                files.push(path.join(check, testPath))
+                files.push(path.join(check, testPath));
         }
     }
-    return files
+    return files;
 }
