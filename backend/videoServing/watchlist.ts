@@ -1,13 +1,13 @@
 import { sep } from 'path';
 import { db } from '../..';
 import { getUserFromToken } from '../UserMangement';
-import { BasicAnswer, User } from '../../interfaces';
+import { WatchListResponse, User } from '../../interfaces';
 
-function addToWatchList(token: string, ip:string, path:string) : BasicAnswer {
+function addToWatchList(token: string, ip:string, path:string) : WatchListResponse {
 
     const user = getUserFromToken(token, ip);
 
-    if (!user.status) return user;
+    if (user.status === false) return user;
 
     if (!path.startsWith(sep)) path = sep + path;
 
@@ -26,10 +26,10 @@ function addToWatchList(token: string, ip:string, path:string) : BasicAnswer {
 
 }
 
-function removeFromWatchList(token:string, ip:string, path:string) : BasicAnswer {
+function removeFromWatchList(token:string, ip:string, path:string) : WatchListResponse {
     const user = getUserFromToken(token ,ip);
 
-    if (!user.status) return user;
+    if (user.status === false) return user;
 
     if (!path.startsWith(sep)) path = sep + path; 
 

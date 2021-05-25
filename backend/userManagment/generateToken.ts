@@ -1,10 +1,10 @@
-import { TokenAnswer } from '../../interfaces';
-import { generateToken } from "../util"
+import { TokenResponse } from '../../interfaces';
+import { generateToken } from '../util';
 import { db } from '../../index';
 
 const TokenLenght = 20;
 
-function GenerateUserToken (username:string, password:string, ip:string): TokenAnswer{
+function GenerateUserToken (username:string, password:string, ip:string): TokenResponse{
 
     const user = db.prepare('SELECT * FROM users WHERE username=? AND password=?').get(username, password);
     if (user === undefined) return {'status' : false, 'reason' : 'Der Benutzername oder das Passwort ist falsch'};

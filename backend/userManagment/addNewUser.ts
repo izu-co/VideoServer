@@ -1,10 +1,10 @@
-import { BasicAnswer } from '../../interfaces';
-import { uuidv4 } from "../util"
+import { Response } from '../../interfaces';
+import { uuidv4 } from '../util';
 import { db } from '../../index';
 
 const PermissionLevel = ['User', 'Admin'];
 
-function addNewUser(username:string, password:string, perm:'Admin'|'User') : BasicAnswer {
+function addNewUser(username:string, password:string, perm:'Admin'|'User') : Response {
 
     const userWithName = db.prepare('SELECT * FROM users WHERE username=?').get(username);
     if (userWithName !== undefined)
@@ -18,7 +18,7 @@ function addNewUser(username:string, password:string, perm:'Admin'|'User') : Bas
         return { 'status' : false, 'reason' : 'Die Permission gibt es nicht!' };
     db.prepare('INSERT INTO users VALUES (?, ?, ?, ?, ?)').run(uuid, username, password, perm, 'true');
     
-    return {'status': true, data: null};
+    return {'status': true };
 }
 
 export { addNewUser };

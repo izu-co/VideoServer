@@ -1,5 +1,6 @@
-import io from "socket.io-client"
-import { fetchBackend, loadCookie } from "./generalFunctions"
+import io from 'socket.io-client';
+import { fetchBackend, loadCookie } from './generalFunctions';
+import { SkipData } from '../../interfaces';
 
 const video = document.querySelector('video');
 const container = document.getElementById('c-video');
@@ -21,7 +22,7 @@ const info = document.getElementById('info');
 let mouseDown = false;
 let skiped = false;
 let timer: NodeJS.Timeout;
-let WaitToHideTime = 1000;
+const WaitToHideTime = 1000;
 let infoProgress: HTMLParagraphElement;
 const socket = io();
 
@@ -33,10 +34,10 @@ document.body.onmouseup = function() {
     mouseDown = false;
 };
 
-let queryString = window.location.search;
-let urlParams = new URLSearchParams(queryString);
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
 
-if (!video.canPlayType(getVideoType(urlParams.get('path').split('\.').pop()))) {
+if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
     socket.on(urlParams.get('path') + '.mp4', (data) => {
         switch (data.type) {
         case 'error':
@@ -95,7 +96,7 @@ fetchBackend('/api/FileData/', {
     method: 'POST'
 }, res => loadData(res), false, false);
 
-function loadData(res) {
+function loadData(res: SkipData) {
     document.title = res['current'].split(res['pathSep']).pop();
 
 
@@ -105,9 +106,9 @@ function loadData(res) {
         });
 
         video.addEventListener('timeupdate', function() {
-            var start = res['skip']['startTime'];
-            var stop = res['skip']['stopTime'];
-            var currTime = Math.round(video.currentTime);
+            const start = res['skip']['startTime'];
+            const stop = res['skip']['stopTime'];
+            const currTime = Math.round(video.currentTime);
             if (currTime > start && currTime < stop)
                 skipButton.className = 'allowed';
             else
@@ -115,7 +116,7 @@ function loadData(res) {
         });
     }
 
-    if (res.hasOwnProperty('next')) {
+    if (res.next) {
         next.style.opacity = '1';
         next.addEventListener('click', function() {
             document.location.href = document.location.href.split('?')[0] + '?path=' + res['next'];
@@ -153,7 +154,7 @@ function togglePlayPause() {
     }
 }
 
-let url = new URL(window.location.origin + '/api/getUserData/');
+const url = new URL(window.location.origin + '/api/getUserData/');
 url.search = new URLSearchParams({
     'token': loadCookie('token')
 }).toString();
@@ -179,10 +180,10 @@ soundbar.onchange = function() {
 barContainer.addEventListener('click', getClickPosition, false);
 
 TimeTooltipBar.addEventListener('mousemove', function(e) {
-    var width = (e.clientX  - (this.offsetLeft + (<HTMLElement>this.offsetParent).offsetLeft)) / this.offsetWidth;
-    var time = width * video.duration;
-    var mincur = Math.floor(time / 60);
-    var seccur: number|string = Math.floor(time % 60);
+    const width = (e.clientX  - (this.offsetLeft + (<HTMLElement>this.offsetParent).offsetLeft)) / this.offsetWidth;
+    const time = width * video.duration;
+    const mincur = Math.floor(time / 60);
+    let seccur: number|string = Math.floor(time % 60);
     if (seccur < 10)
         seccur = '0' + seccur;
     tooltip.innerHTML = mincur + ':' + seccur;
@@ -204,11 +205,11 @@ TimeTooltipBar.addEventListener('mousemove', function(e) {
 
 function getClickPosition(e) {
     if (e.target === barContainer || e.target === bar || e.target === document.getElementById('TimeBar')) {
-        var width = (e.clientX  - (this.offsetLeft + this.offsetParent.offsetLeft)) / this.offsetWidth;
-        var time = width * video.duration;
+        const width = (e.clientX  - (this.offsetLeft + this.offsetParent.offsetLeft)) / this.offsetWidth;
+        const time = width * video.duration;
         video.currentTime = time;
-        var mincur = Math.floor(time / 60);
-        var seccur:number|string = Math.floor(time % 60);
+        const mincur = Math.floor(time / 60);
+        let seccur:number|string = Math.floor(time % 60);
         if (seccur < 10)
             seccur = '0' + seccur;
         tooltip.innerHTML = mincur + ':' + seccur;
@@ -233,20 +234,20 @@ buttonPlay.onclick = function() {
     togglePlayPause();
 };
 
-var last = 0;
+let last = 0;
 
 video.addEventListener('timeupdate', function() {
-    var barPos = video.currentTime / video.duration;
+    const barPos = video.currentTime / video.duration;
     bar.style.width = barPos * 100 + '%';
 
-    var currTime = Math.round(video.currentTime);
-    var dur = Math.round(video.duration);
+    const currTime = Math.round(video.currentTime);
+    const dur = Math.round(video.duration);
 
-    var min = Math.floor(dur / 60);
-    var sec:number|string = Math.floor(dur % 60);
+    const min = Math.floor(dur / 60);
+    let sec:number|string = Math.floor(dur % 60);
 
-    var mincur = Math.floor(currTime / 60);
-    var seccur:number|string = Math.floor(currTime % 60);
+    const mincur = Math.floor(currTime / 60);
+    let seccur:number|string = Math.floor(currTime % 60);
 
     if (sec < 10)
         sec = '0' + sec;
@@ -256,7 +257,7 @@ video.addEventListener('timeupdate', function() {
     time.innerHTML = mincur + ':' + seccur + ' / ' + min + ':' + sec;
     if (video.ended)
         buttonPlay.className = 'play';
-    var timePer = Math.floor(video.currentTime / video.duration * 100) / 100;
+    const timePer = Math.floor(video.currentTime / video.duration * 100) / 100;
     if (timePer !== last) {
         last = timePer;
         fetchBackend('/api/setTime/', {
@@ -269,13 +270,13 @@ video.addEventListener('timeupdate', function() {
                 'path' : urlParams.get('path')
             }),
             method: 'PUT'
-        }, () => {}, false, false);
+        }, undefined, false, false);
 
     }
 });
 
 
-var timeout = function () {
+const timeout = function () {
     controls.className = 'hide';
     controls.style.cursor = 'none';
     video.style.cursor = 'none';
@@ -316,7 +317,7 @@ document.addEventListener('fullscreenchange', function() {
 video.addEventListener('loadeddata', function () {
     info.style.display = 'none';
     if (!skiped) {
-        let url = new URL(window.location.origin + '/api/getTime/');
+        const url = new URL(window.location.origin + '/api/getTime/');
         url.search = new URLSearchParams({
             'token': loadCookie('token'),
             'path': urlParams.get('path')
@@ -350,11 +351,11 @@ function getVideoType(filenameExtension) {
 function showError(message = undefined) {
     while (info.lastChild != null)
         info.removeChild(info.lastChild);
-    let title = document.createElement('p');
+    const title = document.createElement('p');
     title.style.color = 'red';
     title.innerHTML = 'An error occured';
     title.style.fontSize = '150%';
-    let msg = document.createElement('P');
+    const msg = document.createElement('P');
     msg.innerHTML = 'You may now reload the page';
     if (message)
         msg.innerHTML = msg.innerHTML += '\n' + message;

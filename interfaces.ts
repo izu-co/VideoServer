@@ -50,6 +50,22 @@ export interface PathCheck {
     'backup' ? : PathLike
 }
 
+export type CheckPathResponse = {
+    'status': true,
+    'data': string
+} | {
+    'status': false,
+    'reason': string
+}
+
+export type WatchListResponse = {
+    'status': true,
+    'data': 'added'|'removed'
+} | {
+    'status': false,
+    'reason': string
+}
+
 export interface ProgrammSettingsInterface {
     'Video Directory' ? : PathLike,
     'debug' ? : boolean,
@@ -58,7 +74,7 @@ export interface ProgrammSettingsInterface {
     'disableUpdate' ? : boolean
 }
 
-export type UserData = {
+export type UserAccountInfo = {
     'UUID': string,
     'username': string,
     'password': string,
@@ -66,8 +82,19 @@ export type UserData = {
     'active': boolean
 }
 
-export interface Status {
-    'status': true|false
+export type UserAccountInfoResponse = {
+    'status': true,
+    'data': Array<UserAccountInfo>
+} | {
+    'status': false,
+    'reason': string
+}
+
+export type Response = {
+    'status': false,
+    'reason': string
+} | {
+    'status': true
 }
 
 export type FileData = {
@@ -85,17 +112,6 @@ export type FileData = {
     'timeStemp'?: number
 }
 
-/**
- * @deprecated Use specific types instead
- */
-export type BasicAnswer = {
-    'status': true,
-    'data': any
-} | {
-    'status': false,
-    'reason':string,
-}
-
 export interface SkipData {
     'startTime': number,
     'stopTime': number,
@@ -105,7 +121,7 @@ export interface SkipData {
 }
 
 
-export interface UserDataAnswer {
+export interface UserDataResponse {
     'status': boolean,
     'data'?: {
         'volume'?: string
@@ -127,17 +143,19 @@ export interface User {
     'uuid': string
 }
 
-export interface SecretUser {
-    'status': boolean,
-    'reason'?:string,
-    'data'?: {
-        'username':string,
+export type SecretUser = {
+    'status': true,
+    'data': {
+        'username': string,
         'perm': Permission,
         'active': boolean
     }
+} | {
+    'status': false,
+    'reason': string
 }
 
-export type UserRequestAnswer = {
+export type UserRequestResponse = {
     'status': true,
     'data': User,
 } | {
@@ -145,13 +163,16 @@ export type UserRequestAnswer = {
     'reason': string
 }
 
-export interface TokenAnswer {
-    'status': boolean,
-    'data'?: string,
+export type TokenResponse = {
+    'status': true,
+    'data': string,
     'reason'?: string
+} | {
+    'status': false,
+    'reason': string
 }
 
-export type GetFilesAnswer = {
+export type GetFilesResponse = {
     'status': false,
     'reason': string
 } | {
@@ -160,6 +181,22 @@ export type GetFilesAnswer = {
         'pathSep': string,
         'files': Array<FileData>
     }
+}
+
+export type SortTypeResponse = {
+    'status': true,
+    'data': string[]
+} | {
+    'status': false,
+    'reason': string
+}
+
+export type StarResponse = {
+    'status': true,
+    'data': 0|1|2|3|4|5,
+} | {
+    'status': false,
+    'reason': string
 }
 
 export enum SortTypes {

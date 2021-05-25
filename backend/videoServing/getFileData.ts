@@ -1,5 +1,5 @@
 import { SkipData } from '../../interfaces';
-import { checkPath, isEmptyObject } from "../util"
+import { checkPath, isEmptyObject } from '../util';
 import * as fs from 'fs';
 import * as Path from 'path';
 import * as index from '../../index';

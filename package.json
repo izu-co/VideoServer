@@ -50,7 +50,7 @@
   },
   "scripts": {
     "eslint": "npx eslint . --fix",
-    "build": "node build",
+    "build": "npx webpack && node build",
     "test": "npx mocha --require ts-node/register test/run.ts --exit --timeout 10000 --no-warnings"
   },
   "repository": {

@@ -1,4 +1,4 @@
-import { fetchBackend, loadCookie } from "./generalFunctions"
+import { fetchBackend, loadCookie } from './generalFunctions';
 
 fetchBackend('/api/checkToken/', {
     headers: {
@@ -8,7 +8,7 @@ fetchBackend('/api/checkToken/', {
         'token' : loadCookie('token')
     }),
     method: 'POST'
-}, res => {}, true, false);
+}, undefined, true, false);
 
 
 fetchBackend('/api/checkToken/', {
@@ -20,7 +20,7 @@ fetchBackend('/api/checkToken/', {
     }),
     method: 'POST'
 }, user => {
-    let url = new URL(window.location.origin + '/api/getUserData/');
+    const url = new URL(window.location.origin + '/api/getUserData/');
     url.search = new URLSearchParams({
         'token': loadCookie('token')
     }).toString();
@@ -37,7 +37,7 @@ fetchBackend('/api/checkToken/', {
     }, true, false);
 }, true, false);
 
-var usernameText = document.getElementById('Username'),
+const usernameText = document.getElementById('Username'),
     sendButton = document.getElementById('send'),
     oldPass = <HTMLInputElement> document.getElementById('oldPass'),
     newPass = <HTMLInputElement> document.getElementById('newPass'),

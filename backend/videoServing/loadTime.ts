@@ -1,10 +1,10 @@
 
 import { checkPath } from '../util';
-import { UserRequestAnswer } from "../../interfaces"
+import { UserRequestResponse } from '../../interfaces';
 import * as loginBackend from '../UserMangement';
 import { db } from '../..';
 
-function loadTime(path:string, token:string, ip:string, user:UserRequestAnswer = null) : number {
+function loadTime(path:string, token:string, ip:string, user:UserRequestResponse = null) : number {
     const pathCeck = checkPath(path);
     if (!pathCeck.status)
         return 0;

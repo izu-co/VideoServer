@@ -1,6 +1,6 @@
 import { checkPath } from '../util';
-import { SortTypes } from "../../interfaces"
-import { FileData } from "../../interfaces"
+import { SortTypes } from '../../interfaces';
+import { FileData } from '../../interfaces';
 import * as index from '../../index';
 import * as fs from 'fs';
 import * as Path from 'path';

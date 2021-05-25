@@ -5,13 +5,13 @@ import { SettingsDataInterface } from '../interfaces';
 import * as loginBackend from './UserMangement';
 import { db } from '../index';
 import { RunResult } from 'better-sqlite3';
-import { BasicAnswer, UserDataAnswer, Status } from "../interfaces";
+import { UserDataResponse, Response, CheckPathResponse } from '../interfaces';
 
 function isEmptyObject(obj:object) : boolean {
     return !Object.keys(obj).length;
 }
 
-function checkPath(path:string): BasicAnswer {
+function checkPath(path:string): CheckPathResponse {
     if (!path)
         path = index.argv['Video Directory'];
     if (!path.startsWith(index.argv['Video Directory']))
@@ -28,7 +28,7 @@ function checkPath(path:string): BasicAnswer {
     };
 }
 
-function getUserData (token:string, ip:string): UserDataAnswer {
+function getUserData (token:string, ip:string): UserDataResponse {
     const answer = loginBackend.getUserFromToken(token, ip);
     if (!answer['status'])
         return answer;
@@ -45,12 +45,12 @@ function getUserData (token:string, ip:string): UserDataAnswer {
     return {'status' : true, 'data' : ret};
 }
 
-function saveUserData (token:string, ip:string, data:SettingsDataInterface) : Status{
+function saveUserData (token:string, ip:string, data:SettingsDataInterface) : Response {
     const user = loginBackend.getUserFromToken(token, ip);
     if (!user.status) return user;
 
     if (!('volume' in data && Number.isInteger(data.volume) && data.volume >= 0 && data.volume <= 100 )) 
-        return { status: false };
+        return { status: false, reason: 'Malformatted data' };
 
     const exists = db.prepare('SELECT * FROM settings WHERE UUID=?').get(user.data.uuid);
     let answer:RunResult;
@@ -58,7 +58,7 @@ function saveUserData (token:string, ip:string, data:SettingsDataInterface) : St
         answer = db.prepare('UPDATE settings SET volume = ? WHERE UUID = ?').run(data['volume'], user.data.uuid);
     else 
         answer = db.prepare('INSERT INTO settings VALUES(?,?)').run(user.data.uuid, data['volume']);
-    return {'status' : answer.changes > 0};
+    return answer.changes > 0 ? { status: true } : { status: false, reason: 'No changes have been made' };
 }
 
 function readdir(path:string) : string[] {

@@ -4,7 +4,7 @@ const assetsToCache = [
     '/icon',
     '',
     '/js/generalFunctions.js',
-    '/style/index.css',,
+    '/style/index.css',
     '/style/generalStyle.css',
     '/js/index.js',
     '/fonts/AXIS_Extra_Bold_800.otf'

@@ -1,8 +1,8 @@
 import { SortTypes } from '../../interfaces';
-import { BasicAnswer } from '../../interfaces'
+import { SortTypeResponse } from '../../interfaces';
 
-function getSortTypes() : BasicAnswer {
-    const types = [];
+function getSortTypes() : SortTypeResponse {
+    const types : string[] = [];
     for (const k of Object.values(SortTypes))
         types.push(k);
     return {

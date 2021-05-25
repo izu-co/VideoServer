@@ -1,13 +1,13 @@
-import { BasicAnswer } from '../../interfaces';
+import { UserAccountInfo, UserAccountInfoResponse } from '../../interfaces';
 import { getUserFromToken } from '../UserMangement';
 import { db } from '../..';
 
-function loadUsers (token:string, ip:string) : BasicAnswer {
+function loadUsers (token:string, ip:string) : UserAccountInfoResponse {
     const user = getUserFromToken(token, ip);
     if (user['status'] === true) {
         if (user['data']['perm'] === 'Admin') {
             const users = db.prepare('SELECT * from users').all();
-            const retUsers = [];
+            const retUsers : Array<UserAccountInfo> = [];
             for (let i = 0; i < users.length; i++) {
                 const addUser = users[i];
                 let passText = '';

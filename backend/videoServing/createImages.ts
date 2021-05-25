@@ -1,12 +1,12 @@
 import * as child_process from 'child_process';
-import { Status } from '../../interfaces';
+import { Response } from '../../interfaces';
 
 /**
  * @param path The path to the video dir
  * @param override Sets the override behavior
  * @param writeOutput Should the process output data. Only used if in async mode
  */
-function createImages(path:string, override:boolean, writeOutput:boolean, sync = false): Status {
+function createImages(path:string, override:boolean, writeOutput:boolean, sync = false): Response {
     console.log('[INFO][ImageCreation] Startet creating of Images!');
     if (sync) {
         const spawn = child_process.spawnSync('java', ['-jar', './java/ThumbnailGenerator-1.2.jar',  path, '' + override]);

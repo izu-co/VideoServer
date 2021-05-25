@@ -1,8 +1,8 @@
-import { BasicAnswer} from '../../interfaces';
+import { Response } from '../../interfaces';
 import { getUserFromToken } from '../UserMangement';
 import { db } from '../..';
 
-function changeActiveState (state:boolean, uuid:string, token:string, ip:string): BasicAnswer{
+function changeActiveState (state:boolean, uuid:string, token:string, ip:string): Response {
     const user = getUserFromToken(token, ip);
     if (!user['status'])
         return user;
@@ -14,7 +14,7 @@ function changeActiveState (state:boolean, uuid:string, token:string, ip:string)
         return {'status' : false, 'reason': 'UUID User not found'};
 
     db.prepare('UPDATE users SET active=? WHERE UUID=?').run(state ? 'true' : 'false', uuid);
-    return { status: true, data:null };
+    return { status: true };
 }
 
 export {changeActiveState};

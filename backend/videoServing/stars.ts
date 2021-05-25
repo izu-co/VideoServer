@@ -1,21 +1,21 @@
 import { db } from '../..';
 import { getUserFromToken } from '../UserMangement';
 import { checkPath } from '../util';
-import { BasicAnswer } from "../../interfaces";
+import { StarResponse } from '../../interfaces';
 
 
-function setStars(token: string, ip:string, path:string, stars:number) : BasicAnswer {
+function setStars(token: string, ip:string, path:string, stars:number) : StarResponse {
 
     const user = getUserFromToken(token, ip);
 
-    if (!user.status) return user;
-
+    if (user.status === false)
+        return user;
+    
     if (!Number.isInteger(stars) || stars < 0 || stars > 5)
         return { status: false, reason: 'The stars has to be an integer between 0 and 5' };
 
     const checkedPath = checkPath(path);
-
-    if (!checkedPath.status)
+    if (checkedPath.status === false)
         return checkedPath;
 
     path = checkedPath.data;
@@ -26,7 +26,7 @@ function setStars(token: string, ip:string, path:string, stars:number) : BasicAn
         db.prepare('INSERT INTO stars VALUES (?, ?, ?)').run(user.data.uuid, path, stars);
         return {
             status: true,
-            data: stars
+            data: <0|1|2|3|4|5> stars
         };
     } else {
         db.prepare('UPDATE stars SET stars=? WHERE path=? AND UUID=?').run(stars, path, user.data.uuid);
@@ -38,14 +38,14 @@ function setStars(token: string, ip:string, path:string, stars:number) : BasicAn
 
 }
 
-function getStars(token:string, ip:string, path:string) : BasicAnswer {
+function getStars(token:string, ip:string, path:string) : StarResponse {
     const user = getUserFromToken(token ,ip);
 
-    if (!user.status) return user;
+    if (user.status === false) return user;
 
     const checkedPath = checkPath(path);
 
-    if (!checkedPath.status)
+    if (checkedPath.status === false)
         return checkedPath;
 
     path = checkedPath.data;

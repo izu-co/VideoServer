@@ -1,12 +1,16 @@
-import { loadCookie, fetchBackend, setCookie } from "./generalFunctions"
+import { loadCookie, fetchBackend, setCookie } from './generalFunctions';
 
-var loginbtn = document.getElementById('submit');
-var username = <HTMLInputElement> document.getElementById('username');
-var password = <HTMLInputElement> document.getElementById('password');
-var wrongPass = document.getElementById('wrongPass');
-var wrongPassText = document.getElementById('wrongPassText');
+window.addEventListener('load', () => {
+    console.log('test');
+});
 
-var canlogin = true;
+const loginbtn = document.getElementById('submit');
+const username = <HTMLInputElement> document.getElementById('username');
+const password = <HTMLInputElement> document.getElementById('password');
+const wrongPass = document.getElementById('wrongPass');
+const wrongPassText = document.getElementById('wrongPassText');
+
+let canlogin = true;
 
 loginbtn.addEventListener('click', login);
 username.addEventListener('keyup', function(e) {

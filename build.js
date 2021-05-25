@@ -32,47 +32,54 @@ tsc.on('error', (err) => console.log(`[Typescript] ${err}`));
 tsc.on('message', (msg) => console.log(`[Typescript] ${msg}`));
 
 tsc.on('close', () => {
-    let copy = getAllFiles('.').filter(a => {
-        return buildOptions.ignore.every(ign => {
-            if (ign.match(/\*\.[A-Za-z]/)) {
-                if (path.extname(a) === ign.substring(1))
-                    return false;
-            } else {
-                if (path.resolve(a).startsWith(path.resolve(ign))) 
-                    return false;
-            }
-            return true;
-        }) && fs.lstatSync(a).isFile();
-    });
+    const webpack = child_process.exec('npx webpack')
+    webpack.on('close', (code) => console.log(`[Webpack] Finished with code ${code}`));
+    webpack.on('error', (err) => console.log(`[Webpack] ${err}`));
+    webpack.on('message', (msg) => console.log(`[Webpack] ${msg}`));
 
-    copy.forEach(c => {
-        createParents(path.join('build', c).split(path.sep).slice(0, -1).join(path.sep));
-        fs.copyFile(c, path.join('build', c), (err) => {
-            if (err) {
-                console.log(err);    
-                console.log('❌', c); 
-                process.exit(1);
-            }
+    webpack.on('close', () => {
+        let copy = getAllFiles('.').filter(a => {
+            return buildOptions.ignore.every(ign => {
+                if (ign.match(/\*\.[A-Za-z]/)) {
+                    if (path.extname(a) === ign.substring(1))
+                        return false;
+                } else {
+                    if (path.resolve(a).startsWith(path.resolve(ign))) 
+                        return false;
+                }
+                return true;
+            }) && fs.lstatSync(a).isFile();
         });
-    });
-
-    console.log('Copyed files');
-
-    const output = fs.createWriteStream('update.zip');
-    output.on('close', () => {
-        console.log(`Done. Total size: ${archiver.pointer()} bytes`);
-    });
-
-    archiver.on('entry', (d) => console.log(`Zipped ${d.name}`));
-    archiver.on('finish', () => {});
-
-    archiver.pipe(output);
-
-    archiver.on('error', (er) => console.log(er));
-    archiver.on('warning', (er) => console.log(er));
-
-    archiver.directory('build', false);
-    archiver.finalize();
+    
+        copy.forEach(c => {
+            createParents(path.join('build', c).split(path.sep).slice(0, -1).join(path.sep));
+            fs.copyFile(c, path.join('build', c), (err) => {
+                if (err) {
+                    console.log(err);    
+                    console.log('❌', c); 
+                    process.exit(1);
+                }
+            });
+        });
+    
+        console.log('Copyed files');
+    
+        const output = fs.createWriteStream('update.zip');
+        output.on('close', () => {
+            console.log(`Done. Total size: ${archiver.pointer()} bytes`);
+        });
+    
+        archiver.on('entry', (d) => console.log(`Zipped ${d.name}`));
+        archiver.on('finish', () => {});
+    
+        archiver.pipe(output);
+    
+        archiver.on('error', (er) => console.log(er));
+        archiver.on('warning', (er) => console.log(er));
+    
+        archiver.directory('build', false);
+        archiver.finalize();
+    })
 });
 
 function getAllFiles(p) {

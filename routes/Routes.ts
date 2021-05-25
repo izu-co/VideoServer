@@ -1,12 +1,11 @@
-
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, Handler } from 'express';
 import * as loginBackend from '../backend/UserMangement';
 import slowDown from 'express-slow-down';
 
 /**
  * @param force If true, the function will enforce its rules upon api requests
  */
-export function getUser(force = false) {
+export function getUser(force = false) : Handler {
     return function (req:Request, res:Response, next:NextFunction) {
         const apiRequest = req.originalUrl.startsWith('/api/');
         if (apiRequest && !force)
@@ -29,7 +28,7 @@ export function getUser(force = false) {
     };
 }
 
-export function requireArguments (Arguments:Array<string>) {
+export function requireArguments (Arguments:Array<string>) : Handler {
     return function (req:Request, res:Response, next:NextFunction) {
         const arg = (req.method === 'GET' || req.method === 'HEAD') ? req.query : req.body;
         if (!arg && Arguments.length > 0)

@@ -1,12 +1,12 @@
-import { loadCookie, fetchBackend } from "./generalFunctions"
-import { UserData } from "../../interfaces"
+import { loadCookie, fetchBackend } from './generalFunctions';
+import { UserAccountInfo } from '../../interfaces';
 
-var container = document.getElementById('container');
+const container = document.getElementById('container');
 
-let url = new URL(window.location.origin + '/api/getUsers/');
+const url = new URL(window.location.origin + '/api/getUsers/');
 url.search = new URLSearchParams({
     'token': loadCookie('token')
-}).toString()
+}).toString();
 
 
 fetchBackend(url.toString(), {
@@ -14,29 +14,29 @@ fetchBackend(url.toString(), {
         'content-type' : 'application/json; charset=UTF-8'
     },
     method: 'GET'
-}, (users: Array<UserData>) => {
+}, (users: Array<UserAccountInfo>) => {
     users = users.sort((a,b) => {
         if (a['perm'] !== b['perm'])
-            return a.perm === "Admin" ? 1 : -1;
+            return a.perm === 'Admin' ? 1 : -1;
         else 
             return a['username'].localeCompare(b['username']); 
     });
     users.forEach(user => {
-        var userContainer = document.createElement('div');
+        const userContainer = document.createElement('div');
         userContainer.className = 'User';
 
-        var name = document.createElement('b');
+        const name = document.createElement('b');
         name.innerHTML = user['username'];
         name.className = 'Username';
         name.style.display = 'block';
 
-        var passwordDiv = document.createElement('div');
+        const passwordDiv = document.createElement('div');
         passwordDiv.style.display = 'inline-block';
-        var PasswordLabel = document.createElement('label');
+        const PasswordLabel = document.createElement('label');
         PasswordLabel.htmlFor = 'Password';
         PasswordLabel.innerHTML = 'Passwort';
 
-        var password = document.createElement('b');
+        const password = document.createElement('b');
 
         password.className = 'Password';
         password.innerHTML = user['password'];
@@ -46,15 +46,15 @@ fetchBackend(url.toString(), {
         passwordDiv.appendChild(PasswordLabel);
         passwordDiv.appendChild(password);
 
-        var PermDiv = document.createElement('div');
+        const PermDiv = document.createElement('div');
         PermDiv.style.display = 'inline-block';
 
-        var PermLabel = document.createElement('label');
+        const PermLabel = document.createElement('label');
         PermLabel.htmlFor = 'permission';
         PermLabel.style.width = '70px';
         PermLabel.innerHTML = 'Rechte';
 
-        var Perm = document.createElement('b');
+        const Perm = document.createElement('b');
 
         Perm.className = 'permission';
         Perm.innerHTML = user['perm'];
@@ -63,17 +63,17 @@ fetchBackend(url.toString(), {
         PermDiv.appendChild(Perm);
 
 
-        var activeDiv = document.createElement('div');
+        const activeDiv = document.createElement('div');
         activeDiv.style.display = 'inline-block';
 
-        var activeLabel = document.createElement('label');
+        const activeLabel = document.createElement('label');
         activeLabel.htmlFor = 'active';
         activeLabel.innerHTML = 'Active';
 
-        var activeL = document.createElement('label');
+        const activeL = document.createElement('label');
         activeL.className = 'switch active';
 
-        var checkavtive = document.createElement('input');
+        const checkavtive = document.createElement('input');
         checkavtive.type = 'checkbox';
         checkavtive.checked = user['active'];
 
@@ -88,10 +88,10 @@ fetchBackend(url.toString(), {
                     'uuid' : user['UUID']
                 }),
                 method: 'POST'
-            }, () => {}, false, true);
+            }, undefined, false, true);
         });
 
-        var slider = document.createElement('span');
+        const slider = document.createElement('span');
         slider.className = 'slider round';
 
         activeL.appendChild(checkavtive);
@@ -101,15 +101,15 @@ fetchBackend(url.toString(), {
         activeDiv.appendChild(activeL);
 
 
-        var TokenDiv = document.createElement('div');
+        const TokenDiv = document.createElement('div');
         TokenDiv.style.display = 'inline-block';
 
-        var Tokenlabel = document.createElement('label');
+        const Tokenlabel = document.createElement('label');
         Tokenlabel.htmlFor = 'token';
         Tokenlabel.style.width = '70px';
         Tokenlabel.innerHTML = 'Tokens';
 
-        var token = document.createElement('button');
+        const token = document.createElement('button');
 
         token.className = 'token';
         token.innerHTML = 'Token löschen';
@@ -145,10 +145,10 @@ fetchBackend(url.toString(), {
     });}, false, false);
 
 document.getElementById('submit').addEventListener('click', function() {
-    let username = (<HTMLInputElement> document.getElementById('Name')).value;
-    let pass = (<HTMLInputElement> document.getElementById('Pass')).value;
-    let passCon = (<HTMLInputElement> document.getElementById('ConPass')).value;
-    let perm = (<HTMLSelectElement> document.getElementById('perm')).options[(<HTMLSelectElement> document.getElementById('perm')).selectedIndex].value;
+    const username = (<HTMLInputElement> document.getElementById('Name')).value;
+    const pass = (<HTMLInputElement> document.getElementById('Pass')).value;
+    const passCon = (<HTMLInputElement> document.getElementById('ConPass')).value;
+    const perm = (<HTMLSelectElement> document.getElementById('perm')).options[(<HTMLSelectElement> document.getElementById('perm')).selectedIndex].value;
     if (username === '') 
         alert('Please enter a username!');
     else if (pass === '')
@@ -168,7 +168,7 @@ document.getElementById('submit').addEventListener('click', function() {
             'perm': perm
         }),
         method: 'PUT'
-    }, _ => {
+    }, () => {
         location.reload();
     }, false, true);
 });

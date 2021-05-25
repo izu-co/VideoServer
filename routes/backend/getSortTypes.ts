@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as fileStuff from '../../backend/fileStuff';
 import * as Path from 'path';
-import { getUser, requireArguments } from '../Routes';
+import { getUser } from '../Routes';
 const router = express.Router();
 
 const filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 1].split('.');

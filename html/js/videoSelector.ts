@@ -1,5 +1,5 @@
-import { fetchBackend, loadCookie, setCookie, fetchBackendPromise } from "./generalFunctions";
-import { FileData as FileDataType, SortTypes, GetFilesAnswer } from "../../interfaces"
+import { fetchBackend, loadCookie, setCookie, fetchBackendPromise } from './generalFunctions';
+import { FileData as FileDataType, SortTypes, GetFilesResponse } from '../../interfaces';
 
 fetchBackend('/api/checkToken/', {
     headers: {
@@ -16,11 +16,11 @@ fetchBackend('/api/checkToken/', {
         document.getElementById('sortDiv').style.right = '120px';
 }, true, false);
 
-var queryString = window.location.search;
+let queryString = window.location.search;
 let urlParams = new URLSearchParams(queryString);
 const container = document.getElementById('container');
 const loadMore = document.getElementById('loadMore');
-let sort = <HTMLSelectElement> document.getElementById('sort');
+const sort = <HTMLSelectElement> document.getElementById('sort');
 let filter = '';
 
 
@@ -29,12 +29,13 @@ document.getElementById('admin').addEventListener('click', () => {
 });
 
 
-let loading = {
+const loading = {
     aInternal: false,
-    aListener: function (val) {},
+    aListener: undefined,
     set a(val) {
         this.aInternal = val;
-        this.aListener(val);
+        if (this.aListener)
+            this.aListener(val);
     },
     get a() {
         return this.aInternal;
@@ -45,8 +46,8 @@ let loading = {
 };
 
 loading.registerListener(function (val) {
-    let curr = val ? 'invis' : 'vis';
-    let toset = val ? 'vis' : 'invis';
+    const curr = val ? 'invis' : 'vis';
+    const toset = val ? 'vis' : 'invis';
 
     document.getElementById('running').classList.remove(curr);
     document.getElementById('running').classList.add(toset);
@@ -79,13 +80,13 @@ class FileData {
         loading.a = true;
         this.showAmount = 10;
         this.currentlyShown = 0;
-        let url = new URL(window.location.origin + '/api/getFiles/');
+        const url = new URL(window.location.origin + '/api/getFiles/');
         url.search = new URLSearchParams({
             'token': loadCookie('token'),
             'path': path,
             'type': type
         }).toString();
-        const response : GetFilesAnswer = await (await fetchBackendPromise(url.toString(), {
+        const response : GetFilesResponse = await (await fetchBackendPromise(url.toString(), {
             headers: {
                 'content-type': 'application/json; charset=UTF-8'
             },
@@ -96,7 +97,7 @@ class FileData {
             document.location.href = '/';
         else {
             this.data = response.data.files;
-            this.pathSep = response.data.pathSep
+            this.pathSep = response.data.pathSep;
         }
         loading.a = false;
     }
@@ -115,26 +116,26 @@ class FileData {
         data = data.filter((_, i) => this.currentlyShown < i  && i < this.showAmount);
 
         data.forEach((file, index) => {
-            var header = document.createElement('div');
-            var div = document.createElement('div');
+            const header = document.createElement('div');
+            const div = document.createElement('div');
 
             div.className = 'Item';
 
-            let tubDiv = document.createElement('div');
+            const tubDiv = document.createElement('div');
 
 
-            var tub = document.createElement('img');
+            const tub = document.createElement('img');
             tub.className = 'tumb';
             tub.alt = 'Thumbnail';
             tub.src = '/video/' + encodeURI(file['image']);
             if (index === data.length - 1)
                 tub.addEventListener('load', () => setScroll());
 
-            let add = document.createElement('button');
+            const add = document.createElement('button');
             add.classList.add('watchList');
             add.classList.add(file['watchList'] ? 'already' : 'add');
             add.addEventListener('click', () => {
-                let pathToFetch = '/api/' + (add.classList.contains('already') ? 'removeWatchList' : 'addWatchList/');
+                const pathToFetch = '/api/' + (add.classList.contains('already') ? 'removeWatchList' : 'addWatchList/');
                 fetchBackend(pathToFetch, {
                     headers: {
                         'content-type': 'application/json; charset=UTF-8'
@@ -166,7 +167,7 @@ class FileData {
                     singleStar.classList.add('starSelected');
                 else 
                     singleStar.classList.add('notSelected');
-                singleStar.addEventListener('mouseenter', (e) => {
+                singleStar.addEventListener('mouseenter', () => {
                     for (let a = 0; a < singleStars.length; a++)
                         singleStars.item(a).classList.add(a <= i ? 'tempSelected' : 'tempNotSelected');
                 });
@@ -184,13 +185,13 @@ class FileData {
                         method: 'PUT'
                     }, (data) => {
                         for (let k = 0; k < singleStars.length; k++) {
-                            singleStars.item(k).classList.forEach(a => singleStars.item(k).classList.remove(a))
+                            singleStars.item(k).classList.forEach(a => singleStars.item(k).classList.remove(a));
                             singleStars.item(k).classList.add(k < data ? 'starSelected' : 'notSelected');
                         }
                     }, false, true);
                 });
 
-                singleStar.addEventListener('mouseleave', (e) => {
+                singleStar.addEventListener('mouseleave', () => {
                     for (let a = 0; a < singleStars.length ; a++)
                         singleStars.item(a).classList.remove('tempSelected', 'tempNotSelected');
                 });
@@ -203,13 +204,13 @@ class FileData {
             div.appendChild(tubDiv);
 
             if (file.type === 'video') {
-                var fortschritt = document.createElement('div');
+                const fortschritt = document.createElement('div');
                 fortschritt.className = 'fortschritt';
                 fortschritt.style.width = (file.timeStemp * 100) + '%';
                 div.appendChild(fortschritt);
             }
 
-            var text = document.createElement('b');
+            const text = document.createElement('b');
 
             text.className = 'text';
             
@@ -245,13 +246,13 @@ class FileData {
 
 }
 
-const fileData = new FileData()
+const fileData = new FileData();
 
-fileData.loadData(urlParams.get('path')).then(_ => fileData.showData()).catch((er) => {
+fileData.loadData(urlParams.get('path')).then(() => fileData.showData()).catch((er) => {
     document.getElementById('offline').classList.remove('false');
     console.log(er);
 });
-let url = new URL(window.location.origin + '/api/getSortTypes/');
+const url = new URL(window.location.origin + '/api/getSortTypes/');
 url.search = new URLSearchParams({
     'token': loadCookie('token')
 }).toString();
@@ -264,7 +265,7 @@ fetchBackend(url.toString(), {
     while (sort.lastChild != null)
         sort.removeChild(sort.lastChild);
     res.forEach(a => {
-        let option = document.createElement('option');
+        const option = document.createElement('option');
         option.value = a;
         option.innerHTML = a;
         sort.appendChild(option);
@@ -281,7 +282,7 @@ sort.addEventListener('change', (e) => {
         return;
     }
     last = sort.value;
-    fileData.loadData(urlParams.get('path'), (<SortTypes> (<HTMLSelectElement> e.target).value)).then(_ => fileData.showData());
+    fileData.loadData(urlParams.get('path'), (<SortTypes> (<HTMLSelectElement> e.target).value)).then(() => fileData.showData());
 });
 
 window.addEventListener('scroll', () => {
@@ -317,7 +318,7 @@ document.getElementById('server').addEventListener('click', () => {
 });
 
 function setScroll() {
-    let cookie = loadCookie('scroll:' + location.search.slice('?path='.length));
+    const cookie = loadCookie('scroll:' + location.search.slice('?path='.length));
     window.scrollTo({
         top: parseFloat(cookie)
     });
@@ -326,7 +327,7 @@ function setScroll() {
 let lastSearch = '';
 
 document.getElementById('search').addEventListener('input', (e) => {
-    filter = (<HTMLInputElement> e.target).value
+    filter = (<HTMLInputElement> e.target).value;
 
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString);
@@ -367,7 +368,7 @@ function buildStarSVG() : SVGElement {
 
 function getNode(n: string, v: object) : SVGElement {
     const f = document.createElementNS('http://www.w3.org/2000/svg', n);
-    for (var p in v)
+    for (const p in v)
         f.setAttributeNS(null, p, v[p]);
     return f;
 }

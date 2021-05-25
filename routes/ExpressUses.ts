@@ -10,7 +10,7 @@ import { checkPath } from '../backend/util';
 
 const currentTranscoding = [];
 
-export function init() {
+export function init() : void {
     app.use(express.json());
     app.use(cookieParser());
     app.use(json());
@@ -25,8 +25,8 @@ export function init() {
 
     app.use('/', express.static(path.join(argv['Working Directory'], 'html')));
     app.use('/video', getUser(),  (req, res, next) => {
-        if (!VideoNameExtensions.includes(req.url.split('\.').pop())) return next();
-        if (app.locals.streams.hasOwnProperty(res.locals.user.username)) {
+        if (!VideoNameExtensions.includes(req.url.split('.').pop())) return next();
+        if (app.locals.streams[res.locals.user.username]) {
             app.locals.streams[res.locals.user.username]++;
         } else {
             app.locals.streams[res.locals.user.username] = 1;
@@ -37,8 +37,8 @@ export function init() {
 
         next();
     }, (req, res, next) => {
-        if (!VideoNameExtensions.includes(req.url.split('\.').pop())) return next();
-        const urlPath = req.url.split('\.');
+        if (!VideoNameExtensions.includes(req.url.split('.').pop())) return next();
+        const urlPath = req.url.split('.');
         const pathCheck = checkPath(req.path.replace('/video/', ''));
 
         if (!pathCheck.status) 
@@ -103,7 +103,7 @@ function initSocket() {
             if (currentTranscoding.includes(decodeURIComponent(pathCheck.data)))
                 return;
             
-            const streamPath = pathCheck.data.split('\.').reverse().slice(1).reverse().join('\.');
+            const streamPath = pathCheck.data.split('.').reverse().slice(1).reverse().join('.');
 
             pathCheck.data.substring(argv['Video Directory'].length).split(path.sep).forEach((_: string, i: number, a: Array<string>) => {
                 if (i === 0)

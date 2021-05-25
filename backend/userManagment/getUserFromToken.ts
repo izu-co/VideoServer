@@ -1,7 +1,7 @@
-import { UserRequestAnswer } from '../../interfaces';
+import { UserRequestResponse } from '../../interfaces';
 import { db } from '../../index';
 
-function getUserFromToken (token:string, ip:string): UserRequestAnswer {
+function getUserFromToken (token:string, ip:string): UserRequestResponse {
 
     const tokenUser = db.prepare('SELECT * FROM tokens WHERE token=?').get(token);
 
