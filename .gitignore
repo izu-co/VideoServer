@@ -11,3 +11,4 @@ SSL/server.key
 SSL/server.crt
 temp/
 test/**/*.jpg
+settings.json

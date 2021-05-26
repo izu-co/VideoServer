@@ -18,31 +18,31 @@ getAllFiles('test').forEach(f => {
 
 //TODO check settings file
 
-import { argv } from '../index';
-
 describe('File Tests', () => {
     it('Node_modules installed', () => {
-        expect(fs.existsSync('node_modules')).to.be.true;
+        expect(fs.existsSync('build/node_modules')).to.be.true;
     });
 
     it('Database files has been created', () => {
-        expect(fs.existsSync('data/data.db')).to.be.true;
-        expect(fs.existsSync('data/database-backup.db')).to.be.true;
+        expect(fs.existsSync('build/data/data.db')).to.be.true;
+        expect(fs.existsSync('build/data/database-backup.db')).to.be.true;
     });
 
     it('Temp folder has been created', () => {
-        expect(fs.existsSync('temp')).to.be.true;
+        expect(fs.existsSync('build/temp')).to.be.true;
     });
 
-    it('Settings', () => {
-        expect(argv.debug).to.be.false;
-        expect(argv['Video Directory']).to.equal(path.resolve('test', 'videos'));
-        expect(argv.disableUpdate).to.be.true;
-        expect(argv.sync).to.be.true;
-        expect(argv['Working Directory']).to.equal(path.resolve('.'));
-    });
+    fs.writeFileSync('settings.json', JSON.stringify({
+        "Video Directory": "./test/videos",
+        "debug": false,
+        "sync": true,
+        "disableUpdate": true,
+        "httpPort": 3000,
+        "httpsPort": 3001
+    }, null, 4))
 });
 
+const argv = require('../build/index.js').argv
 
 describe('Test requests', () => {
     const requester = request(`http://localhost:${argv.httpPort}/api/`).keepOpen();

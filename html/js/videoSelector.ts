@@ -28,7 +28,6 @@ document.getElementById('admin').addEventListener('click', () => {
     location.href = '/admin';
 });
 
-
 const loading = {
     aInternal: false,
     aListener: undefined,
@@ -104,7 +103,8 @@ class FileData {
 
     public showData() : void {  
         loading.a = true;
-
+        while (container.children.length > this.currentlyShown)
+            container.removeChild(container.lastChild)
         if (this.hasMore())
             loadMore.style.display = 'inline';
         else 
@@ -113,7 +113,7 @@ class FileData {
         let data = this.data;
 
         data = data.filter(a => a['name'].toLowerCase().includes(filter.toLowerCase()));
-        data = data.filter((_, i) => this.currentlyShown < i  && i < this.showAmount);
+        data = data.filter((_, i) => this.currentlyShown <= i  && i < this.showAmount);
 
         data.forEach((file, index) => {
             const header = document.createElement('div');
@@ -144,7 +144,7 @@ class FileData {
                         'token': loadCookie('token'),
                         'path': file['Path']
                     }),
-                    method: (add.classList.contains('already') ? 'REMOVE' : 'PUT')
+                    method: (add.classList.contains('already') ? 'DELETE' : 'PUT')
                 }, (data) => {
                     if (data === 'added') {
                         add.classList.remove('add');
@@ -240,7 +240,7 @@ class FileData {
             header.className = 'showItem';
             container.appendChild(header);
         });
-
+        this.currentlyShown = container.children.length;
         loading.a = false;
     }
 
@@ -252,6 +252,9 @@ fileData.loadData(urlParams.get('path')).then(() => fileData.showData()).catch((
     document.getElementById('offline').classList.remove('false');
     console.log(er);
 });
+
+loadMore.addEventListener("click", () => fileData.loadMore())
+
 const url = new URL(window.location.origin + '/api/getSortTypes/');
 url.search = new URLSearchParams({
     'token': loadCookie('token')

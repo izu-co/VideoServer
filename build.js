@@ -2,15 +2,20 @@ const child_process = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const archiver = require('archiver')('zip');
+const yargs = require('yargs');
+
+const argv = yargs
+    .option('test', {
+        boolean: true,
+        default: false,
+        describe: 'If set to true, the programm will build a test env'
+    }).argv;
 
 const buildOptions = {
     ignore: [
         'test',
         'temp',
-        'node_modules',
         'data',
-        'SSL' + path.sep + 'server.crt',
-        'SSL' + path.sep + 'server.key',
         '*.ts',
         '*.log',
         '.github',
@@ -23,6 +28,13 @@ const buildOptions = {
     ]
 };
 
+if (!argv.test) {
+    buildOptions.ignore.push([
+        'SSL' + path.sep + 'server.crt',
+        'SSL' + path.sep + 'server.key',
+        'node_modules',
+    ])
+}
 
 deleteDir('build');
 const tsc = child_process.exec('tsc -p tsconfig.json');
@@ -32,7 +44,7 @@ tsc.on('error', (err) => console.log(`[Typescript] ${err}`));
 tsc.on('message', (msg) => console.log(`[Typescript] ${msg}`));
 
 tsc.on('close', () => {
-    const webpack = child_process.exec('npx webpack')
+    const webpack = child_process.exec('npx webpack');
     webpack.on('close', (code) => console.log(`[Webpack] Finished with code ${code}`));
     webpack.on('error', (err) => console.log(`[Webpack] ${err}`));
     webpack.on('message', (msg) => console.log(`[Webpack] ${msg}`));
@@ -50,7 +62,7 @@ tsc.on('close', () => {
                 return true;
             }) && fs.lstatSync(a).isFile();
         });
-    
+        
         copy.forEach(c => {
             createParents(path.join('build', c).split(path.sep).slice(0, -1).join(path.sep));
             fs.copyFile(c, path.join('build', c), (err) => {
@@ -61,25 +73,26 @@ tsc.on('close', () => {
                 }
             });
         });
-    
+        
         console.log('Copyed files');
-    
-        const output = fs.createWriteStream('update.zip');
-        output.on('close', () => {
-            console.log(`Done. Total size: ${archiver.pointer()} bytes`);
-        });
-    
-        archiver.on('entry', (d) => console.log(`Zipped ${d.name}`));
-        archiver.on('finish', () => {});
-    
-        archiver.pipe(output);
-    
-        archiver.on('error', (er) => console.log(er));
-        archiver.on('warning', (er) => console.log(er));
-    
-        archiver.directory('build', false);
-        archiver.finalize();
-    })
+        if (!argv.test) {
+            const output = fs.createWriteStream('update.zip');
+            output.on('close', () => {
+                console.log(`Done. Total size: ${archiver.pointer()} bytes`);
+            });
+        
+            archiver.on('entry', (d) => console.log(`Zipped ${d.name}`));
+            archiver.on('finish', () => {});
+        
+            archiver.pipe(output);
+        
+            archiver.on('error', (er) => console.log(er));
+            archiver.on('warning', (er) => console.log(er));
+        
+            archiver.directory('build', false);
+            archiver.finalize();
+        }
+    });
 });
 
 function getAllFiles(p) {

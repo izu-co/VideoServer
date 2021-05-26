@@ -63,7 +63,6 @@ if (!fs.existsSync('data'))
 if (data !== undefined) {
     argv['Video Directory'] = (data['Video Directory'] !== undefined) ? path.resolve(data['Video Directory'].toString()) : false || argv['Video Directory'];
     argv['Working Directory'] = (data['Working Directory'] !== undefined) ? path.resolve(data['Working Directory'].toString()) : false || argv['Working Directory'];
-    
     argv.sync = data.sync || argv.sync;
     argv.debug = data.debug || argv.debug;
     argv.disableUpdate = data.disableUpdate || argv.disableUpdate;
@@ -71,5 +70,8 @@ if (data !== undefined) {
     argv.httpPort = 'httpPort' in data && Number.isInteger(data['httpPort']) ? parseInt(data['httpPort']) : argv.httpPort;
     argv.httpsPort = 'httpsPort' in data && Number.isInteger(data['httpsPort']) ? parseInt(data['httpsPort']) : argv.httpsPort;
 }
+
+argv['Video Directory'] = path.isAbsolute(argv['Video Directory']) ? path.resolve(argv['Video Directory']) : path.relative(__dirname, argv['Video Directory'])
+
 
 export {argv};

@@ -85,15 +85,17 @@ fetchBackend('/api/checkToken/', {
     method: 'POST'
 }, undefined, true, false);
 
-fetchBackend('/api/FileData/', {
+const fileDataURL = new URL(window.location.origin + '/api/FileData/');
+fileDataURL.search = new URLSearchParams({
+    'token' : loadCookie('token'),
+    'path':  urlParams.get('path')
+}).toString();
+
+fetchBackend(fileDataURL.toString(), {
     headers: {
         'content-type' : 'application/json; charset=UTF-8'
     },
-    body: JSON.stringify({
-        'token' : loadCookie('token'),
-        'path':  urlParams.get('path')
-    }),
-    method: 'POST'
+    method: 'GET'
 }, res => loadData(res), false, false);
 
 function loadData(res: SkipData) {
