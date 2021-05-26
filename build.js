@@ -1,7 +1,6 @@
 const child_process = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const archiver = require('archiver')('zip');
 const yargs = require('yargs');
 
 const argv = yargs
@@ -29,11 +28,11 @@ const buildOptions = {
 };
 
 if (!argv.test) {
-    buildOptions.ignore.push([
+    buildOptions.ignore.push(
         'SSL' + path.sep + 'server.crt',
         'SSL' + path.sep + 'server.key',
         'node_modules',
-    ])
+    )
 }
 
 deleteDir('build');
@@ -75,23 +74,6 @@ tsc.on('close', () => {
         });
         
         console.log('Copyed files');
-        if (!argv.test) {
-            const output = fs.createWriteStream('update.zip');
-            output.on('close', () => {
-                console.log(`Done. Total size: ${archiver.pointer()} bytes`);
-            });
-        
-            archiver.on('entry', (d) => console.log(`Zipped ${d.name}`));
-            archiver.on('finish', () => {});
-        
-            archiver.pipe(output);
-        
-            archiver.on('error', (er) => console.log(er));
-            archiver.on('warning', (er) => console.log(er));
-        
-            archiver.directory('build', false);
-            archiver.finalize();
-        }
     });
 });
 

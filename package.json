@@ -1,6 +1,6 @@
 {
   "name": "videoplayer",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "A Video Player",
   "main": "index.js",
   "databaseVersion": 2,
@@ -37,7 +37,6 @@
     "@types/yargs": "^15.0.13",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
     "@typescript-eslint/parser": "^4.25.0",
-    "archiver": "^5.3.0",
     "chai": "^4.3.4",
     "chai-http": "^4.3.0",
     "eslint": "^7.27.0",
