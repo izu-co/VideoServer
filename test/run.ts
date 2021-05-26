@@ -28,10 +28,6 @@ describe('File Tests', () => {
         expect(fs.existsSync('build/data/database-backup.db')).to.be.true;
     });
 
-    it('Temp folder has been created', () => {
-        expect(fs.existsSync('build/temp')).to.be.true;
-    });
-
     fs.writeFileSync('settings.json', JSON.stringify({
         "Video Directory": "./test/videos",
         "debug": false,

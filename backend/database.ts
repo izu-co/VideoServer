@@ -10,6 +10,8 @@ import {
 } from 'path';
 import * as chok from 'chokidar';
 
+if (!fs.existsSync(path.join(__dirname, '..', 'data')))
+    fs.mkdirSync(path.join(__dirname, '..', 'data'))
 
 const file = path.join(__dirname, '..', 'data', 'data.db');
 const backupFile = path.join(__dirname, '..', 'data', 'database-backup.db');

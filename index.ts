@@ -17,11 +17,10 @@ import express from 'express';
 import * as fs from 'fs';
 import path from 'path';
 
-if (!fs.existsSync('temp'))
-    fs.mkdirSync('temp');
-
 
 function clearCacheRecur(p: string) {
+    if (!fs.existsSync(p))
+        return;
     const stats = fs.lstatSync(p);
     if (stats.isDirectory()) {
         const files = fs.readdirSync(p);
@@ -36,6 +35,8 @@ function clearCacheRecur(p: string) {
 }
 
 function clearCache() {
+    if (!fs.existsSync('temp'))
+        fs.mkdirSync('temp');
     clearCacheRecur(path.join(__dirname, 'temp'));
     setTimeout(() => {
         clearCache();
