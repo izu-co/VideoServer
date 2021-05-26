@@ -16,6 +16,7 @@
     "progress-stream": "^2.0.0",
     "request": "^2.88.2",
     "socket.io": "^4.0.1",
+    "socket.io-client": "^4.1.2",
     "unzipper": "^0.10.11",
     "yargs": "^16.2.0"
   },
@@ -34,15 +35,25 @@
     "@types/socket.io": "^2.1.13",
     "@types/unzipper": "^0.10.3",
     "@types/yargs": "^15.0.13",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
     "archiver": "^5.3.0",
     "chai": "^4.3.4",
     "chai-http": "^4.3.0",
+    "eslint": "^7.27.0",
     "mocha": "^8.3.2",
+    "ts-loader": "^9.2.2",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.4"
+    "typescript": "^4.2.4",
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0"
   },
   "scripts": {
-    "build": "node build",
+    "eslint": "npx eslint . --fix",
+    "build": "node build.js",
+    "prestart": "node build.js --test",
+    "start": "cd build && node index.js --vd ../test/videos",
+    "pretest": "npm run prestart",
     "test": "npx mocha --require ts-node/register test/run.ts --exit --timeout 10000 --no-warnings"
   },
   "repository": {

@@ -1,136 +1,141 @@
-import {FileData, checkPath, readdir, SortTypes} from "../util"
-import * as index from "../../index"
-import * as fs from "fs"
-import * as Path from "path"
-import { loadTime, IsOnWatchList, getStars } from "../fileStuff";
-import { getUserFromToken } from "../UserMangement";
+import { checkPath } from '../util';
+import { SortTypes } from '../../interfaces';
+import { FileData } from '../../interfaces';
+import * as index from '../../index';
+import * as fs from 'fs';
+import * as Path from 'path';
+import { loadTime, IsOnWatchList, getStars } from '../fileStuff';
+import { getUserFromToken } from '../UserMangement';
 
 function getFiles(path:string, token:string, ip:string, type:string|null|SortTypes = null): Array<FileData> {
     let searchType:SortTypes;
     switch (type) {
-        case null:
-        case "null":
-        case SortTypes.File:
-            searchType = SortTypes.File
-            break
-        case SortTypes.Created:
-            searchType = SortTypes.Created
-            break
-        case SortTypes.WatchList:
-            searchType = SortTypes.WatchList
-            break
+    case null:
+    case 'null':
+    case SortTypes.File:
+        searchType = SortTypes.File;
+        break;
+    case SortTypes.Created:
+        searchType = SortTypes.Created;
+        break;
+    case SortTypes.WatchList:
+        searchType = SortTypes.WatchList;
+        break;
     }
     if (searchType == null)
         return [];
-    let pathCheck = checkPath(path)
+    const pathCheck = checkPath(path);
     if (!pathCheck.status)
-        return []
-    path = pathCheck.data
+        return [];
+    path = pathCheck.data;
     
-    if(!fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) return []
+    if(!fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) return [];
     
     switch(searchType) {
-        case SortTypes.File:
-            return getFileFromFolder(path, token, ip);
-        case SortTypes.Created:
-            return getFileFromCreated(path, token, ip);
-        case SortTypes.WatchList:
-            return getFilesFromWatchList(token, ip);
+    case SortTypes.File:
+        return getFileFromFolder(path, token, ip);
+    case SortTypes.Created:
+        return getFileFromCreated(path, token, ip);
+    case SortTypes.WatchList:
+        return getFilesFromWatchList(token, ip);
     }
 }
 
 function getFilesFromWatchList(token:string, ip:string) {
-    let Users = getUserFromToken(token, ip);
+    const Users = getUserFromToken(token, ip);
 
-    if (!Users.status) return []
+    if (!Users.status) return [];
 
-    let answers = index.db.prepare("SELECT * FROM watchlist WHERE UUID=?").all(Users.data.uuid)
+    const answers = index.db.prepare('SELECT * FROM watchlist WHERE UUID=?').all(Users.data.uuid);
 
-    let retarr = []
+    const retarr = [];
 
-    answers.map(a => a["path"]).forEach(file => {
-        let pathCheck = checkPath(file);
+    answers.map(a => a['path']).forEach(file => {
+        const pathCheck = checkPath(file);
         if (!pathCheck.status) return;
 
-        let path = <string> pathCheck.data
+        const path = <string> pathCheck.data;
 
         if (!fs.existsSync(path)) return;
 
         if (fs.lstatSync(path).isFile())
-            if (!index.VideoNameExtensions.includes(path.split(".")[path.split(".").length - 1]))
+            if (!index.VideoNameExtensions.includes(path.split('.')[path.split('.').length - 1]))
                 return;
-        if (!fs.existsSync(path + ".jpg"))
+        if (!fs.existsSync(path + '.jpg'))
             return;        
-        let name = path.substring(path.lastIndexOf(Path.sep))
-        let push = {
-            "name" : name,
-            "Path" : path.replace(index.argv["Video Directory"], ""),
-            "type" : fs.lstatSync(path).isDirectory() ? "folder" : "video",
-            "image" : (path + ".jpg").replace(index.argv["Video Directory"], ""),
-            "watchList": true,
-            "stars": getStars(token, ip, path).data
-        }
-        if (push["type"] === "video") 
-            push["timeStemp"] = loadTime(path, token, ip, Users)          
+        const name = path.substring(path.lastIndexOf(Path.sep));
+        const stars = getStars(token, ip, path);
+        const push = {
+            'name' : name,
+            'Path' : path.replace(index.argv['Video Directory'], ''),
+            'type' : fs.lstatSync(path).isDirectory() ? 'folder' : 'video',
+            'image' : (path + '.jpg').replace(index.argv['Video Directory'], ''),
+            'watchList': true,
+            'stars': stars.status ? stars.data : 0
+        };
+        if (push['type'] === 'video') 
+            push['timeStemp'] = loadTime(path, token, ip, Users);          
         retarr.push(push);        
-    })
+    });
 
-    return retarr
+    return retarr;
 }
 
 function getFileFromFolder(path:string, token:string, ip:string) {
-    var retarr = [];
-    let Users = getUserFromToken(token, ip);
+    const retarr = [];
+    const Users = getUserFromToken(token, ip);
     if (!Users.status)
         return [];
-    index.fileIndex.prepare("SELECT * FROM files").all().filter(a => {
-        return new RegExp(escapeRegExp(path + Path.sep) + "[^" + escapeRegExp(Path.sep) + "]*(" + escapeRegExp(Path.sep) + "|(" + index.VideoNameExtensions.join("|") + "))$").test(a["isDir"] ? a["path"] + Path.sep : a["path"])
+    index.fileIndex.prepare('SELECT * FROM files').all().filter(a => {
+        return new RegExp(escapeRegExp(path + Path.sep) + '[^' + escapeRegExp(Path.sep) + ']*(' + escapeRegExp(Path.sep) + '|(' + index.VideoNameExtensions.join('|') + '))$').test(a['isDir'] ? a['path'] + Path.sep : a['path']);
     }).forEach(file => { 
-        let name:string = file["path"].split(Path.sep)[file["path"].split(Path.sep).length - 1];
-        if (!file["isDir"])
-            name = name.substring(0, name.lastIndexOf("."))
-        var push = {
-            "name" : name,
-            "Path" : file["path"].replace(index.argv["Video Directory"], ""),
-            "type" : file["isDir"] ? "folder" : "video",
-            "image" : (file["path"] + ".jpg").replace(index.argv["Video Directory"], ""),
-            "watchList": IsOnWatchList(Users.data, file["path"].replace(index.argv["Video Directory"], "")),
-            "stars": getStars(token, ip, file["path"]).data
-        }
-        if (push["type"] === "video") 
-            push["timeStemp"] = loadTime(file["path"], token, ip, Users)          
+        let name:string = file['path'].split(Path.sep)[file['path'].split(Path.sep).length - 1];
+        if (!file['isDir'])
+            name = name.substring(0, name.lastIndexOf('.'));
+        const stars = getStars(token, ip, file['path']);
+        const push = {
+            'name' : name,
+            'Path' : file['path'].replace(index.argv['Video Directory'], ''),
+            'type' : file['isDir'] ? 'folder' : 'video',
+            'image' : (file['path'] + '.jpg').replace(index.argv['Video Directory'], ''),
+            'watchList': IsOnWatchList(Users.data, file['path'].replace(index.argv['Video Directory'], '')),
+            'stars': stars.status ? stars.data : 0
+        };
+        if (push['type'] === 'video') 
+            push['timeStemp'] = loadTime(file['path'], token, ip, Users);          
         retarr.push(push);
             
-    })
+    });
     return retarr;
 }
 
 function getFileFromCreated(path:string, token:string, ip:string) {
-    let Users = getUserFromToken(token, ip);
+    const Users = getUserFromToken(token, ip);
 
-    if (!Users.status) return []
-    var retarr = [];
-    let files = index.fileIndex.prepare("SELECT * FROM files").all()
-    files = files.filter(a => !a["isDir"])
-    files = files.sort((a, b) => b["created"] - a["created"])
+    if (!Users.status) return [];
+    const retarr = [];
+    let files = index.fileIndex.prepare('SELECT * FROM files').all();
+    files = files.filter(a => !a['isDir']);
+    files = files.sort((a, b) => b['created'] - a['created']);
     if (files.length > 50)
-        files = files.slice(0, 50)
+        files = files.slice(0, 50);
     files.forEach(file => { 
-        let name:string = file["path"].split(Path.sep)[file["path"].split(Path.sep).length - 1];
-        if (!file["isDir"])
-            name = name.substring(0, name.lastIndexOf("."))
-        var push = {
-            "name" : name,
-            "Path" : file["path"].replace(index.argv["Video Directory"], ""),
-            "type" : "video",
-            "image" : (file["path"] + ".jpg").replace(index.argv["Video Directory"], ""),
-            "watchList": IsOnWatchList(Users.data, file["path"].replace(index.argv["Video Directory"], "")),
-            "timeStemp": loadTime(path + Path.sep + file, token, ip, Users),
-            "stars": getStars(token, ip, file["path"]).data
-        }
+        let name:string = file['path'].split(Path.sep)[file['path'].split(Path.sep).length - 1];
+        if (!file['isDir'])
+            name = name.substring(0, name.lastIndexOf('.'));
+        const stars = getStars(token, ip, file['path']);
+        const push = {
+            'name' : name,
+            'Path' : file['path'].replace(index.argv['Video Directory'], ''),
+            'type' : 'video',
+            'image' : (file['path'] + '.jpg').replace(index.argv['Video Directory'], ''),
+            'watchList': IsOnWatchList(Users.data, file['path'].replace(index.argv['Video Directory'], '')),
+            'timeStemp': loadTime(path + Path.sep + file, token, ip, Users),
+            'stars': stars.status ? stars.data : 0
+        };
         retarr.push(push);
             
-    })
+    });
     
     return retarr;
 }
@@ -139,4 +144,4 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
 }
 
-export {getFiles}
+export {getFiles};

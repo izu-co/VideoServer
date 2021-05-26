@@ -1,23 +1,23 @@
-import * as express from "express";
+import * as express from 'express';
 const router = express.Router();
 
-import backendRouter from "./backend/index"
+import backendRouter from './backend/index';
 
 router.use('/api',
-backendRouter)
+    backendRouter);
 
-router.use(notFound)
+router.use(notFound);
 
 function notFound(req:express.Request, res:express.Response) {
     switch (req.method) {
-        case "POST":
-            res.status(404).json({"status": false, "reason": "Not found"})
-            break;
-        case "GET":
-            res.redirect("/notFound")
-            break;
-        default:
-            res.status(404).json({"status": false, "reason": "Not found"})
+    case 'POST':
+        res.status(404).json({'status': false, 'reason': 'Not found'});
+        break;
+    case 'GET':
+        res.redirect('/notFound');
+        break;
+    default:
+        res.status(404).json({'status': false, 'reason': 'Not found'});
     }
 }
 
