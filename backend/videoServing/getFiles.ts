@@ -92,7 +92,7 @@ function getFileFromFolder(path:string, token:string, ip:string) {
         let name:string = file['path'].split(Path.sep)[file['path'].split(Path.sep).length - 1];
         if (!file['isDir'])
             name = name.substring(0, name.lastIndexOf('.'));
-        const stars = getStars(token, ip, file["path"]);
+        const stars = getStars(token, ip, file['path']);
         const push = {
             'name' : name,
             'Path' : file['path'].replace(index.argv['Video Directory'], ''),
@@ -123,7 +123,7 @@ function getFileFromCreated(path:string, token:string, ip:string) {
         let name:string = file['path'].split(Path.sep)[file['path'].split(Path.sep).length - 1];
         if (!file['isDir'])
             name = name.substring(0, name.lastIndexOf('.'));
-        const stars = getStars(token, ip, file["path"]);
+        const stars = getStars(token, ip, file['path']);
         const push = {
             'name' : name,
             'Path' : file['path'].replace(index.argv['Video Directory'], ''),

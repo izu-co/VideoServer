@@ -29,16 +29,16 @@ describe('File Tests', () => {
     });
 
     fs.writeFileSync('settings.json', JSON.stringify({
-        "Video Directory": "./test/videos",
-        "debug": false,
-        "sync": true,
-        "disableUpdate": true,
-        "httpPort": 3000,
-        "httpsPort": 3001
-    }, null, 4))
+        'Video Directory': './test/videos',
+        'debug': false,
+        'sync': true,
+        'disableUpdate': true,
+        'httpPort': 3000,
+        'httpsPort': 3001
+    }, null, 4));
 });
 
-const argv = require('../build/index.js').argv
+const argv = require('../build/index.js').argv;
 
 describe('Test requests', () => {
     const requester = request(`http://localhost:${argv.httpPort}/api/`).keepOpen();

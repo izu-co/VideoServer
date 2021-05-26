@@ -104,7 +104,7 @@ class FileData {
     public showData() : void {  
         loading.a = true;
         while (container.children.length > this.currentlyShown)
-            container.removeChild(container.lastChild)
+            container.removeChild(container.lastChild);
         if (this.hasMore())
             loadMore.style.display = 'inline';
         else 
@@ -253,7 +253,7 @@ fileData.loadData(urlParams.get('path')).then(() => fileData.showData()).catch((
     console.log(er);
 });
 
-loadMore.addEventListener("click", () => fileData.loadMore())
+loadMore.addEventListener('click', () => fileData.loadMore());
 
 const url = new URL(window.location.origin + '/api/getSortTypes/');
 url.search = new URLSearchParams({

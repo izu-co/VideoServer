@@ -71,7 +71,7 @@ if (data !== undefined) {
     argv.httpsPort = 'httpsPort' in data && Number.isInteger(data['httpsPort']) ? parseInt(data['httpsPort']) : argv.httpsPort;
 }
 
-argv['Video Directory'] = path.isAbsolute(argv['Video Directory']) ? path.resolve(argv['Video Directory']) : path.relative(__dirname, argv['Video Directory'])
+argv['Video Directory'] = path.isAbsolute(argv['Video Directory']) ? path.resolve(argv['Video Directory']) : path.relative(__dirname, argv['Video Directory']);
 
 
 export {argv};
