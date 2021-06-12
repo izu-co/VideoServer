@@ -142,7 +142,7 @@ fetchBackend(url.toString(), {
 
         container.appendChild(userContainer);
 
-    });}, false, false);
+    });}, true, false);
 
 document.getElementById('submit').addEventListener('click', function() {
     const username = (<HTMLInputElement> document.getElementById('Name')).value;
@@ -150,13 +150,13 @@ document.getElementById('submit').addEventListener('click', function() {
     const passCon = (<HTMLInputElement> document.getElementById('ConPass')).value;
     const perm = (<HTMLSelectElement> document.getElementById('perm')).options[(<HTMLSelectElement> document.getElementById('perm')).selectedIndex].value;
     if (username === '') 
-        alert('Please enter a username!');
+        return alert('Please enter a username!');
     else if (pass === '')
-        alert('Please enter a password!');
+        return alert('Please enter a password!');
     else if (passCon === '')
-        alert('Please confirm the password!');
+        return alert('Please confirm the password!');
     else if (pass !== passCon)
-        alert('The passwords are not the same!');
+        return alert('The passwords are not the same!');
     fetchBackend('/api/addUser/', {
         headers: {
             'content-type' : 'application/json; charset=UTF-8'

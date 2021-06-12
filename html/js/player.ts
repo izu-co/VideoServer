@@ -18,7 +18,6 @@ const next = <HTMLButtonElement> document.getElementById('next');
 const controls = document.getElementById('controls');
 const info = document.getElementById('info');
 
-
 let mouseDown = false;
 let skiped = false;
 let timer: NodeJS.Timeout;
@@ -33,6 +32,16 @@ document.body.onmousedown = function() {
 document.body.onmouseup = function() {
     mouseDown = false;
 };
+
+fetchBackend('/api/checkToken/', {
+    headers: {
+        'content-type' : 'application/json; charset=UTF-8'
+    },
+    body: JSON.stringify({
+        'token' : loadCookie('token')
+    }),
+    method: 'POST'
+}, undefined, true, false);
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
@@ -75,16 +84,6 @@ if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
     video.src = '/video/' + urlParams.get('path');
 }
 
-fetchBackend('/api/checkToken/', {
-    headers: {
-        'content-type' : 'application/json; charset=UTF-8'
-    },
-    body: JSON.stringify({
-        'token' : loadCookie('token')
-    }),
-    method: 'POST'
-}, undefined, true, false);
-
 const fileDataURL = new URL(window.location.origin + '/api/FileData/');
 fileDataURL.search = new URLSearchParams({
     'token' : loadCookie('token'),
@@ -121,7 +120,11 @@ function loadData(res: SkipData) {
     if (res.next) {
         next.style.opacity = '1';
         next.addEventListener('click', function() {
-            document.location.href = document.location.href.split('?')[0] + '?path=' + res['next'];
+            const nextURL = new URL(document.location.href)
+            nextURL.search = new URLSearchParams({
+                path: res.next
+            }).toString()
+            document.location.href = nextURL.toString()
         });
     } else 
         next.disabled = true;

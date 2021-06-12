@@ -78,7 +78,7 @@ chok.watch(argv['Video Directory'], {
 console.log('[INFO] Finished indexing!');
 
 db.exec('CREATE TABLE IF NOT EXISTS properties (name STRING, val TEXT)');
-db.exec('CREATE TABLE IF NOT EXISTS users (UUID TEXT PRIMARY KEY, username TEXT, password TEXT, perm TEXT, active BOOLEAN) WITHOUT ROWID');
+db.exec('CREATE TABLE IF NOT EXISTS users (UUID TEXT PRIMARY KEY, username TEXT, password TEXT, perm TEXT, active INT) WITHOUT ROWID');
 db.exec('CREATE TABLE IF NOT EXISTS status (UUID Text, path TEXT, data DOUBLE)');
 db.exec('CREATE TABLE IF NOT EXISTS intros (path TEXT PRIMARY KEY, startTime INT, endTime INT)');
 db.exec('CREATE TABLE IF NOT EXISTS settings (UUID TEXT PRIMARY KEY, volume INT)');
@@ -116,7 +116,7 @@ if (!fileExists) {
         let prep = db.prepare('INSERT INTO settings VALUES (?, ?)');
         prep.run('default', 30);
         prep = db.prepare('INSERT INTO users VALUES (?, ?, ?, ?, ?)');
-        prep.run('f084bdb1-7fb7-4e45-bace-e7719974e135', 'Admin', 'pass', 'Admin', 'true');
+        prep.run('f084bdb1-7fb7-4e45-bace-e7719974e135', 'Admin', 'pass', 'Admin', 1);
     }
 }
 

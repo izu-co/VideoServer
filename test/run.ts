@@ -18,6 +18,8 @@ getAllFiles('test').forEach(f => {
 
 //TODO check settings file
 
+const oldSettings = fs.readFileSync('settings.json')
+
 describe('File Tests', () => {
     it('Node_modules installed', () => {
         expect(fs.existsSync('build/node_modules')).to.be.true;
@@ -144,7 +146,7 @@ describe('Test requests', () => {
         it('Check changed active state', async () => {
             return await requester.get('getUsers/').query({ token: token }).send()
                 .then(data => {
-                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.find(a => a.username === 'Testi').active).to.equal('false')];
+                    return [expect(data.status).to.be.equal(200), expect(data.body.status).to.be.true, expect(data.body.data.find(a => a.username === 'Testi').active).to.equal(0)];
                 });
         });      
         
@@ -326,6 +328,10 @@ describe('Test requests', () => {
             });
         });
     });
+
+    after(() => {
+        fs.writeFileSync('settings.json', oldSettings)
+    })
 });
 
 
