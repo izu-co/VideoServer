@@ -17,8 +17,7 @@ getAllFiles('test').forEach(f => {
 });
 
 //TODO check settings file
-
-const oldSettings = fs.readFileSync('settings.json')
+const oldSettings: Buffer|undefined = fs.existsSync('settings.json') ? fs.readFileSync('settings.json') : undefined
 
 describe('File Tests', () => {
     it('Node_modules installed', () => {
@@ -330,7 +329,8 @@ describe('Test requests', () => {
     });
 
     after(() => {
-        fs.writeFileSync('settings.json', oldSettings)
+        if (oldSettings)
+            fs.writeFileSync('settings.json', oldSettings)
     })
 });
 

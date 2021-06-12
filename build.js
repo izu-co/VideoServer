@@ -23,7 +23,8 @@ const buildOptions = {
         'update.zip',
         'tsconfig.json',
         'webpack.config.js',
-        '.eslintrc.json'
+        '.eslintrc.json',
+        'settings.json'
     ]
 };
 

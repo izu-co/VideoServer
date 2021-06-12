@@ -51,7 +51,7 @@
     "eslint": "npx eslint . --fix",
     "build": "node build.js",
     "prestart": "node build.js --test",
-    "start": "cd build && node index.js",
+    "start": "cd build && node index.js --vd ../test/videos --sync --httpPort 3000 --httpsPort 3001 --disableUpdate",
     "pretest": "npm run prestart",
     "test": "npx mocha --require ts-node/register test/run.ts --exit --timeout 10000 --no-warnings"
   },
