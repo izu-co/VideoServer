@@ -10,11 +10,18 @@ const routeName = filename.slice(0, filename.length - 1).join('.');
 
 
 router.route('/' + routeName + '/')
-    .delete(requireArguments(['token', 'path']), postRouteHandler);
+    .delete(requireArguments([
+        { name: 'token' },
+        { name: 'path' }
+    ]), postRouteHandler);
 
 function postRouteHandler(req:Request, res:Response) {
-    const response = fileStuff.removeFromWatchList(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.path);
-    res.send(response);
+    const answer = fileStuff.removeFromWatchList(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.path);
+    if (answer.isOk === true) {
+        res.status(200).end(answer.value)
+    } else {
+        res.status(answer.statusCode).end(answer.message)
+    }
 }
 
 

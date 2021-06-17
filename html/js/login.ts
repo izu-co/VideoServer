@@ -1,9 +1,5 @@
 import { loadCookie, fetchBackend, setCookie } from './generalFunctions';
 
-window.addEventListener('load', () => {
-    console.log('test');
-});
-
 const loginbtn = document.getElementById('submit');
 const username = <HTMLInputElement> document.getElementById('username');
 const password = <HTMLInputElement> document.getElementById('password');
@@ -56,25 +52,24 @@ async function login() {
                 'Passwort' : password.value
             }),
             method: 'POST'
-        }).then(data => data.json())
-            .then(res => {
-                if (res['status'] === true) {
-                    setCookie('token', res['data'], new Date(Date.now() + (1000 * 60 * 60 * 24)));
-                    wrongPass.style.color = 'greenyellow';
-                    wrongPass.innerHTML = 'Erfolgreich eingeloggt!';
-                    wrongPass.style.opacity = '1';
-                    canlogin = false;
-                    setTimeout(() => { document.location.href = '/videoSelector?path='; }, 2000);
-                } else {
-                    wrongPassText.innerHTML = res['reason'];
-                    wrongPassText.className = 'vis';
-                    setTimeout(() => { wrongPassText.className = 'unvis'; }, 600);
-                }
-            })
-            .catch(error => {
-                document.getElementById('offline').classList.remove('false');
-                console.log(error);
-            });
+        }).then(async data => {
+            if (data.ok) {
+                setCookie('token', await data.text(), new Date(Date.now() + (1000 * 60 * 60 * 24)));
+                wrongPass.style.color = 'greenyellow';
+                wrongPass.innerHTML = 'Erfolgreich eingeloggt!';
+                wrongPass.style.opacity = '1';
+                canlogin = false;
+                setTimeout(() => { document.location.href = '/videoSelector?path='; }, 2000);
+            } else {
+                wrongPassText.innerHTML = data.body ? await data.text() : 'Login failed';
+                wrongPassText.className = 'vis';
+                setTimeout(() => { wrongPassText.className = 'unvis'; }, 600);
+            }
+        })
+        .catch(error => {
+            document.getElementById('offline').classList.remove('false');
+            console.log(error);
+        });
         return;
     } else {
         wrongPassText.className = 'vis';

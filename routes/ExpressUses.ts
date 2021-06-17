@@ -41,15 +41,15 @@ export function init() : void {
         const urlPath = req.url.split('.');
         const pathCheck = checkPath(req.path.replace('/video/', ''));
 
-        if (!pathCheck.status) 
+        if (pathCheck.isOk === false) 
             return res.status(404).end();
 
         if (urlPath.pop() === 'mp4' && VideoNameExtensions.includes(urlPath.pop())) {
-            if (fs.existsSync(decodePath(pathCheck.data)))
+            if (fs.existsSync(decodePath(pathCheck.value)))
                 return next();
 
-            if (fs.existsSync('temp' + path.sep + decodePath(pathCheck.data.substring(argv['Video Directory'].length)))) {
-                res.locals.tempVideo = 'temp' + path.sep + decodePath(pathCheck.data.substring(argv['Video Directory'].length));
+            if (fs.existsSync('temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length)))) {
+                res.locals.tempVideo = 'temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length));
                 return next();
             }
 
@@ -73,12 +73,12 @@ function initSocket() {
         socket.on('transcodeStatus', (pathToCheck, callback) => {
             const pathCheck = checkPath(pathToCheck);
 
-            if (!pathCheck.status) 
+            if (pathCheck.isOk === false) 
                 return callback({
                     type: 'error'
                 });
 
-            let p = decodePath(pathCheck.data.substring(argv['Video Directory'].length));
+            let p = decodePath(pathCheck.value.substring(argv['Video Directory'].length));
             while (p.startsWith(path.sep))
                 p = p.slice(1);
             if (fs.existsSync('temp' + path.sep + p)) 
@@ -98,14 +98,14 @@ function initSocket() {
 
         socket.on('startTranscoding', (pathToCheck) => {
             const pathCheck = checkPath(decodePath(pathToCheck));
-            if (!pathCheck.status) 
+            if (pathCheck.isOk === false) 
                 return;
-            if (currentTranscoding.includes(decodeURIComponent(pathCheck.data)))
+            if (currentTranscoding.includes(decodeURIComponent(pathCheck.value)))
                 return;
             
-            const streamPath = pathCheck.data.split('.').reverse().slice(1).reverse().join('.');
+            const streamPath = pathCheck.value.split('.').reverse().slice(1).reverse().join('.');
 
-            pathCheck.data.substring(argv['Video Directory'].length).split(path.sep).forEach((_: string, i: number, a: Array<string>) => {
+            pathCheck.value.substring(argv['Video Directory'].length).split(path.sep).forEach((_: string, i: number, a: Array<string>) => {
                 if (i === 0)
                     return;
                 const testPath = ['temp'].concat(a.slice(0, i)).join(path.sep);
@@ -116,9 +116,9 @@ function initSocket() {
             ffmpeg()
                 .input(streamPath)
                 .outputOptions([ '-preset veryfast', '-vcodec libx264', '-threads 0', '-y'])
-                .output('temp' + path.sep + decodePath(pathCheck.data.substring(argv['Video Directory'].length)))
+                .output('temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length)))
                 .on('end', () => {
-                    const index = currentTranscoding.indexOf((pathCheck.data));
+                    const index = currentTranscoding.indexOf((pathCheck.value));
                     if (index > -1) {
                         currentTranscoding.splice(index, 1);
                     }
@@ -127,7 +127,7 @@ function initSocket() {
                     });
                 })
                 .on('error', (err) => {
-                    const index = currentTranscoding.indexOf(decodeURIComponent(pathCheck.data));
+                    const index = currentTranscoding.indexOf(decodeURIComponent(pathCheck.value));
                     if (index > -1) {
                         currentTranscoding.splice(index, 1);
                     }
@@ -137,7 +137,7 @@ function initSocket() {
                     });
                 })
                 .on('start', () => {
-                    currentTranscoding.push(decodeURIComponent(pathCheck.data));
+                    currentTranscoding.push(decodeURIComponent(pathCheck.value));
                     socketIO.emit(pathToCheck, {
                         type: 'start'
                     });

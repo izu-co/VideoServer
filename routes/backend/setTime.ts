@@ -8,11 +8,19 @@ const filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 
 const routeName = filename.slice(0, filename.length - 1).join('.');
 
 router.route('/' + routeName + '/')
-    .put(getUser(true), requireArguments(['path', 'token', 'percent']), postRouteHandler);
+    .put(getUser(true), requireArguments([
+        { name: 'path' },
+        { name: 'token' },
+        { name: 'percent', test: (val) => typeof val === "number" && val <= 1 && val >= 0}
+    ]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    const response = fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress);
-    res.send({'status': response});
+    const answer = fileStuff.saveTime(req.body.path, req.body.token, req.body.percent, req.header('x-forwarded-for') || req.socket.remoteAddress);
+    if (answer.isOk === true) {
+        res.status(200).end(answer.value)
+    } else {
+        res.status(answer.statusCode).end(answer.message)
+    }
 }
 
 export = router;

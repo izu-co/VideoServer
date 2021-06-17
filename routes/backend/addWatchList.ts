@@ -10,11 +10,18 @@ const routeName = filename.slice(0, filename.length - 1).join('.');
 
 
 router.route('/' + routeName + '/')
-    .put(requireArguments(['token', 'path']), postRouteHandler);
+    .put(requireArguments([
+        { name: 'token' },
+        { name: 'path' }
+    ]), postRouteHandler);
 
 function postRouteHandler(req:Request, res:Response) {
     const response = fileStuff.addToWatchList(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.path);
-    res.send(response);
+    if (response.isOk === true) {
+        res.status(200).end(response.value)
+    } else {
+        res.status(response.statusCode).end(response.message)
+    }
 }
 
 

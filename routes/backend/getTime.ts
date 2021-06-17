@@ -8,16 +8,18 @@ const filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 
 const routeName = filename.slice(0, filename.length - 1).join('.');
 
 router.route('/' + routeName + '/')
-    .get(requireArguments(['path', 'token']), postRouteHandler);
+    .get(requireArguments([
+        { name: 'path' },
+        { name: 'token' }
+    ]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    if (!(typeof req.query.token === 'string') || !(typeof req.query.path === 'string'))
-        return res.status(400).send({status: false, reason: 'Can\'t parse query parameters'});
-    const answer = fileStuff.loadTime(<string> req.query.path, <string> req.query.token, req.header('x-forwarded-for') || req.socket.remoteAddress);
-    if (answer !== -1)
-        res.send({'status' : true, 'data' : answer});
-    else
-        res.send({'status' : false});
+    const answer = fileStuff.loadTime(req.query.path as string, req.query.token as string, req.header('x-forwarded-for') || req.socket.remoteAddress);
+    if (answer.isOk === true) {
+        res.status(200).end(answer.value.toString())
+    } else {
+        res.status(answer.statusCode).end(answer.message)
+    }
 }
 
 export = router;

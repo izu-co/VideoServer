@@ -11,10 +11,7 @@ router.route('/' + routeName + '/')
     .get(getUser(true) ,postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    res.send({
-        status: true,
-        data: index.app.locals.streams
-    });
+    res.status(200).json(index.app.locals.streams).end();
 }
 
 export = router;

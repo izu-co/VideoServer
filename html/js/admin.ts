@@ -88,7 +88,12 @@ fetchBackend(url.toString(), {
                     'uuid' : user['UUID']
                 }),
                 method: 'POST'
-            }, undefined, false, true);
+            }, (val) => {
+                if (val !== undefined) {
+                    alert(val)
+                    checkavtive.checked = !checkavtive.checked
+                }
+            }, false, true);
         });
 
         const slider = document.createElement('span');

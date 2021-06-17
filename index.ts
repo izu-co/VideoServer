@@ -113,6 +113,8 @@ const httpServer = http.createServer(app);
 if (httpsEnabled) {
     app.use((req, res, next) => {
         if (!req.secure) {
+            if (!req.headers.host)
+                return;
             return res.redirect(308, 'https://' + req.headers.host.split(':')[0] + (argv.httpsPort !== 443 ? ':' + argv.httpsPort : '') + req.url);
         }
         next();

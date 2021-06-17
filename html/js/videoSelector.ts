@@ -1,5 +1,5 @@
 import { fetchBackend, loadCookie, setCookie, fetchBackendPromise } from './generalFunctions';
-import { FileData as FileDataType, SortTypes, GetFilesResponse } from '../../interfaces';
+import { FileData as FileDataType, GetFilesResponse, SortTypes } from '../../interfaces';
 
 fetchBackend('/api/checkToken/', {
     headers: {
@@ -55,9 +55,11 @@ loading.registerListener(function (val) {
 class FileData {
     private data: Array<FileDataType>;
     private pathSep: string; 
-    public showAmount = 10;
+    public defaultShowAmount = 20;
+    public addShowAmount = 20;
+
+    public showAmount = this.defaultShowAmount;
     public currentlyShown = 0;
-    public defaultShowAmount = 10;
 
     public hasMore() : boolean {
         if (!this.data)
@@ -67,7 +69,7 @@ class FileData {
 
     public loadMore() : void {
         if (this.hasMore()) {
-            this.showAmount+=10;
+            this.showAmount+=this.addShowAmount;
             this.showData();
         }
 
@@ -77,7 +79,7 @@ class FileData {
 
     public async loadData(path: string, type: null|SortTypes = null) : Promise<void> {
         loading.a = true;
-        this.showAmount = 10;
+        this.showAmount = this.defaultShowAmount;
         this.currentlyShown = 0;
         const url = new URL(window.location.origin + '/api/getFiles/');
         url.search = new URLSearchParams({
@@ -85,19 +87,24 @@ class FileData {
             'path': path,
             'type': type
         }).toString();
-        const response : GetFilesResponse = await (await fetchBackendPromise(url.toString(), {
+        const response = await fetchBackendPromise(url.toString(), {
             headers: {
                 'content-type': 'application/json; charset=UTF-8'
             },
             method: 'GET'
-        })).json();
-        
-        if (!response['status'])
-            document.location.href = '/';
-        else {
-            this.data = response.data.files;
-            this.pathSep = response.data.pathSep;
+        })
+
+        if (!response.ok) {
+            document.getElementById('offline').classList.remove('false');
+            console.log(`[Request Failed] ${response.body ? await response.text() : ''}`)
+            return;
         }
+
+        const parsedData : GetFilesResponse = await response.json()
+
+        this.data = parsedData.files;
+        this.pathSep = parsedData.pathSep;
+
         loading.a = false;
     }
 
@@ -146,6 +153,7 @@ class FileData {
                     }),
                     method: (add.classList.contains('already') ? 'DELETE' : 'PUT')
                 }, (data) => {
+                    console.log(data)
                     if (data === 'added') {
                         add.classList.remove('add');
                         add.classList.add('already');

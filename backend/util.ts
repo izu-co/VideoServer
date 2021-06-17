@@ -5,13 +5,13 @@ import { SettingsDataInterface } from '../interfaces';
 import * as loginBackend from './UserMangement';
 import { db } from '../index';
 import { RunResult } from 'better-sqlite3';
-import { UserDataResponse, Response, CheckPathResponse } from '../interfaces';
+import { UserData, BackendRequest} from '../interfaces';
 
 function isEmptyObject(obj:object) : boolean {
     return !Object.keys(obj).length;
 }
 
-function checkPath(path:string): CheckPathResponse {
+function checkPath(path:string): BackendRequest<string> {
     if (!path)
         path = index.argv['Video Directory'];
     if (!path.startsWith(index.argv['Video Directory']))
@@ -19,46 +19,46 @@ function checkPath(path:string): CheckPathResponse {
 
     if (!Path.resolve(path).startsWith(Path.resolve(index.argv['Video Directory'])))
         return {
-            status: false,
-            reason: 'The path provided is invalid'
+            isOk: false,
+            statusCode: 404,
+            message: 'The path provided is invalid'
         };
     return {
-        'status': true,
-        'data': path
+        isOk: true,
+        value: path
     };
 }
 
-function getUserData (token:string, ip:string): UserDataResponse {
+function getUserData (token:string, ip:string): BackendRequest<UserData> {
     const answer = loginBackend.getUserFromToken(token, ip);
-    if (!answer['status'])
+    if (answer.isOk === false)
         return answer;
     
-    const volume = db.prepare('SELECT * from settings WHERE UUID=?').get(answer.data.uuid);
-    const ret = {};
+    const volume = db.prepare('SELECT * from settings WHERE UUID=?').get(answer.value.uuid);
+    const ret = {
+        volume: (volume ?? {})['volume'] || db.prepare('SELECT * from settings WHERE UUID=?').get('default')['volume']
+    };
     
-    if (volume === undefined) {
-        ret['volume'] = db.prepare('SELECT * from settings WHERE UUID=?').get('default')['volume'];
-    } else {
-        ret['volume'] = volume['volume'];
-    }
-    
-    return {'status' : true, 'data' : ret};
+    return {
+        isOk: true,
+        value: ret
+    };
 }
 
-function saveUserData (token:string, ip:string, data:SettingsDataInterface) : Response {
+function saveUserData (token:string, ip:string, data:SettingsDataInterface) : BackendRequest<undefined> {
     const user = loginBackend.getUserFromToken(token, ip);
-    if (!user.status) return user;
+    if (user.isOk === false) return user;
 
     if (!('volume' in data && Number.isInteger(data.volume) && data.volume >= 0 && data.volume <= 100 )) 
-        return { status: false, reason: 'Malformatted data' };
+        return {isOk: false, statusCode: 400, message: 'Malformatted data' };
 
-    const exists = db.prepare('SELECT * FROM settings WHERE UUID=?').get(user.data.uuid);
+    const exists = db.prepare('SELECT * FROM settings WHERE UUID=?').get(user.value.uuid);
     let answer:RunResult;
     if (exists)
-        answer = db.prepare('UPDATE settings SET volume = ? WHERE UUID = ?').run(data['volume'], user.data.uuid);
+        answer = db.prepare('UPDATE settings SET volume = ? WHERE UUID = ?').run(data['volume'], user.value.uuid);
     else 
-        answer = db.prepare('INSERT INTO settings VALUES(?,?)').run(user.data.uuid, data['volume']);
-    return answer.changes > 0 ? { status: true } : { status: false, reason: 'No changes have been made' };
+        answer = db.prepare('INSERT INTO settings VALUES(?,?)').run(user.value.uuid, data['volume']);
+    return { isOk: true, value: undefined }
 }
 
 function readdir(path:string) : string[] {

@@ -8,13 +8,18 @@ const filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 
 const routeName = filename.slice(0, filename.length - 1).join('.');
 
 router.route('/' + routeName + '/')
-    .get(getUser(true), requireArguments(['path']), postRouteHandler);
+    .get(getUser(true), requireArguments([
+        { name: 'token' },
+        { name: 'path' }
+    ]), getRouteHandler);
 
-function postRouteHandler(req:express.Request, res:express.Response) {
-    if (req.query.path && typeof req.query.path !== 'string')
-        return res.status(400).send({status: false, reason: 'Can\'t parse query parameters'});
-    const answer = fileStuff.getFileData(<string|undefined|null> req.query.path);
-    res.send(answer===null?{'status': false} : {'status': true, 'data': answer});
+function getRouteHandler(req:express.Request, res:express.Response) {
+    const answer = fileStuff.getFileData(req.query.path as string);
+    if (answer.isOk === true) {
+        res.status(200).json(answer.value).end()
+    } else {
+        res.status(answer.statusCode).end(answer.message)
+    }
 }
 
 export = router;

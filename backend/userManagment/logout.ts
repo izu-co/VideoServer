@@ -1,10 +1,11 @@
-import { Response } from '../../interfaces';
+import { BackendRequest } from '../../interfaces';
 import { db } from '../..';
 
-function logout(tokenToLogout:string): Response {
+function logout(tokenToLogout:string): BackendRequest<undefined> {
     db.prepare('DELETE FROM tokens WHERE token=?').run(tokenToLogout);
     return {
-        status: true
+        isOk: true,
+        value: undefined
     };
 }
 

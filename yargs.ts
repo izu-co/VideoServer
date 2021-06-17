@@ -70,8 +70,8 @@ if (data !== undefined) {
     argv.httpPort = 'httpPort' in data && Number.isInteger(data['httpPort']) ? parseInt(data['httpPort']) : argv.httpPort;
     argv.httpsPort = 'httpsPort' in data && Number.isInteger(data['httpsPort']) ? parseInt(data['httpsPort']) : argv.httpsPort;
 }
-
-argv['Video Directory'] = path.isAbsolute(argv['Video Directory']) ? path.resolve(argv['Video Directory']) : path.relative(__dirname, argv['Video Directory']);
+if (argv['Video Directory'])
+    argv['Video Directory'] = path.isAbsolute(argv['Video Directory']) ? path.resolve(argv['Video Directory']) : path.relative(__dirname, argv['Video Directory']);
 
 
 export {argv};

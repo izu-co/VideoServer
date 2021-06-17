@@ -1,16 +1,16 @@
-import { SkipData } from '../../interfaces';
+import { SkipData, BackendRequest } from '../../interfaces';
 import { checkPath, isEmptyObject } from '../util';
 import * as fs from 'fs';
 import * as Path from 'path';
 import * as index from '../../index';
 
-function getFileData (path:string) : SkipData|{'status':true|false, 'reason'?:string} {
+function getFileData (path:string) : BackendRequest<SkipData> {
     const pathCeck = checkPath(path);
-    if (!pathCeck.status)
+    if (pathCeck.isOk === false)
         return pathCeck;
-    path = pathCeck.data;
+    path = pathCeck.value;
     if (!fs.existsSync(path))
-        return {'status': false, 'reason': 'The given path does not exist'};
+        return { isOk: false, statusCode: 400, message: 'The given path does not exist'};
     const ret = {};
 
     const skip = index.db.prepare('SELECT * FROM intros WHERE path=?').get(path);
@@ -34,7 +34,10 @@ function getFileData (path:string) : SkipData|{'status':true|false, 'reason'?:st
     ret['pathSep'] = Path.sep;
     ret['current'] = path.substring(index.argv['Video Directory'].length);
     if (!isEmptyObject(ret))
-        return <SkipData> ret;
+        return {
+            isOk: true,
+            value: ret as SkipData
+        };
     else 
         return null;
 }

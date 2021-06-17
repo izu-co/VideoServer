@@ -1,13 +1,13 @@
 import { SortTypes } from '../../interfaces';
-import { SortTypeResponse } from '../../interfaces';
+import { BackendRequest } from '../../interfaces';
 
-function getSortTypes() : SortTypeResponse {
+function getSortTypes() : BackendRequest<string[]> {
     const types : string[] = [];
     for (const k of Object.values(SortTypes))
         types.push(k);
     return {
-        status: true,
-        data: types
+        isOk: true,
+        value: types
     };
 }
 

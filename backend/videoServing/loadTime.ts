@@ -1,25 +1,37 @@
 
 import { checkPath } from '../util';
-import { UserRequestResponse } from '../../interfaces';
+import { BackendRequest, User } from '../../interfaces';
 import * as loginBackend from '../UserMangement';
 import { db } from '../..';
 
-function loadTime(path:string, token:string, ip:string, user:UserRequestResponse = null) : number {
+function loadTime(path:string, token:string, ip:string, user:BackendRequest<User> = null) : BackendRequest<number> {
     const pathCeck = checkPath(path);
-    if (!pathCeck.status)
-        return 0;
-    path = pathCeck.data;    
+    if (pathCeck.isOk === false)
+        return {
+            isOk: true,
+            value: 0
+        };
+    path = pathCeck.value;    
     if (user === null) {
         user = loginBackend.getUserFromToken(token, ip);
     }
-    if (!user['status'])
-        return -1;
+    if (user.isOk === false)
+        return {
+            isOk: true,
+            value: -1
+        };
 
-    const data = db.prepare('SELECT * FROM status WHERE UUID=? AND path=?').get(user.data.uuid, path);
+    const data = db.prepare('SELECT * FROM status WHERE UUID=? AND path=?').get(user.value.uuid, path);
     if (data === undefined)
-        return 0;
+        return {
+            isOk: true,
+            value: 0
+        }
     else 
-        return data['data'];
+        return {
+            isOk: true,
+            value: data['data']
+        }
 }
 
 export {loadTime};

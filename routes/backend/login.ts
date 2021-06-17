@@ -8,11 +8,18 @@ const filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 
 const routeName = filename.slice(0, filename.length - 1).join('.');
 
 router.route('/' + routeName + '/')
-    .post(requireArguments(['Username', 'Passwort']), postRouteHandler);
+    .post(requireArguments([
+        { name: 'Username' },
+        { name: 'Passwort' }
+    ]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    const response = loginBackend.GenerateUserToken(req.body.Username, req.body.Passwort, req.header('x-forwarded-for') || req.socket.remoteAddress);
-    res.send(response);
+    const answer = loginBackend.GenerateUserToken(req.body.Username, req.body.Passwort, req.header('x-forwarded-for') || req.socket.remoteAddress);
+    if (answer.isOk === true) {
+        res.status(200).end(answer.value)
+    } else {
+        res.status(answer.statusCode).end(answer.message)
+    }
 }
 
 export = router;

@@ -8,11 +8,17 @@ const filename = __filename.split(Path.sep)[__filename.split(Path.sep).length - 
 const routeName = filename.slice(0, filename.length - 1).join('.');
 
 router.route('/' + routeName + '/')
-    .post(requireArguments(['token']), postRouteHandler);
+    .post(requireArguments([
+        { name: 'token' }
+    ]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
-    const response = loginBackend.logout(req.body.token);
-    res.send(response);
+    const answer = loginBackend.logout(req.body.token);
+    if (answer.isOk === true) {
+        res.status(200).end(answer.value)
+    } else {
+        res.status(answer.statusCode).end(answer.message)
+    }
 }
 
 export = router;

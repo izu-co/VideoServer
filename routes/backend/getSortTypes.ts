@@ -12,7 +12,11 @@ router.route('/' + routeName + '/')
 
 function postRouteHandler(req:express.Request, res:express.Response) {
     const answer = fileStuff.getSortTypes();
-    res.send(answer);
+    if (answer.isOk === true) {
+        res.status(200).json(answer.value).end()
+    } else {
+        res.status(answer.statusCode).end(answer.message)
+    }
 }
 
 export = router;

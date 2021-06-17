@@ -17,18 +17,23 @@ function setCookie(name: string, cookie: string, expires: Date, path = '/') : vo
     document.cookie = name + '=' + cookie + ';' + (expires ? 'expires=' + expires.toUTCString() + ';' : '') + 'path=' + path;
 }
 
-function fetchBackend(url: string, options: RequestInit, callback: ((data: any) => void)|undefined, sendBack = false, canFail = false) : void {
-    fetch(url, options).then(data => data.json())
-        .then(res => {
-            if (!res['status']) {
+function fetchBackend(url: string, options: RequestInit, callback?: ((data: any) => void)|undefined, sendBack = false, canFail = false) : void {
+    fetch(url, options).then(async data => {
+            if (!data.ok) {
+                console.log('[Request Error] ' + data.bodyUsed ? await data.text() : '')
                 if (sendBack)
                     document.location.href = '/';
                 else if (!canFail)
                     document.getElementById('offline').classList.remove('false');
             } else {
                 document.getElementById('offline').classList.add('false');
+                const text = await data.text()
                 if (callback)
-                    callback(res['data']);
+                    try {
+                        callback(JSON.parse(text))
+                    } catch {
+                        callback(text)
+                    } 
             }
         })
         .catch(error => {

@@ -1,60 +1,61 @@
 import { db } from '../..';
 import { getUserFromToken } from '../UserMangement';
 import { checkPath } from '../util';
-import { StarResponse } from '../../interfaces';
+import { BackendRequest } from '../../interfaces';
 
+type StarRequest = 0|1|2|3|4|5
 
-function setStars(token: string, ip:string, path:string, stars:number) : StarResponse {
+function setStars(token: string, ip:string, path:string, stars:number) : BackendRequest<StarRequest> {
 
     const user = getUserFromToken(token, ip);
 
-    if (user.status === false)
+    if (user.isOk === false)
         return user;
     
     if (!Number.isInteger(stars) || stars < 0 || stars > 5)
-        return { status: false, reason: 'The stars has to be an integer between 0 and 5' };
+        return { isOk: false, statusCode: 400, message: 'The stars has to be an integer between 0 and 5' };
 
     const checkedPath = checkPath(path);
-    if (checkedPath.status === false)
+    if (checkedPath.isOk === false)
         return checkedPath;
 
-    path = checkedPath.data;
+    path = checkedPath.value;
 
-    const request = db.prepare('SELECT * FROM stars WHERE path=? AND UUID=?').get(path, user.data.uuid);
+    const request = db.prepare('SELECT * FROM stars WHERE path=? AND UUID=?').get(path, user.value.uuid);
 
     if (request === undefined) {
-        db.prepare('INSERT INTO stars VALUES (?, ?, ?)').run(user.data.uuid, path, stars);
+        db.prepare('INSERT INTO stars VALUES (?, ?, ?)').run(user.value.uuid, path, stars);
         return {
-            status: true,
-            data: <0|1|2|3|4|5> stars
+            isOk: true,
+            value: stars as StarRequest
         };
     } else {
-        db.prepare('UPDATE stars SET stars=? WHERE path=? AND UUID=?').run(stars, path, user.data.uuid);
+        db.prepare('UPDATE stars SET stars=? WHERE path=? AND UUID=?').run(stars, path, user.value.uuid);
         return {
-            status: true,
-            data: db.prepare('SELECT * FROM stars WHERE path=? AND UUID=?').get(path, user.data.uuid)['stars']
+            isOk: true,
+            value: db.prepare('SELECT * FROM stars WHERE path=? AND UUID=?').get(path, user.value.uuid)['stars']
         };
     }
 
 }
 
-function getStars(token:string, ip:string, path:string) : StarResponse {
+function getStars(token:string, ip:string, path:string) : BackendRequest<StarRequest> {
     const user = getUserFromToken(token ,ip);
 
-    if (user.status === false) return user;
+    if (user.isOk === false) return user;
 
     const checkedPath = checkPath(path);
 
-    if (checkedPath.status === false)
+    if (checkedPath.isOk === false)
         return checkedPath;
 
-    path = checkedPath.data;
+    path = checkedPath.value;
 
-    const request = db.prepare('SELECT * FROM stars WHERE path=? AND UUID=?').get(path, user.data.uuid);
+    const request = db.prepare('SELECT * FROM stars WHERE path=? AND UUID=?').get(path, user.value.uuid);
     
     return {
-        status: true,
-        data: request === undefined ? 0 : request['stars']
+        isOk: true,
+        value: request === undefined ? 0 : request['stars']
     };
 }
 
