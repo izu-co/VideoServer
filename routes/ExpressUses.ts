@@ -47,20 +47,10 @@ export function init() : void {
         if (urlPath.pop() === 'mp4' && VideoNameExtensions.includes(urlPath.pop())) {
             if (fs.existsSync(decodePath(pathCheck.value)))
                 return next();
+
             if (fs.existsSync('temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length)))) {
                 res.locals.tempVideo = 'temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length));
                 return next();
-            } else {
-                // res.contentType("mp4")
-                res.writeHead(206, { "Content-Type":"video/mp4"});
-                console.log("Started", path.resolve(decodePath(pathCheck.value).slice(0, -4)))
-                ffmpeg(path.resolve(decodePath(pathCheck.value).slice(0, -4)))
-                // .videoCodec('libx264')
-                .on("error", (er, stdout,stderr) => console.log(er, stdout, stderr))
-                .on("process", (chunk) => console.log(`Process: ${chunk}`))
-                .toFormat("ismv")
-                .pipe(res, { end: true })
-                .on("error", (er,stdout,stderr) => console.log(er, stdout, stderr))
             }
 
         } else
@@ -79,7 +69,6 @@ export function init() : void {
 }
 
 function initSocket() {
-    //TODO SocketIO Auth
     socketIO.on('connection', (socket) => {
         socket.on('transcodeStatus', (pathToCheck, callback) => {
             const pathCheck = checkPath(pathToCheck);

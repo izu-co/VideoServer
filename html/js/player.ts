@@ -46,9 +46,8 @@ fetchBackend('/api/checkToken/', {
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
-if (true || !video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
-    video.src = '/video/' + urlParams.get('path') + '.mp4'
-    /*socket.on(urlParams.get('path') + '.mp4', (data) => {
+if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
+    socket.on(urlParams.get('path') + '.mp4', (data) => {
         switch (data.type) {
         case 'error':
             console.error(data.data);
@@ -80,7 +79,7 @@ if (true || !video.canPlayType(getVideoType(urlParams.get('path').split('.').pop
             socket.emit('startTranscoding', urlParams.get('path') + '.mp4');
             break;
         }
-    });*/
+    });
 } else {
     video.src = '/video/' + urlParams.get('path');
 }
