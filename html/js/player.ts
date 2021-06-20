@@ -17,13 +17,23 @@ const skipButton = document.getElementById('SkipButton');
 const next = <HTMLButtonElement> document.getElementById('next');
 const controls = document.getElementById('controls');
 const info = document.getElementById('info');
+const blueJuice = document.getElementById('blue-juice');
 
 let mouseDown = false;
 let skiped = false;
 let timer: NodeJS.Timeout;
 const WaitToHideTime = 1000;
-let infoProgress: HTMLParagraphElement;
-const socket = io();
+const socket = io({
+    auth: {
+        token: loadCookie('token')
+    }
+});
+
+socket.on('error', (err:string, critical:boolean) => {
+    console.log(`[SocketIO] Recived error: ${err}`);
+    if (critical)
+        socket.disconnect();
+});
 
 document.body.onmousedown = function() { 
     mouseDown = true;
@@ -45,42 +55,23 @@ fetchBackend('/api/checkToken/', {
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
+type LiveTranscodingData = {
+    duration: number,
+} | undefined
+let liveTranscodingData: LiveTranscodingData = undefined;
 
-if (true || !video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
-    video.src = '/video/' + urlParams.get('path') + '.mp4'
-    /*socket.on(urlParams.get('path') + '.mp4', (data) => {
-        switch (data.type) {
-        case 'error':
-            console.error(data.data);
-            showError();
-            break;
-        case 'progress':
-            if (!infoProgress) {
-                infoProgress = document.createElement('p');
-                info.appendChild(infoProgress);
-            }
-            infoProgress.innerHTML = Math.ceil(data.data * 100) / 100 + '%';
-            break;
-        case 'finish':
-            if (!video.src)
-                video.src = '/video/' + urlParams.get('path') + '.mp4';
+
+if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
+    socket.emit('videoMetaData', urlParams.get('path'), (res) => {
+        if (res.type === 'error') {
+            console.log(`[Error] ${typeof res.msg === 'object' ? JSON.stringify(res.msg) : res.msg}`);
+            return showError(typeof res.msg === 'object' ? JSON.stringify(res.msg) : res.msg);
         }
+        liveTranscodingData = {
+            duration: res.format.duration
+        };
+        video.src = '/video/' + urlParams.get('path') + '.mp4';
     });
-
-    socket.emit('transcodeStatus', encodeURIComponent(urlParams.get('path')) + '.mp4', (res) => {
-        console.log(res.type);
-        switch (res.type) {
-        case 'error':
-            showError();
-            break;
-        case 'ready':
-            video.src = '/video/' + urlParams.get('path') + '.mp4';
-            break;
-        case 'notFound':
-            socket.emit('startTranscoding', urlParams.get('path') + '.mp4');
-            break;
-        }
-    });*/
 } else {
     video.src = '/video/' + urlParams.get('path');
 }
@@ -121,11 +112,11 @@ function loadData(res: SkipData) {
     if (res.next) {
         next.style.opacity = '1';
         next.addEventListener('click', function() {
-            const nextURL = new URL(document.location.href)
+            const nextURL = new URL(document.location.href);
             nextURL.search = new URLSearchParams({
                 path: res.next
-            }).toString()
-            document.location.href = nextURL.toString()
+            }).toString();
+            document.location.href = nextURL.toString();
         });
     } else 
         next.disabled = true;
@@ -187,7 +178,7 @@ barContainer.addEventListener('click', getClickPosition, false);
 
 TimeTooltipBar.addEventListener('mousemove', function(e) {
     const width = (e.clientX  - (this.offsetLeft + (<HTMLElement>this.offsetParent).offsetLeft)) / this.offsetWidth;
-    const time = width * video.duration;
+    const time = width * (liveTranscodingData ? liveTranscodingData.duration : video.duration);
     const mincur = Math.floor(time / 60);
     let seccur: number|string = Math.floor(time % 60);
     if (seccur < 10)
@@ -201,6 +192,9 @@ TimeTooltipBar.addEventListener('mousemove', function(e) {
         tooltip.style.left = (TimeTooltipBar.offsetWidth - 70) + 'px';
 
     if (mouseDown) {
+        if (time > video.duration && liveTranscodingData) {
+            return alert('You may only seek backward or on the blue line');
+        }
         video.currentTime = time;
         if (seccur < 10)
             seccur = '0' + seccur;
@@ -212,7 +206,7 @@ TimeTooltipBar.addEventListener('mousemove', function(e) {
 function getClickPosition(e) {
     if (e.target === barContainer || e.target === bar || e.target === document.getElementById('TimeBar')) {
         const width = (e.clientX  - (this.offsetLeft + this.offsetParent.offsetLeft)) / this.offsetWidth;
-        const time = width * video.duration;
+        const time = width * (liveTranscodingData ? liveTranscodingData.duration : video.duration);
         video.currentTime = time;
         const mincur = Math.floor(time / 60);
         let seccur:number|string = Math.floor(time % 60);
@@ -243,11 +237,17 @@ buttonPlay.onclick = function() {
 let last = 0;
 
 video.addEventListener('timeupdate', function() {
-    const barPos = video.currentTime / video.duration;
+    const barPos = video.currentTime / ( liveTranscodingData ? liveTranscodingData.duration : video.duration);
     bar.style.width = barPos * 100 + '%';
 
+    if (liveTranscodingData) {
+        const bluePos = video.duration / liveTranscodingData.duration;
+        blueJuice.style.width = bluePos * 100 + '%'; 
+        blueJuice.style.display = 'inherit';
+    }
+
     const currTime = Math.round(video.currentTime);
-    const dur = Math.round(video.duration);
+    const dur = Math.round((liveTranscodingData ? liveTranscodingData.duration : video.duration));
 
     const min = Math.floor(dur / 60);
     let sec:number|string = Math.floor(dur % 60);
@@ -263,7 +263,7 @@ video.addEventListener('timeupdate', function() {
     time.innerHTML = mincur + ':' + seccur + ' / ' + min + ':' + sec;
     if (video.ended)
         buttonPlay.className = 'play';
-    const timePer = Math.floor(video.currentTime / video.duration * 100) / 100;
+    const timePer = Math.floor(video.currentTime / (liveTranscodingData ? liveTranscodingData.duration : video.duration) * 100) / 100;
     if (timePer !== last) {
         last = timePer;
         fetchBackend('/api/setTime/', {
@@ -322,7 +322,7 @@ document.addEventListener('fullscreenchange', function() {
 
 video.addEventListener('loadeddata', function () {
     info.style.display = 'none';
-    if (!skiped) {
+    if (!skiped && !liveTranscodingData) {
         const url = new URL(window.location.origin + '/api/getTime/');
         url.search = new URLSearchParams({
             'token': loadCookie('token'),

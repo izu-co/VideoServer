@@ -66,10 +66,10 @@ async function login() {
                 setTimeout(() => { wrongPassText.className = 'unvis'; }, 600);
             }
         })
-        .catch(error => {
-            document.getElementById('offline').classList.remove('false');
-            console.log(error);
-        });
+            .catch(error => {
+                document.getElementById('offline').classList.remove('false');
+                console.log(error);
+            });
         return;
     } else {
         wrongPassText.className = 'vis';

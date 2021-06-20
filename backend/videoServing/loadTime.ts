@@ -26,12 +26,12 @@ function loadTime(path:string, token:string, ip:string, user:BackendRequest<User
         return {
             isOk: true,
             value: 0
-        }
+        };
     else 
         return {
             isOk: true,
             value: data['data']
-        }
+        };
 }
 
 export {loadTime};

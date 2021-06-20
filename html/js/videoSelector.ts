@@ -92,15 +92,15 @@ class FileData {
                 'content-type': 'application/json; charset=UTF-8'
             },
             method: 'GET'
-        })
+        });
 
         if (!response.ok) {
             document.getElementById('offline').classList.remove('false');
-            console.log(`[Request Failed] ${response.body ? await response.text() : ''}`)
+            console.log(`[Request Failed] ${response.body ? await response.text() : ''}`);
             return;
         }
 
-        const parsedData : GetFilesResponse = await response.json()
+        const parsedData : GetFilesResponse = await response.json();
 
         this.data = parsedData.files;
         this.pathSep = parsedData.pathSep;
@@ -153,7 +153,7 @@ class FileData {
                     }),
                     method: (add.classList.contains('already') ? 'DELETE' : 'PUT')
                 }, (data) => {
-                    console.log(data)
+                    console.log(data);
                     if (data === 'added') {
                         add.classList.remove('add');
                         add.classList.add('already');

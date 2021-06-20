@@ -18,9 +18,9 @@ router.route('/' + routeName + '/')
 function postRouteHandler(req:Request, res:Response) {
     const answer = fileStuff.removeFromWatchList(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress, req.body.path);
     if (answer.isOk === true) {
-        res.status(200).end(answer.value)
+        res.status(200).end(answer.value);
     } else {
-        res.status(answer.statusCode).end(answer.message)
+        res.status(answer.statusCode).end(answer.message);
     }
 }
 
