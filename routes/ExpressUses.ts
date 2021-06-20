@@ -7,6 +7,7 @@ import { getUser, limiter } from './Routes';
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import { checkPath } from '../backend/util';
+import { getUserFromToken } from "../backend/UserMangement";
 
 const currentTranscoding = [];
 
@@ -70,6 +71,17 @@ export function init() : void {
 
 function initSocket() {
     socketIO.on('connection', (socket) => {
+        if (socket.handshake.auth.token) {
+            const user = getUserFromToken(socket.handshake.auth.token, socket.handshake.address)
+            if (user.isOk === false) {
+                delete user.isOk;
+                return socketIO.to(socket.id).emit('error', user, true)
+            }
+        } else {
+            socketIO.to(socket.id).emit('error', 'No token provided', true)
+            return;
+        }
+
         socket.on('transcodeStatus', (pathToCheck, callback) => {
             const pathCheck = checkPath(pathToCheck);
 
