@@ -76,7 +76,6 @@ export function init() : void {
 }
 
 function initSocket() {
-    //TODO SocketIO Auth
     socketIO.on('connection', (socket) => {
         if (socket.handshake.auth.token) {
             const user = getUserFromToken(socket.handshake.auth.token, socket.handshake.address);
