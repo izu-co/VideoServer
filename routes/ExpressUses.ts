@@ -115,7 +115,7 @@ function initSocket() {
         
             ffmpeg()
                 .input(streamPath)
-                .outputOptions([ '-preset veryfast', '-vcodec libx264', '-threads 0', '-y'])
+                .outputOptions([ '-preset veryfast', '-vcodec libx264', '-b:v 500k', '-vf scale=1280:720', '-threads 0', '-y'])
                 .output('temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length)))
                 .on('end', () => {
                     const index = currentTranscoding.indexOf((pathCheck.value));
