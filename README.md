@@ -60,7 +60,7 @@ $ node index.js --vd [Video directory]
 This project is under license from MIT. For more details, see the [LICENSE](LICENSE.md) file.
 
 
-Made with :heart: by <a href="https://github.com/AnAppleforlife" target="_blank">Me</a>
+Made with :heart: by <a href="https://github.com/izu-co" target="_blank">Me</a>
 
 &#xa0;
 
