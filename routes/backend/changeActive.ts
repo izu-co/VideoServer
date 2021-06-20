@@ -10,23 +10,23 @@ const routeName = filename.slice(0, filename.length - 1).join('.');
 router.route('/' + routeName + '/')
     .post(requireArguments([
         { name: 'token'},
-        { name: 'state', test: (val) => typeof val === "boolean" || typeof val === "number" },
+        { name: 'state', test: (val) => typeof val === 'boolean' || typeof val === 'number' },
         { name: 'uuid' }
     ]), getUser(true), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
     if (res.locals.user['perm'] === 'Admin') {
-        if (typeof req.body.state === "boolean")
-            req.body.state = req.body.state ? 1 : 0
+        if (typeof req.body.state === 'boolean')
+            req.body.state = req.body.state ? 1 : 0;
         const response = loginBackend.changeActiveState(req.body.state, req.body.uuid, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress);
         if (response.isOk === true) {
-            res.status(200).end(response.value)
+            res.status(200).end(response.value);
         } else {
-            res.status(response.statusCode).end(response.message)
+            res.status(response.statusCode).end(response.message);
         }
     } else {
-        console.log(`[ERROR] User was not correctly parsed on ${routeName} request!`)
-        res.status(500).end()
+        console.log(`[ERROR] User was not correctly parsed on ${routeName} request!`);
+        res.status(500).end();
     }
 }
 

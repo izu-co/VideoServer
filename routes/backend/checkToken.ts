@@ -15,9 +15,9 @@ router.route('/' + routeName + '/')
 function postRouteHandler(req:express.Request, res:express.Response) {
     const response = loginBackend.checkToken(req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress);
     if (response.isOk === true) {
-        res.status(200).json(response.value).end()
+        res.status(200).json(response.value).end();
     } else {
-        res.status(response.statusCode).end(response.message)
+        res.status(response.statusCode).end(response.message);
     }
 }
 

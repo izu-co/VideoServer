@@ -17,9 +17,9 @@ router.route('/' + routeName + '/')
 function postRouteHandler(req:express.Request, res:express.Response) {
     const response = loginBackend.deleteToken(req.body.uuid, req.body.token, req.header('x-forwarded-for') || req.socket.remoteAddress);
     if (response.isOk === true) {
-        res.status(200).end(response.value)
+        res.status(200).end(response.value);
     } else {
-        res.status(response.statusCode).end(response.message)
+        res.status(response.statusCode).end(response.message);
     }
 }
 
