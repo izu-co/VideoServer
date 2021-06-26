@@ -44,7 +44,7 @@ tsc.on('error', (err) => console.log(`[Typescript] ${err}`));
 tsc.on('message', (msg) => console.log(`[Typescript] ${msg}`));
 
 tsc.on('close', () => {
-    const webpack = child_process.exec('npx webpack');
+    const webpack = child_process.exec(`npx webpack ${!argv.test ? '--mode production' : ''}`);
     webpack.on('close', (code) => console.log(`[Webpack] Finished with code ${code}`));
     webpack.on('error', (err) => console.log(`[Webpack] ${err}`));
     webpack.on('message', (msg) => console.log(`[Webpack] ${msg}`));

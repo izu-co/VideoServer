@@ -5,6 +5,11 @@ import {
     FileSettings,
     Updater
 } from './backend/updater';
+import EventEmitter from 'events';
+
+const appEvents = new EventEmitter()
+
+export { appEvents }
 
 const updater = new Updater('anappleforlife', 'videoplayer', new Map < string, FileSettings > ()
     .set('data', FileSettings.DontOverride), argv.beta
@@ -35,7 +40,8 @@ export {
 import {
     db,
     backup,
-    fileIndex
+    fileIndex,
+    checkFiles
 } from './backend/database';
 
 export {
@@ -56,16 +62,20 @@ import router from './routes/index';
 import {
     init
 } from './routes/ExpressUses';
-import * as fileStuff from './backend/fileStuff';
 import * as loginBackend from './backend/UserMangement';
 import {
     Server
 } from 'socket.io';
 import http from 'http';
 import https from 'https';
+import createImages from "./backend/createImages"
 
-if (!argv.debug)
-    fileStuff.createImages(argv['Video Directory'], false, false, argv.sync);
+if (!argv['no-images'])
+    createImages(argv['Video Directory'], false, argv.verbose).then(files => {
+        if (files.isOk) {
+            checkFiles(files.value.map(a => a.path))
+        }
+    })
 
 let options;
 
@@ -106,13 +116,13 @@ app.use('/', router);
 
 httpServer.listen(argv.httpPort, () => {
     console.log(`[INFO] Listening on http://localhost${argv.httpPort !== 80 ? ':' + argv.httpPort : ''}/`);
-    httpServer.emit('started');
+    appEvents.emit('started', 'httpServer');
 });
 
 if (httpsServer) {
     httpsServer.listen(argv.httpsPort, () => {
         console.log(`[INFO] Listening on https://localhost${argv.httpsPort !== 443 ? ':' + argv.httpsPort : ''}/`);
-        httpsServer.emit('started');
+        appEvents.emit('started', 'httpsServer');
     });
 }
 

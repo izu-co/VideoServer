@@ -39,12 +39,22 @@ describe('File Tests', () => {
     }, null, 4));
 });
 
-const argv = require('../build/index.js').argv;
-
+const app = require('../build/index.js');
+const argv = app.argv
 describe('Test requests', () => {
     const requester = request(`http://localhost:${argv.httpPort}/api/`).keepOpen();
     let token: string;
     before(async () => {
+        //Wait for images
+        await new Promise<void>((resolve, reject) => {
+            app.appEvents.on('finished', data => {
+                console.log(data)
+                if (data === 'image generation')
+                    resolve()
+            })
+        })
+
+
         const data = await requester.post('login/').set('Content-Type', 'application/json').send({ Username: 'Admin', Passwort: 'pass' });
         expect(data.status).to.equal(200);
         expect(data.text).to.have.lengthOf(20);

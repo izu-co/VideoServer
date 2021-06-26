@@ -17,7 +17,7 @@ With the Video Server you can stream your videos anywhere in the world
 :heavy_check_mark: Search for video\
 :heavy_check_mark: Responsive Design\
 :heavy_check_mark: Rating system\
-:heavy_check_mark: On the fly video conversationn
+:heavy_check_mark: Video conversationn to watch your videos on every device
 
 ## :rocket: Technologies ##
 
@@ -25,12 +25,11 @@ The following tools were used in this project:
 
 - [Node.js](https://nodejs.org/en/)
 - [TypeScript](https://www.typescriptlang.org/)
-- [Java](https://java.com/)
 - [FFmpeg](https://ffmpeg.org/)
 
 ## :white_check_mark: Requirements ##
 
-Before starting, you need to have [Node](https://nodejs.org/en/), [Java](https://java.com/) and [FFmpeg](https://ffmpeg.org/) (make sure it includes libx264)installed.
+Before starting, you need to have [Node](https://nodejs.org/en/) and [FFmpeg](https://ffmpeg.org/) (make sure it includes libx264) installed.
 
 ## :checkered_flag: Starting ##
 
