@@ -62,8 +62,6 @@ body {
 .buttons {
     padding-left: 10px;
     padding-right: 10px;
-    position: relative;
-    top: 7px;
 }
 
 
@@ -86,18 +84,7 @@ body {
     background-color: black;
 }
 
-#blue-juice {
-    display: none;
-    background-color: blue;
-}
-
-#orange-juice {
-    z-index: 1;
-}
-
 .orange-juice {
-    position: absolute;
-    top: 0;
     height: 7px;
     width: 0%;
     background-color: orangered;
@@ -109,6 +96,8 @@ body {
     outline: 0;
     cursor: pointer;
 }
+
+
 
 .buttons #volume:before {
     content: '\f028';

@@ -22,6 +22,34 @@ import express from 'express';
 import * as fs from 'fs';
 import path from 'path';
 
+
+function clearCacheRecur(p: string) {
+    if (!fs.existsSync(p))
+        return;
+    const stats = fs.lstatSync(p);
+    if (stats.isDirectory()) {
+        const files = fs.readdirSync(p);
+        if (files.length === 0 && p !== path.join(__dirname, 'temp'))
+            fs.rmdirSync(p);
+        files.forEach(f => clearCacheRecur(path.join(p,f)));
+    } else {
+        if (stats.mtime.getTime() + 30 * 60 * 1000 < new Date().getTime()) {
+            fs.unlinkSync(p);
+        }
+    }
+}
+
+function clearCache() {
+    if (!fs.existsSync('temp'))
+        fs.mkdirSync('temp');
+    clearCacheRecur(path.join(__dirname, 'temp'));
+    setTimeout(() => {
+        clearCache();
+    }, 1000 * 60 * 30);
+}
+
+clearCache();
+
 const app = express();
 
 if (!fs.existsSync(argv['Video Directory'])) {

@@ -21,12 +21,12 @@ function postRouteHandler(req:Request, res:Response) {
     if (res.locals.user['perm'] === 'Admin') {
         const response = loginBackend.addNewUser(req.body.username, req.body.password, req.body.perm);
         if (response.isOk === true) 
-            res.status(200).end();
+            res.status(200).end()
         else 
-            res.status(response.statusCode).end(response.message);
+            res.status(response.statusCode).end(response.message)
     } else {
-        console.log(`[ERROR] User was not correctly parsed on ${routeName} request!`);
-        res.status(500).end();
+        console.log(`[ERROR] User was not correctly parsed on ${routeName} request!`)
+        res.status(500).end()
     }
 }
 

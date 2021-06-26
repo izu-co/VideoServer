@@ -4,9 +4,11 @@ import * as path from 'path';
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { getUser, limiter } from './Routes';
+import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import { checkPath } from '../backend/util';
-import { getUserFromToken } from '../backend/UserMangement';
+
+const currentTranscoding = [];
 
 export function init() : void {
     app.use(express.json());
@@ -43,31 +45,32 @@ export function init() : void {
             return res.status(404).end();
 
         if (urlPath.pop() === 'mp4' && VideoNameExtensions.includes(urlPath.pop())) {
-            ffmpeg(decodePath(pathCheck.value).slice(0, -4))
-                .ffprobe((er, data) => {
-                    if (er)
-                        return res.status(500).end('ffmpeg error');
-                    const command = ffmpeg(decodePath(pathCheck.value).slice(0, -4))
-                        .videoBitrate(data.format.bit_rate / 3)
-                        .size('50%')
-                        .videoCodec('libx264')
-                        .format('mp4')
-                        .outputOption('-movflags frag_keyframe+empty_moov')
-                        .on('error', (er, stdout, stderr) => {
-                            console.log(er, stdout, stderr);
-                            return res.status(500).end('ffmpeg error');
-                        })
-                        .on('progress', (progress) => console.log(`[FFmpeg] ${progress.percent}`));
-                    command
-                        .pipe(res)
-                        .on('error', (er) => {
-                            if (er.message !== 'Output stream closed')
-                                console.log(er);
-                            return res.status(500).end(er.message);
-                        });
-                });
+            if (fs.existsSync(decodePath(pathCheck.value)))
+                return next();
+            if (fs.existsSync('temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length)))) {
+                res.locals.tempVideo = 'temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length));
+                return next();
+            } else {
+                // res.contentType("mp4")
+                res.writeHead(206, { "Content-Type":"video/mp4"});
+                console.log("Started", path.resolve(decodePath(pathCheck.value).slice(0, -4)))
+                ffmpeg(path.resolve(decodePath(pathCheck.value).slice(0, -4)))
+                // .videoCodec('libx264')
+                .on("error", (er, stdout,stderr) => console.log(er, stdout, stderr))
+                .on("process", (chunk) => console.log(`Process: ${chunk}`))
+                .toFormat("ismv")
+                .pipe(res, { end: true })
+                .on("error", (er,stdout,stderr) => console.log(er, stdout, stderr))
+            }
+
         } else
             next();
+    }, (_, res, next) => {
+        if (!res.locals.tempVideo)
+            return next();
+        return res.sendFile(res.locals.tempVideo, {
+            root: argv['Working Directory']
+        });
     }, express.static(argv['Video Directory'], {
         dotfiles: 'allow'
     }));
@@ -77,39 +80,85 @@ export function init() : void {
 
 function initSocket() {
     socketIO.on('connection', (socket) => {
-        if (socket.handshake.auth.token) {
-            const user = getUserFromToken(socket.handshake.auth.token, socket.handshake.address);
-            if (user.isOk === false) {
-                delete user.isOk;
-                return socketIO.to(socket.id).emit('error', user, true);
-            }
-        } else {
-            socketIO.to(socket.id).emit('error', 'No token provided', true);
-            return;
-        }
-
-        socket.on('videoMetaData', (filepath, callback) => {
-            const pathCheck = checkPath(filepath);
+        socket.on('transcodeStatus', (pathToCheck, callback) => {
+            const pathCheck = checkPath(pathToCheck);
 
             if (pathCheck.isOk === false) 
                 return callback({
-                    type: 'error',
-                    msg: pathCheck.message
+                    type: 'error'
                 });
 
-            let p = decodePath(pathCheck.value);
+            let p = decodePath(pathCheck.value.substring(argv['Video Directory'].length));
             while (p.startsWith(path.sep))
                 p = p.slice(1);
-            ffmpeg(p).ffprobe((er, data) => {
-                if (er) {
-                    console.log(er);
-                    return callback({
-                        type: 'error',
-                        msg: er
-                    });
-                }
-                return callback(data);
+            if (fs.existsSync('temp' + path.sep + p)) 
+                return callback({
+                    type: 'ready'
+                });
+            
+            if (currentTranscoding.includes(pathToCheck))
+                return callback({
+                    type: 'transcoding'
+                });
+            
+            return callback({
+                type: 'notFound'
             });
+        });
+
+        socket.on('startTranscoding', (pathToCheck) => {
+            const pathCheck = checkPath(decodePath(pathToCheck));
+            if (pathCheck.isOk === false) 
+                return;
+            if (currentTranscoding.includes(decodeURIComponent(pathCheck.value)))
+                return;
+            
+            const streamPath = pathCheck.value.split('.').reverse().slice(1).reverse().join('.');
+
+            pathCheck.value.substring(argv['Video Directory'].length).split(path.sep).forEach((_: string, i: number, a: Array<string>) => {
+                if (i === 0)
+                    return;
+                const testPath = ['temp'].concat(a.slice(0, i)).join(path.sep);
+                if (!fs.existsSync(testPath))
+                    fs.mkdirSync(testPath);
+            });
+        
+            ffmpeg()
+                .input(streamPath)
+                .outputOptions([ '-preset veryfast', '-vcodec libx264', '-threads 0', '-y'])
+                .output('temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length)))
+                .on('end', () => {
+                    const index = currentTranscoding.indexOf((pathCheck.value));
+                    if (index > -1) {
+                        currentTranscoding.splice(index, 1);
+                    }
+                    socketIO.emit(pathToCheck, {
+                        type: 'finish'
+                    });
+                })
+                .on('error', (err) => {
+                    const index = currentTranscoding.indexOf(decodeURIComponent(pathCheck.value));
+                    if (index > -1) {
+                        currentTranscoding.splice(index, 1);
+                    }
+                    socketIO.emit(pathToCheck, {
+                        type: 'error',
+                        data: err.message
+                    });
+                })
+                .on('start', () => {
+                    currentTranscoding.push(decodeURIComponent(pathCheck.value));
+                    socketIO.emit(pathToCheck, {
+                        type: 'start'
+                    });
+                })
+                .on('progress', (pro) => {
+                    socketIO.emit(pathToCheck, {
+                        type: 'progress',
+                        data: pro.percent
+                    });
+                })
+                .run();
         });
     });
 }

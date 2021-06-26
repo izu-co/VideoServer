@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { SettingsDataInterface } from '../interfaces';
 import * as loginBackend from './UserMangement';
 import { db } from '../index';
+import { RunResult } from 'better-sqlite3';
 import { UserData, BackendRequest} from '../interfaces';
 
 function isEmptyObject(obj:object) : boolean {
@@ -52,11 +53,12 @@ function saveUserData (token:string, ip:string, data:SettingsDataInterface) : Ba
         return {isOk: false, statusCode: 400, message: 'Malformatted data' };
 
     const exists = db.prepare('SELECT * FROM settings WHERE UUID=?').get(user.value.uuid);
+    let answer:RunResult;
     if (exists)
-        db.prepare('UPDATE settings SET volume = ? WHERE UUID = ?').run(data.volume, user.value.uuid);
+        answer = db.prepare('UPDATE settings SET volume = ? WHERE UUID = ?').run(data['volume'], user.value.uuid);
     else 
-        db.prepare('INSERT INTO settings VALUES(?,?)').run(user.value.uuid, data.volume);
-    return { isOk: true, value: undefined };
+        answer = db.prepare('INSERT INTO settings VALUES(?,?)').run(user.value.uuid, data['volume']);
+    return { isOk: true, value: undefined }
 }
 
 function readdir(path:string) : string[] {

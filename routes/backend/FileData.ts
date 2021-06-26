@@ -16,9 +16,9 @@ router.route('/' + routeName + '/')
 function getRouteHandler(req:express.Request, res:express.Response) {
     const answer = fileStuff.getFileData(req.query.path as string);
     if (answer.isOk === true) {
-        res.status(200).json(answer.value).end();
+        res.status(200).json(answer.value).end()
     } else {
-        res.status(answer.statusCode).end(answer.message);
+        res.status(answer.statusCode).end(answer.message)
     }
 }
 

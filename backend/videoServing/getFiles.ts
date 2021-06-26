@@ -79,8 +79,8 @@ function getFilesFromWatchList(token:string, ip:string) : BackendRequest<Array<F
             'stars': stars.isOk ? stars.value : 0
         };
         if (push['type'] === 'video') {
-            const time = loadTime(file['path'], token, ip, user);
-            push['timeStemp'] = time.isOk ? time.value : 0;          
+            const time = loadTime(file['path'], token, ip, user)
+            push['timeStemp'] = time.isOk ? time.value : 0          
         }    
         retarr.push(push);        
     });
@@ -113,8 +113,8 @@ function getFileFromFolder(path:string, token:string, ip:string): BackendRequest
             'stars': stars.isOk ? stars.value : 0
         };
         if (push['type'] === 'video') {
-            const time = loadTime(file['path'], token, ip, user);
-            push['timeStemp'] = time.isOk ? time.value : 0;          
+            const time = loadTime(file['path'], token, ip, user)
+            push['timeStemp'] = time.isOk ? time.value : 0          
         }
         retarr.push(push);
             
@@ -140,7 +140,7 @@ function getFileFromCreated(path:string, token:string, ip:string) : BackendReque
         if (!file['isDir'])
             name = name.substring(0, name.lastIndexOf('.'));
         const stars = getStars(token, ip, file['path']);
-        const time = loadTime(path + Path.sep + file, token, ip, user);
+        const time = loadTime(path + Path.sep + file, token, ip, user)
         const watchlist = IsOnWatchList(user.value, file['path'].replace(index.argv['Video Directory'], ''));
         const push = {
             'name' : name,

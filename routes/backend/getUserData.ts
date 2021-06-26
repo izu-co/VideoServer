@@ -17,9 +17,9 @@ function postRouteHandler(req:express.Request, res:express.Response) {
         return res.status(400).send({status: false, reason: 'Can\'t parse query parameters'});
     const answer = util.getUserData(req.query.token as string, req.header('x-forwarded-for') || req.socket.remoteAddress);
     if (answer.isOk === true) {
-        res.status(200).json(answer.value).end();
+        res.status(200).json(answer.value).end()
     } else {
-        res.status(answer.statusCode).end(answer.message);
+        res.status(answer.statusCode).end(answer.message)
     }
 }
 

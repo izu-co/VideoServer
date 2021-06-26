@@ -1,7 +1,7 @@
 import { checkPath } from '../util';
 import * as loginBackend from '../UserMangement';
 import { db } from '../..';
-import { BackendRequest } from '../../interfaces';
+import { BackendRequest } from "../../interfaces";
 
 function saveTime (path:string, token:string, percent:number, ip:string) : BackendRequest<undefined> {
     const pathCeck = checkPath(path);

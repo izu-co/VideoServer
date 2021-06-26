@@ -90,8 +90,8 @@ fetchBackend(url.toString(), {
                 method: 'POST'
             }, (val) => {
                 if (val !== undefined) {
-                    alert(val);
-                    checkavtive.checked = !checkavtive.checked;
+                    alert(val)
+                    checkavtive.checked = !checkavtive.checked
                 }
             }, false, true);
         });
