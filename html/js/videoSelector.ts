@@ -88,6 +88,14 @@ class FileData {
         loadAll.style.display = 'none';
     }
 
+    public reload(keepShowAmount = false) : void {
+        if (!keepShowAmount) {
+            this.showAmount = this.defaultShowAmount;
+            this.currentlyShown = 0;
+        }
+        this.showData()
+    }
+
     public async loadData(path: string, type: null|SortTypes = null) : Promise<void> {
         loading.a = true;
         this.showAmount = this.defaultShowAmount;
@@ -113,10 +121,12 @@ class FileData {
 
         const parsedData : GetFilesResponse = await response.json()
 
-        console.log(parsedData.files.map(a => a.Path))
-        this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
-        this.pathSep = parsedData.pathSep;
+        if (type === SortTypes.File)
+            this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
+        else
+            this.data = parsedData.files;
 
+        this.pathSep = parsedData.pathSep;
         loading.a = false;
     }
 
@@ -351,18 +361,12 @@ function setScroll() {
     });
 }
 
-let lastSearch = '';
-
 document.getElementById('search').addEventListener('input', (e) => {
     filter = (<HTMLInputElement> e.target).value;
 
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString);
-    if (loading.a) {
-        (<HTMLInputElement> e.target).value = lastSearch;
-        return;
-    }
-    fileData.loadData(urlParams.get('path'), <SortTypes> sort.value).then(() => fileData.showData());
+    fileData.reload();
 });
 
 document.getElementById('searchForm').addEventListener('submit', (e) => {
@@ -371,12 +375,7 @@ document.getElementById('searchForm').addEventListener('submit', (e) => {
 
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString);
-    if (loading.a) {
-        (<HTMLFormElement> e.target).value = lastSearch;
-        return;
-    }
-    lastSearch = filter;
-    fileData.loadData(urlParams.get('path'), <SortTypes> sort.value).then(() => fileData.showData());
+    fileData.reload();
 });
 
 

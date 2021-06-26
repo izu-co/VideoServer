@@ -46,9 +46,9 @@ fetchBackend('/api/checkToken/', {
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
-if (true || !video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
+if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
     video.src = '/video/' + urlParams.get('path') + '.mp4'
-    /*socket.on(urlParams.get('path') + '.mp4', (data) => {
+    socket.on(urlParams.get('path') + '.mp4', (data) => {
         switch (data.type) {
         case 'error':
             console.error(data.data);
@@ -80,7 +80,7 @@ if (true || !video.canPlayType(getVideoType(urlParams.get('path').split('.').pop
             socket.emit('startTranscoding', urlParams.get('path') + '.mp4');
             break;
         }
-    });*/
+    });
 } else {
     video.src = '/video/' + urlParams.get('path');
 }
@@ -146,16 +146,13 @@ document.body.onkeyup = function(e){
     }
 };
 
-video.onplay = function() {
-    buttonPlay.className = video.paused ? 'pause' : 'play';
-};
+video.onplay = () => buttonPlay.className = video.paused ? 'play' : 'pause'
+video.onpause = () => buttonPlay.className = video.paused ? 'play' : 'pause'
 
 function togglePlayPause() {
     if (video.paused) {
-        buttonPlay.className = 'pause';
         video.play();
     } else {
-        buttonPlay.className = 'play';
         video.pause();
     }
 }
@@ -261,8 +258,6 @@ video.addEventListener('timeupdate', function() {
         seccur = '0' + seccur;
 
     time.innerHTML = mincur + ':' + seccur + ' / ' + min + ':' + sec;
-    if (video.ended)
-        buttonPlay.className = 'play';
     const timePer = Math.floor(video.currentTime / video.duration * 100) / 100;
     if (timePer !== last) {
         last = timePer;

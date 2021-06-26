@@ -50,19 +50,7 @@ export function init() : void {
             if (fs.existsSync('temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length)))) {
                 res.locals.tempVideo = 'temp' + path.sep + decodePath(pathCheck.value.substring(argv['Video Directory'].length));
                 return next();
-            } else {
-                // res.contentType("mp4")
-                res.writeHead(206, { "Content-Type":"video/mp4"});
-                console.log("Started", path.resolve(decodePath(pathCheck.value).slice(0, -4)))
-                ffmpeg(path.resolve(decodePath(pathCheck.value).slice(0, -4)))
-                // .videoCodec('libx264')
-                .on("error", (er, stdout,stderr) => console.log(er, stdout, stderr))
-                .on("process", (chunk) => console.log(`Process: ${chunk}`))
-                .toFormat("ismv")
-                .pipe(res, { end: true })
-                .on("error", (er,stdout,stderr) => console.log(er, stdout, stderr))
             }
-
         } else
             next();
     }, (_, res, next) => {
