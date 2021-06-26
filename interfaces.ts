@@ -51,6 +51,8 @@ export interface PathCheck {
 }
 
 export interface ProgrammSettingsInterface {
+    'verbose': boolean
+    'no-images': boolean,
     'Video Directory' ? : PathLike,
     'debug' ? : boolean,
     'Working Directory' ? : PathLike,

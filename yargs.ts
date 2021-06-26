@@ -43,15 +43,20 @@ const argv = yargs
         default: 443,
         describe: 'The port to pind the https server to'
     })
-    .option('sync', {
-        boolean: true,
-        default: false,
-        describe: 'Whether the images should be created before the server starts'
-    })
     .option('disableUpdate', {
         boolean: true,
         default: false,
         describe: 'Wheather the server should check for updates'
+    })
+    .option('verbose', {
+        boolean: true,
+        default: false,
+        describe: 'Wheather image generation output should be printed'
+    })
+    .option('no-images', {
+        boolean: true,
+        default: false,
+        describe: 'Wheather to generate images'
     })
     .argv;
 let data:ProgrammSettingsInterface;
@@ -66,6 +71,8 @@ if (data !== undefined) {
     argv.sync = data.sync || argv.sync;
     argv.debug = data.debug || argv.debug;
     argv.disableUpdate = data.disableUpdate || argv.disableUpdate;
+    argv.verbose = data.verbose || argv.verbose;
+    argv['no-images'] = data["no-images"] || argv['no-images']
 
     argv.httpPort = 'httpPort' in data && Number.isInteger(data['httpPort']) ? parseInt(data['httpPort']) : argv.httpPort;
     argv.httpsPort = 'httpsPort' in data && Number.isInteger(data['httpsPort']) ? parseInt(data['httpsPort']) : argv.httpsPort;

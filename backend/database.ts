@@ -27,6 +27,20 @@ fileIndex.exec('CREATE TABLE files (path TEXT PRIMARY KEY, created INT, isDir BO
 
 console.log('[INFO] Started indexing of files... This might take a minute.');
 
+const checkFiles = (files: string[]) => {
+    files.forEach(async file => {
+        const existsFile = fs.existsSync(file)
+        const existsIndex = fileIndex.prepare('SELECT * FROM files WHERE path=?').get(file) !== undefined;
+        const existsImg = fs.existsSync(file + '.jpg')
+        if (existsIndex && (!existsImg || !existsFile)) {
+            fileIndex.prepare('DELETE FROM files WHERE path=?').run(file)
+        } else if (!existsIndex && existsImg && existsFile) {
+            const stats = fs.statSync(file);
+            fileIndex.prepare('INSERT INTO files VALUES(?,?,?)').run(file, stats.mtimeMs, stats.isDirectory() ? 1 : 0);
+        }
+    })
+}
+
 getAllFiles(argv['Video Directory']).forEach(file => {
     fileIndex.prepare('INSERT INTO files VALUES(?,?,?)').run(file, fs.statSync(file).mtimeMs, fs.statSync(file).isDirectory() ? 1 : 0);
 });
@@ -127,7 +141,8 @@ function backup() : void {
 export {
     backup,
     db,
-    fileIndex
+    fileIndex,
+    checkFiles
 };
 
 function getAllFiles(path: string): Array < string > {
