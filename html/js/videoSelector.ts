@@ -20,6 +20,7 @@ let queryString = window.location.search;
 let urlParams = new URLSearchParams(queryString);
 const container = document.getElementById('container');
 const loadMore = document.getElementById('loadMore');
+const loadAll = document.getElementById('loadAll')
 const sort = <HTMLSelectElement> document.getElementById('sort');
 let filter = '';
 
@@ -73,8 +74,18 @@ class FileData {
             this.showData();
         }
 
-        if (!this.hasMore())
+        if (!this.hasMore()) {
             loadMore.style.display = 'none';
+            loadAll.style.display = 'none';
+        }
+    }
+
+    public loadAll() : void {
+        while (this.hasMore()) 
+            this.showAmount+=this.addShowAmount;
+        this.showData()
+        loadMore.style.display = 'none';
+        loadAll.style.display = 'none';
     }
 
     public async loadData(path: string, type: null|SortTypes = null) : Promise<void> {
@@ -102,7 +113,8 @@ class FileData {
 
         const parsedData : GetFilesResponse = await response.json();
 
-        this.data = parsedData.files;
+        console.log(parsedData.files.map(a => a.Path))
+        this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
         this.pathSep = parsedData.pathSep;
 
         loading.a = false;
@@ -112,10 +124,13 @@ class FileData {
         loading.a = true;
         while (container.children.length > this.currentlyShown)
             container.removeChild(container.lastChild);
-        if (this.hasMore())
+        if (this.hasMore()) {
             loadMore.style.display = 'inline';
-        else 
+            loadAll.style.display = 'inline';
+        } else {
             loadMore.style.display = 'none';
+            loadAll.style.display = 'none';
+        } 
         
         let data = this.data;
 
@@ -262,6 +277,7 @@ fileData.loadData(urlParams.get('path')).then(() => fileData.showData()).catch((
 });
 
 loadMore.addEventListener('click', () => fileData.loadMore());
+loadAll.addEventListener('click', () => fileData.loadAll());
 
 const url = new URL(window.location.origin + '/api/getSortTypes/');
 url.search = new URLSearchParams({

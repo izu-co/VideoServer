@@ -6,8 +6,10 @@
     margin-bottom: 50px;
 }
 
-#loadMore {
+.loadOption {
     color: white;
     background-color: rgba(128, 128, 128, 0.3);
     font-size: x-large;
+    margin-left: 20px;
+    margin-right: 20px;
 }
