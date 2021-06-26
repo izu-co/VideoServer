@@ -7,9 +7,9 @@ import {
 } from './backend/updater';
 import EventEmitter from 'events';
 
-const appEvents = new EventEmitter()
+const appEvents = new EventEmitter();
 
-export { appEvents }
+export { appEvents };
 
 const updater = new Updater('anappleforlife', 'videoplayer', new Map < string, FileSettings > ()
     .set('data', FileSettings.DontOverride), argv.beta
@@ -96,14 +96,14 @@ import {
 } from 'socket.io';
 import http from 'http';
 import https from 'https';
-import createImages from "./backend/createImages"
+import createImages from './backend/createImages';
 
 if (!argv['no-images'])
     createImages(argv['Video Directory'], false, argv.verbose).then(files => {
         if (files.isOk) {
-            checkFiles(files.value.map(a => a.path))
+            checkFiles(files.value.map(a => a.path));
         }
-    })
+    });
 
 let options;
 

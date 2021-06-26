@@ -20,7 +20,7 @@ let queryString = window.location.search;
 let urlParams = new URLSearchParams(queryString);
 const container = document.getElementById('container');
 const loadMore = document.getElementById('loadMore');
-const loadAll = document.getElementById('loadAll')
+const loadAll = document.getElementById('loadAll');
 const sort = <HTMLSelectElement> document.getElementById('sort');
 let filter = '';
 
@@ -83,7 +83,7 @@ class FileData {
     public loadAll() : void {
         while (this.hasMore()) 
             this.showAmount+=this.addShowAmount;
-        this.showData()
+        this.showData();
         loadMore.style.display = 'none';
         loadAll.style.display = 'none';
     }
@@ -93,7 +93,7 @@ class FileData {
             this.showAmount = this.defaultShowAmount;
             this.currentlyShown = 0;
         }
-        this.showData()
+        this.showData();
     }
 
     public async loadData(path: string, type: null|SortTypes = null) : Promise<void> {
@@ -111,15 +111,15 @@ class FileData {
                 'content-type': 'application/json; charset=UTF-8'
             },
             method: 'GET'
-        })
+        });
 
         if (!response.ok) {
             document.getElementById('offline').classList.remove('false');
-            console.log(`[Request Failed] ${response.body ? await response.text() : ''}`)
+            console.log(`[Request Failed] ${response.body ? await response.text() : ''}`);
             return;
         }
 
-        const parsedData : GetFilesResponse = await response.json()
+        const parsedData : GetFilesResponse = await response.json();
 
         if (type === SortTypes.File)
             this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
@@ -178,7 +178,7 @@ class FileData {
                     }),
                     method: (add.classList.contains('already') ? 'DELETE' : 'PUT')
                 }, (data) => {
-                    console.log(data)
+                    console.log(data);
                     if (data === 'added') {
                         add.classList.remove('add');
                         add.classList.add('already');

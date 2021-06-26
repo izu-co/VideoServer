@@ -16,7 +16,7 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
     console.log('[INFO] Started Image generation');
     const paths = (await getAllFiles(path)).filter(file => VideoNameExtensions.includes(file.path.split('.').pop()) || file.stats.isDirectory());
 
-    const createdImages = []
+    const createdImages = [];
 
     let folders = paths.filter(f => f.stats.isDirectory());
     let files = paths.filter(f => f.stats.isFile());
@@ -24,13 +24,13 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
     let filesPromises = [];
     let folderPromises = [];
 
-    let progress = {
+    const progress = {
         start: folders.length + files.length,
         finished: 0
-    }
+    };
 
     const updateIntervall = setInterval(() => {
-        console.log(`[INFO] ${progress.finished}/${progress.start} images created.`)
+        console.log(`[INFO] ${progress.finished}/${progress.start} images created.`);
     }, 5000);
 
     while (files.length > 0) {
@@ -51,12 +51,12 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
                     else if (!ok)
                         console.log(`[ERROR] Unable to create image ${file.path}.jpg`);
                     if (ok)
-                        createdImages.push(file)
+                        createdImages.push(file);
                     progress.finished++;
                     return resolve(ok);
                 } else {
                     progress.finished++;
-                    return resolve(true)
+                    return resolve(true);
                 }
             }));
         }
@@ -84,7 +84,7 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
                         else if (!ok)
                             console.log(`[ERROR] Unable to create image ${file.path}.jpg`);
                         if (ok)
-                            createdImages.push(file)
+                            createdImages.push(file);
                         progress.finished++;
                         return resolve(ok);
                     });
@@ -100,8 +100,8 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
         folders = folders.slice(Math.min(folders.length, maxConcurrent));
     }
     console.log('[INFO] Image generation done');
-    appEvents.emit("finished", 'image generation')
-    clearInterval(updateIntervall)
+    appEvents.emit('finished', 'image generation');
+    clearInterval(updateIntervall);
     return {
         isOk: true,
         value: createdImages
@@ -142,7 +142,7 @@ const combine2 = async (file1: string, file2: string) : Promise<jimp> => {
     for (let x = 0; x < two.getWidth(); x++)
         for (let y = 0; y < two.getHeight(); y++)
             final.setPixelColor(two.getPixelColor(x,y),x+one.getWidth(),y);
-    return await scale(0.5, final)
+    return await scale(0.5, final);
 };
 
 const combine3 = async (file1: string, file2: string, file3: string) : Promise<jimp> => {
@@ -160,7 +160,7 @@ const combine3 = async (file1: string, file2: string, file3: string) : Promise<j
     for (let x = 0; x < three.getWidth(); x++)
         for (let y = 0; y < three.getHeight(); y++)
             final.setPixelColor(three.getPixelColor(x,y),x,y+Math.max(one.getHeight(), two.getHeight()));
-    return await scale(0.5, final)
+    return await scale(0.5, final);
 };
 
 const combine4 = async (...files: string[]) : Promise<jimp> => {
@@ -258,9 +258,9 @@ const extractImage = async (path: string, percent: number) : Promise<ImageAnswer
         let hasMore = percent < 1;
         if (!data.format.duration || isNaN(data.format.duration)) {
             if (argv.debug)
-                console.log('No lenght found', path)
+                console.log('No lenght found', path);
             hasMore = false;
-            data.format.duration = 5
+            data.format.duration = 5;
         }
         const time = percent * data.format.duration;
         const buffers = [];
@@ -351,11 +351,11 @@ const scale = async (factor: number, img: jimp) : Promise<jimp> => {
     return new Promise<jimp>((resolve, reject) => {
         img.scale(factor, (er, val) => {
             if (er)
-                return reject(er)
-            return resolve(val)
-        })
-    })
-}
+                return reject(er);
+            return resolve(val);
+        });
+    });
+};
 
 const resize = (img: jimp, w: number, h:number) : Promise<jimp> => {
     return new Promise((resolve, reject) => {
@@ -390,4 +390,4 @@ const readImageFromFile = (data: string) => {
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
 
-export default createImages
+export default createImages;

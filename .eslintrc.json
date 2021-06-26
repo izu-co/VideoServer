@@ -19,6 +19,7 @@
     "rules": {
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/no-explicit-any": "off",
+        "no-async-promise-executor": "off",
         "indent": [
             "error",
             4

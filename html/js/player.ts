@@ -47,7 +47,7 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
 if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
-    video.src = '/video/' + urlParams.get('path') + '.mp4'
+    video.src = '/video/' + urlParams.get('path') + '.mp4';
     socket.on(urlParams.get('path') + '.mp4', (data) => {
         switch (data.type) {
         case 'error':
@@ -121,11 +121,11 @@ function loadData(res: SkipData) {
     if (res.next) {
         next.style.opacity = '1';
         next.addEventListener('click', function() {
-            const nextURL = new URL(document.location.href)
+            const nextURL = new URL(document.location.href);
             nextURL.search = new URLSearchParams({
                 path: res.next
-            }).toString()
-            document.location.href = nextURL.toString()
+            }).toString();
+            document.location.href = nextURL.toString();
         });
     } else 
         next.disabled = true;
@@ -146,8 +146,8 @@ document.body.onkeyup = function(e){
     }
 };
 
-video.onplay = () => buttonPlay.className = video.paused ? 'play' : 'pause'
-video.onpause = () => buttonPlay.className = video.paused ? 'play' : 'pause'
+video.onplay = () => buttonPlay.className = video.paused ? 'play' : 'pause';
+video.onpause = () => buttonPlay.className = video.paused ? 'play' : 'pause';
 
 function togglePlayPause() {
     if (video.paused) {

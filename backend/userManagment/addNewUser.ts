@@ -1,6 +1,6 @@
 import { uuidv4 } from '../util';
 import { db } from '../../index';
-import { BackendRequest } from "../../interfaces";
+import { BackendRequest } from '../../interfaces';
 
 const PermissionLevel = ['User', 'Admin'];
 

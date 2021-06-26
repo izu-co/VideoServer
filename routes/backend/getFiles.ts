@@ -11,7 +11,7 @@ router.route('/' + routeName + '/')
     .get(requireArguments([
         { name: 'path', test: (val) => typeof val === 'string' || val === undefined },
         { name: 'token' },
-        { name: 'type', test: (val) => typeof val === "string" || val === undefined, optional: true}
+        { name: 'type', test: (val) => typeof val === 'string' || val === undefined, optional: true}
     ]), postRouteHandler);
 
 function postRouteHandler(req:express.Request, res:express.Response) {
@@ -20,9 +20,9 @@ function postRouteHandler(req:express.Request, res:express.Response) {
         res.status(200).json({
             files: files.value,
             pathSep: Path.sep
-        })
+        });
     } else {
-        res.status(files.statusCode).end(files.message)
+        res.status(files.statusCode).end(files.message);
     }
 }
 

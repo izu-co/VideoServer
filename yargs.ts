@@ -72,7 +72,7 @@ if (data !== undefined) {
     argv.debug = data.debug || argv.debug;
     argv.disableUpdate = data.disableUpdate || argv.disableUpdate;
     argv.verbose = data.verbose || argv.verbose;
-    argv['no-images'] = data["no-images"] || argv['no-images']
+    argv['no-images'] = data['no-images'] || argv['no-images'];
 
     argv.httpPort = 'httpPort' in data && Number.isInteger(data['httpPort']) ? parseInt(data['httpPort']) : argv.httpPort;
     argv.httpsPort = 'httpsPort' in data && Number.isInteger(data['httpsPort']) ? parseInt(data['httpsPort']) : argv.httpsPort;

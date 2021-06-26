@@ -16,9 +16,9 @@ router.route('/' + routeName + '/')
 function postRouteHandler(req:express.Request, res:express.Response) {
     const answer = fileStuff.getStars(req.query.token as string, req.header('x-forwarded-for') || req.socket.remoteAddress, req.query.path as string);
     if (answer.isOk === true) {
-        res.status(200).end(answer.value.toString())
+        res.status(200).end(answer.value.toString());
     } else {
-        res.status(answer.statusCode).end(answer.message)
+        res.status(answer.statusCode).end(answer.message);
     }
 }
 
