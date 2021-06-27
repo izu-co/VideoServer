@@ -19,7 +19,7 @@ module.exports = (env, argv) => {
             },
             player: {
                 dependOn: 'generalFunctions',
-                import: './html/js/player',
+                import: ['./html/js/player/main', './html/js/player/watchTogether'],
             }, 
             server: {
                 dependOn: 'generalFunctions',

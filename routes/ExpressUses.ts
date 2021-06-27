@@ -8,8 +8,10 @@ import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import { checkPath } from '../backend/util';
 import { getUserFromToken } from '../backend/UserMangement';
+import { BackendRequest, RoomInfo } from '../interfaces';
 
 const currentTranscoding = [];
+let rooms: RoomInfo[] = [];
 
 export function init() : void {
     app.use(express.json());
@@ -160,6 +162,22 @@ function initSocket() {
                 .run();
         });
     });
+
+    socketIO.on("roomAssign", (roomID: number, callback: (res: BackendRequest<RoomInfo>) => void) => {
+        const room = rooms.find((room) => room.id === roomID)
+        if (room === undefined) {
+            return callback({
+                isOk: false,
+                statusCode: 404,
+                message: 'room not found'
+            })
+        } else {
+            return callback({
+                isOk: true,
+                value: room
+            })
+        }
+    })
 }
 
 function decodePath(path: string, escape = false ) {

@@ -131,6 +131,12 @@ export type BackendRequest<T> = {
     message?: string
 }
 
+export type RoomInfo = {
+    id: number,
+    member: number[],
+    videoFile: string
+}
+
 export enum SortTypes {
     File = 'Nach Ordner', Created = 'Zuletzt hinzugefügt', WatchList = 'Watchlist'
 }

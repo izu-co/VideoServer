@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
-import { fetchBackend, loadCookie } from './generalFunctions';
-import { SkipData } from '../../interfaces';
+import { fetchBackend, loadCookie } from '../generalFunctions';
+import { SkipData } from '../../../interfaces';
 
 const video = document.querySelector('video');
 const container = document.getElementById('c-video');
@@ -35,6 +35,8 @@ socket.on('error', (err:string, critical:boolean) => {
         socket.disconnect();
 });
 
+export { socket, video }
+
 document.body.onmousedown = function() { 
     mouseDown = true;
 };
@@ -56,44 +58,46 @@ fetchBackend('/api/checkToken/', {
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
-if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
-    video.src = '/video/' + urlParams.get('path') + '.mp4';
-    socket.on(urlParams.get('path') + '.mp4', (data) => {
-        switch (data.type) {
-        case 'error':
-            console.error(data.data);
-            showError();
-            break;
-        case 'progress':
-            if (!infoProgress) {
-                infoProgress = document.createElement('p');
-                info.appendChild(infoProgress);
+if (!urlParams.get("roomID"))
+    if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
+        video.src = '/video/' + urlParams.get('path') + '.mp4';
+        socket.on(urlParams.get('path') + '.mp4', (data) => {
+            switch (data.type) {
+            case 'error':
+                console.error(data.data);
+                showError();
+                break;
+            case 'progress':
+                if (!infoProgress) {
+                    infoProgress = document.createElement('p');
+                    info.appendChild(infoProgress);
+                }
+                infoProgress.innerHTML = Math.ceil(data.data * 100) / 100 + '%';
+                break;
+            case 'finish':
+                if (!video.src)
+                    video.src = '/video/' + urlParams.get('path') + '.mp4';
             }
-            infoProgress.innerHTML = Math.ceil(data.data * 100) / 100 + '%';
-            break;
-        case 'finish':
-            if (!video.src)
-                video.src = '/video/' + urlParams.get('path') + '.mp4';
-        }
-    });
+        });
 
-    socket.emit('transcodeStatus', encodeURIComponent(urlParams.get('path')) + '.mp4', (res) => {
-        console.log(res.type);
-        switch (res.type) {
-        case 'error':
-            showError();
-            break;
-        case 'ready':
-            video.src = '/video/' + urlParams.get('path') + '.mp4';
-            break;
-        case 'notFound':
-            socket.emit('startTranscoding', urlParams.get('path') + '.mp4');
-            break;
-        }
-    });
-} else {
-    video.src = '/video/' + urlParams.get('path');
-}
+        socket.emit('transcodeStatus', encodeURIComponent(urlParams.get('path')) + '.mp4', (res) => {
+            console.log(res.type);
+            switch (res.type) {
+            case 'error':
+                showError();
+                break;
+            case 'ready':
+                video.src = '/video/' + urlParams.get('path') + '.mp4';
+                break;
+            case 'notFound':
+                socket.emit('startTranscoding', urlParams.get('path') + '.mp4');
+                break;
+            }
+        });
+    } else {
+        video.src = '/video/' + urlParams.get('path');
+    }
+
 
 const fileDataURL = new URL(window.location.origin + '/api/FileData/');
 fileDataURL.search = new URLSearchParams({
