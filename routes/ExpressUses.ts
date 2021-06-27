@@ -8,7 +8,7 @@ import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import { checkPath } from '../backend/util';
 import { getUserFromToken } from '../backend/UserMangement';
-import { BackendRequest, RoomInfo } from '../interfaces';
+import { BackendRequest, RoomInfo, User } from '../interfaces';
 
 const currentTranscoding = [];
 let rooms: RoomInfo[] = [];
@@ -69,6 +69,8 @@ export function init() : void {
     initSocket();
 }
 
+const userMap = new Map<String, User>()
+
 function initSocket() {
     socketIO.on('connection', (socket) => {
         if (socket.handshake.auth.token) {
@@ -76,11 +78,13 @@ function initSocket() {
             if (user.isOk === false) {
                 delete user.isOk;
                 return socketIO.to(socket.id).emit('error', user, true);
-            }
+            } else 
+                userMap.set(socket.id, user.value)
         } else {
             socketIO.to(socket.id).emit('error', 'No token provided', true);
             return;
         }
+
         socket.on('transcodeStatus', (pathToCheck, callback) => {
             const pathCheck = checkPath(pathToCheck);
 
@@ -161,9 +165,36 @@ function initSocket() {
                 })
                 .run();
         });
+        socket.on("roomAssign", handleRoomAssing)
+        socket.on("createRoom", (filePath: string, callback: (res: BackendRequest<RoomInfo>) => void) => {
+            const index = getIndex()
+            const user = userMap.get(socket.id);
+            if (!user)
+                return callback({
+                    isOk: false,
+                    statusCode: 404,
+                    message: 'User not found'
+                })
+            const pathCheck = checkPath(filePath);
+
+            if (pathCheck.isOk === false) 
+                return callback(pathCheck);
+    
+            let p = decodePath(pathCheck.value.substring(argv['Video Directory'].length));
+            while (p.startsWith(path.sep))
+                p = p.slice(1);
+            callback({
+                isOk: true,
+                value: {
+                    id: index,
+                    member: [ { username: user.username, uuid: user.uuid } ],
+                    videoFile: p
+                }
+            })
+        })
     });
 
-    socketIO.on("roomAssign", (roomID: number, callback: (res: BackendRequest<RoomInfo>) => void) => {
+    const handleRoomAssing = (roomID: number, callback: (res: BackendRequest<RoomInfo>) => void) => {
         const room = rooms.find((room) => room.id === roomID)
         if (room === undefined) {
             return callback({
@@ -177,7 +208,19 @@ function initSocket() {
                 value: room
             })
         }
-    })
+    }
+
+    const getIndex = () => {
+        if (rooms.length === 0)
+            return 1;
+        let high = -Infinity;
+        rooms.forEach(r => {
+            if (r.id > high)
+                high = r.id
+        })
+        return ++high
+    }
+
 }
 
 function decodePath(path: string, escape = false ) {

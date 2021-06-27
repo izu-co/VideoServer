@@ -42,4 +42,69 @@ function fetchBackend(url: string, options: RequestInit, callback?: ((data: any)
         });
 }
 
-export { fetchBackend, fetchBackendPromise, loadCookie, setCookie };
+const isMobile = () => /Android|webOS|iPhone|iPad|Mac|Macintosh|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+type EventCallback = (...args: unknown[]) => void;
+type ValueCallback = (arg: unknown) => void;
+type ValueStorage = {
+    [valueName: string]: {
+        value: unknown,
+        listener: ValueCallback[]
+    }
+};
+
+class EventEmitter {
+
+
+    private listener = new Map<String, Array<EventCallback>>()
+    private valueStorage: ValueStorage = {}
+
+    public on(event: string,  callback: EventCallback) {
+        if (this.listener.has(event)) {
+            this.listener.get(event).push(callback)
+        } else {
+            this.listener.set(event, [ callback ])
+        }
+    }
+
+    public emit(event: string, ...args: unknown[]) {
+        if (this.listener.has(event)) {
+            this.listener.get(event).forEach(callback => callback(args))
+        }
+    }
+
+    public setValue(key:string, value: unknown) {
+        if (key in this.valueStorage) {
+            this.valueStorage[key].value = value;
+            this.valueStorage[key].listener.forEach(callback => callback(value))
+        } else {
+            this.valueStorage[key] = {
+                listener: [],
+                value: value
+            }
+        }
+    }
+
+    /**
+     * The callback gets called once on init
+     */
+    public subscribe(key:string, callback: ValueCallback) {
+        if (key in this.valueStorage) {
+            this.valueStorage[key].listener.push(callback)
+            callback(this.valueStorage[key].value)
+        } else {
+            this.valueStorage[key] = {
+                listener: [callback],
+                value: undefined
+            }
+            callback(undefined)
+        }
+    }
+
+    public hasValue(key: string) {
+        return key in this.valueStorage;
+    }
+
+}
+
+export { fetchBackend, fetchBackendPromise, loadCookie, setCookie, isMobile, EventCallback, EventEmitter };

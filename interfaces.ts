@@ -133,7 +133,10 @@ export type BackendRequest<T> = {
 
 export type RoomInfo = {
     id: number,
-    member: number[],
+    member: Array<{
+        username: string,
+        uuid: string
+    }>,
     videoFile: string
 }
 
