@@ -23,7 +23,17 @@ let skiped = false;
 let timer: NodeJS.Timeout;
 const WaitToHideTime = 1000;
 let infoProgress: HTMLParagraphElement;
-const socket = io();
+const socket = io({
+    auth: {
+        token: loadCookie('token')
+    }
+});
+
+socket.on('error', (err:string, critical:boolean) => {
+    console.log(`[SocketIO] Recived error: ${err}`);
+    if (critical)
+        socket.disconnect();
+});
 
 document.body.onmousedown = function() { 
     mouseDown = true;
