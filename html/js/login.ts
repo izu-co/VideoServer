@@ -7,6 +7,7 @@ const wrongPass = document.getElementById('wrongPass');
 const wrongPassText = document.getElementById('wrongPassText');
 
 let canlogin = true;
+let urlParams = new URLSearchParams(window.location.search);
 
 loginbtn.addEventListener('click', login);
 username.addEventListener('keyup', function(e) {
@@ -37,7 +38,12 @@ if (loadCookie('token')) {
         wrongPass.innerHTML = 'Token geladen, Login nicht notwendig!';
         wrongPass.style.opacity = '1';
         canlogin = false;
-        setTimeout(() => { document.location.href = '/videoSelector?path='; }, 2000);
+        setTimeout(() => {
+            if (urlParams.has("redirect")) {
+                document.location.href = decodeURIComponent(urlParams.get("redirect"))
+            } else 
+                document.location.href = '/videoSelector?path=';
+        }, 2000);
     }, false, true);
 }
 
@@ -59,7 +65,12 @@ async function login() {
                 wrongPass.innerHTML = 'Erfolgreich eingeloggt!';
                 wrongPass.style.opacity = '1';
                 canlogin = false;
-                setTimeout(() => { document.location.href = '/videoSelector?path='; }, 2000);
+                setTimeout(() => {
+                    if (urlParams.has("redirect")) {
+                        document.location.href = decodeURIComponent(urlParams.get("redirect"))
+                    } else 
+                        document.location.href = '/videoSelector?path=';
+                }, 2000);
             } else {
                 wrongPassText.innerHTML = data.body ? await data.text() : 'Login failed';
                 wrongPassText.className = 'vis';

@@ -22,7 +22,7 @@ function fetchBackend(url: string, options: RequestInit, callback?: ((data: any)
         if (!data.ok) {
             console.log('[Request Error] ' + data.bodyUsed ? await data.text() : '');
             if (sendBack)
-                document.location.href = '/';
+                document.location.href = `/?redirect=${encodeURIComponent(location.pathname + location.search)}`;
             else if (!canFail)
                 document.getElementById('offline').classList.remove('false');
         } else {

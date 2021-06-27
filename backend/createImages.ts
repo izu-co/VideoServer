@@ -221,6 +221,7 @@ const generateImage = async (path: string) : Promise<boolean> => {
                 const setQual = await setQuality(lastImage, 5);
                 if (setQual)
                     lastImage = setQual;
+                lastImage = await scale(0.5, lastImage)
                 let blackPixel = 0;
                 let whitePixel = 0;
                 const pixelAmount = (lastImage.getWidth() * lastImage.getHeight()) / 2;

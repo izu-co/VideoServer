@@ -120,8 +120,7 @@ class FileData {
         }
 
         const parsedData : GetFilesResponse = await response.json();
-
-        if (type === SortTypes.File)
+        if (type === SortTypes.File || type === null)
             this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
         else
             this.data = parsedData.files;
@@ -339,7 +338,7 @@ logoutButton.addEventListener('click', () => {
     }).then(data => data.json())
         .then(res => {
             if (res['status'] === true)
-                document.location.href = '/';
+                document.location.href = `/?redirect=${encodeURIComponent(location.pathname + location.search)}`;
             else
                 alert('Something went wrong');
         });
