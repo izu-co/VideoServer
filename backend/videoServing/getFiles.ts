@@ -35,8 +35,12 @@ async function getFiles(path:string, token:string, ip:string, length: number, ty
         message: 'The given path does not exists'
     };
 
-    /* If we dont decrement the lenght we will get lenght+1 files */
-    length--;
+    if (length === -1) 
+        /* If its set to infinity, all files will be used */
+        length = Infinity;
+    else
+        /* If we dont decrement the lenght we will get lenght+1 files */
+        length--;
 
     switch(searchType) {
     case SortTypes.File:

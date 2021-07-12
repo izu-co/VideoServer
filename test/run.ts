@@ -48,7 +48,6 @@ describe('Test requests', () => {
         //Wait for images
         await new Promise<void>((resolve, reject) => {
             app.appEvents.on('finished', data => {
-                console.log(data)
                 if (data === 'image generation')
                     resolve()
             })
@@ -72,21 +71,21 @@ describe('Test requests', () => {
     describe('Get files', () => {
         let testFile;
         before(async () => {
-            const data = await requester.get('getFiles/').query({ token: token, path: '', type: '' }).send();
+            const data = await requester.get('getFiles/').query({ token: token, path: '', type: '', length: '-1' }).send();
             expect(data.status).to.be.equal(200);
             expect(data.body.files).to.have.lengthOf(3);
             testFile = data.body.files[2].Path;
         });
         
         it('Subfolder', async () => {
-            return requester.get('getFiles/').query({ token: token, path: testFile }).send()
+            return requester.get('getFiles/').query({ token: token, path: testFile, length: '-1' }).send()
                 .then(data => {
                     return [expect(data.status).to.be.equal(200), expect(data.body.files).to.have.lengthOf(2)];
                 });
         });
 
         it('WatchList', async () => {
-            return requester.get('getFiles/').query({ token: token, path: '', type: 'Watchlist' }).send()
+            return requester.get('getFiles/').query({ token: token, path: '', type: 'Watchlist', length: '-1' }).send()
                 .then(data => {
                     return [expect(data.status).to.be.equal(200), expect(data.body.files).to.have.lengthOf(0)];
                 });
@@ -111,7 +110,7 @@ describe('Test requests', () => {
         });
 
         it('Check watchlist', async () => {
-            return requester.get('getFiles/').query({ token: token, path: '' }).send()
+            return requester.get('getFiles/').query({ token: token, path: '', length: '-1' }).send()
                 .then(data => {
                     return [expect(data.status).to.be.equal(200), expect(data.body.files.find(a => a.name === '1').watchList).to.be.true];
                 });
@@ -125,7 +124,7 @@ describe('Test requests', () => {
         });
 
         it('Check watchlist', async () => {
-            return requester.get('getFiles/').query({ token: token, path: '' }).send()
+            return requester.get('getFiles/').query({ token: token, path: '', length: '-1' }).send()
                 .then(data => {
                     return [expect(data.status).to.be.equal(200), expect(data.body.files.find(a => a.name === '1').watchList).to.be.false];
                 });
