@@ -1,4 +1,4 @@
-import { fetchBackend, loadCookie, setCookie, fetchBackendPromise } from './generalFunctions';
+import { fetchBackend, loadCookie, setCookie, fetchBackendAsPromise,  b64toBlob } from './generalFunctions';
 import { FileData as FileDataType, GetFilesResponse, SortTypes } from '../../interfaces';
 
 fetchBackend('/api/checkToken/', {
@@ -58,20 +58,24 @@ class FileData {
     private pathSep: string; 
     public defaultShowAmount = 20;
     public addShowAmount = 20;
+    public maxFiles = -1;
 
     public showAmount = this.defaultShowAmount;
     public currentlyShown = 0;
+    public BlobURLs = []
 
     public hasMore() : boolean {
         if (!this.data)
             return false;
-        return this.data.filter(a => a['name'].toLowerCase().includes(filter.toLowerCase())).length > this.showAmount;
+        if (this.maxFiles === -1)
+            return false;
+        return this.maxFiles > this.showAmount;
     }
 
     public loadMore() : void {
         if (this.hasMore()) {
             this.showAmount+=this.addShowAmount;
-            this.showData();
+            this.loadData(urlParams.get('path'), undefined, undefined, false).then(() => this.showData());        
         }
 
         if (!this.hasMore()) {
@@ -83,7 +87,7 @@ class FileData {
     public loadAll() : void {
         while (this.hasMore()) 
             this.showAmount+=this.addShowAmount;
-        this.showData();
+        this.loadData(urlParams.get('path'), undefined, undefined, false).then(() => this.showData());
         loadMore.style.display = 'none';
         loadAll.style.display = 'none';
     }
@@ -96,30 +100,47 @@ class FileData {
         this.showData();
     }
 
-    public async loadData(path: string, type: null|SortTypes = null) : Promise<void> {
+    public async loadData(path: string, type: null|SortTypes = null, length:number = this.showAmount, resetShowAmount = true) : Promise<void> {
         loading.a = true;
-        this.showAmount = this.defaultShowAmount;
+        if (resetShowAmount)
+            this.showAmount = this.defaultShowAmount;
         this.currentlyShown = 0;
-        const url = new URL(window.location.origin + '/api/getFiles/');
-        url.search = new URLSearchParams({
+        const amountURL = new URL(window.location.origin + '/api/getFileAmount');
+        amountURL.search = new URLSearchParams({
             'token': loadCookie('token'),
             'path': path,
             'type': type
         }).toString();
-        const response = await fetchBackendPromise(url.toString(), {
+
+        const amountRes = await fetchBackendAsPromise(amountURL.toString(), {});
+        if (typeof amountRes === 'string') {
+            if (!isNaN(parseInt(amountRes))) {
+                this.maxFiles = parseInt(amountRes);
+            }
+        }
+
+        const url = new URL(window.location.origin + '/api/getFiles/');
+        url.search = new URLSearchParams({
+            'token': loadCookie('token'),
+            'path': path,
+            'type': type,
+            'length': length.toString()
+        }).toString();
+        const response = await fetchBackendAsPromise(url.toString(), {
             headers: {
                 'content-type': 'application/json; charset=UTF-8'
             },
             method: 'GET'
         });
-
-        if (!response.ok) {
-            document.getElementById('offline').classList.remove('false');
-            console.log(`[Request Failed] ${response.body ? await response.text() : ''}`);
+        if (!response) {
+            loading.a = false;
             return;
         }
-
-        const parsedData : GetFilesResponse = await response.json();
+        if (typeof response !== 'object') {
+            loading.a = false;
+            return;
+        }
+        const parsedData : GetFilesResponse = response as GetFilesResponse;
 
         if (type === SortTypes.File)
             this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
@@ -141,9 +162,9 @@ class FileData {
             loadMore.style.display = 'none';
             loadAll.style.display = 'none';
         } 
-        
+        this.BlobURLs.forEach(blob => URL.revokeObjectURL(blob));
+        this.BlobURLs = [];
         let data = this.data;
-
         data = data.filter(a => a['name'].toLowerCase().includes(filter.toLowerCase()));
         data = data.filter((_, i) => this.currentlyShown <= i  && i < this.showAmount);
 
@@ -155,11 +176,12 @@ class FileData {
 
             const tubDiv = document.createElement('div');
 
-
             const tub = document.createElement('img');
             tub.className = 'tumb';
             tub.alt = 'Thumbnail';
-            tub.src = '/video/' + encodeURI(file['image']);
+            const blobURL = URL.createObjectURL(b64toBlob(file.image, 'image/jpeg'));
+            tub.src = blobURL;
+            this.BlobURLs.push(blobURL);
             if (index === data.length - 1)
                 tub.addEventListener('load', () => setScroll());
 
@@ -272,7 +294,7 @@ class FileData {
             header.appendChild(div);
             header.className = 'showItem';
             container.appendChild(header);
-        });
+        });  
         this.currentlyShown = container.children.length;
         loading.a = false;
     }

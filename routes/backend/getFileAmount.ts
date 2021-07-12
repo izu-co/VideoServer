@@ -11,17 +11,13 @@ router.route('/' + routeName + '/')
     .get(requireArguments([
         { name: 'path', test: (val) => typeof val === 'string' || val === undefined },
         { name: 'token' },
-        { name: 'length', test: (val) => typeof val === 'string' && !isNaN(parseInt(val)) && (parseInt(val) > 0 || parseInt(val) === -1)},
         { name: 'type', test: (val) => typeof val === 'string' || val === undefined, optional: true}
     ]), postRouteHandler);
 
 async function postRouteHandler(req:express.Request, res:express.Response) {
-    const files = await fileStuff.getFiles(req.query.path as string, req.query.token as string, req.header('x-forwarded-for') || req.socket.remoteAddress, parseInt(req.query.length as string), req.query.type as string|undefined);
+    const files = await fileStuff.getFileAmount(req.query.path as string, req.query.token as string, req.header('x-forwarded-for') || req.socket.remoteAddress, req.query.type as string|undefined);
     if (files.isOk === true) {
-        res.status(200).json({
-            files: files.value,
-            pathSep: Path.sep
-        });
+        res.status(200).end(files.value.toString());
     } else {
         res.status(files.statusCode).end(files.message);
     }

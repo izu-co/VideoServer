@@ -21,6 +21,7 @@ import addToWatchListRoute from './addWatchList';
 import removeFromWatchListRoute from './removeWatchList';
 import setStarsRoute from './setStars';
 import getStarsRoute from './getStars';
+import getFileAmountRoute from './getFileAmount';
 
 /**Post Routes Start */
 router.use('/', 
@@ -43,7 +44,9 @@ router.use('/',
     addToWatchListRoute,
     removeFromWatchListRoute,
     setStarsRoute,
-    getStarsRoute);
+    getStarsRoute,
+    getFileAmountRoute
+);
 
 /** Post Routes End */
 

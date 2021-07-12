@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import { SettingsDataInterface } from '../interfaces';
 import * as loginBackend from './UserMangement';
 import { db } from '../index';
-import { RunResult } from 'better-sqlite3';
 import { UserData, BackendRequest} from '../interfaces';
 
 function isEmptyObject(obj:object) : boolean {
