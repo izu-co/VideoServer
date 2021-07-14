@@ -117,7 +117,9 @@ class FileData {
             if (!isNaN(parseInt(amountRes))) {
                 this.maxFiles = parseInt(amountRes);
             }
-        }
+        } else if (typeof amountRes === "number") [
+            this.maxFiles = amountRes
+        ]
 
         const url = new URL(window.location.origin + '/api/getFiles/');
         url.search = new URLSearchParams({
@@ -155,13 +157,6 @@ class FileData {
         loading.a = true;
         while (container.children.length > this.currentlyShown)
             container.removeChild(container.lastChild);
-        if (this.hasMore()) {
-            loadMore.style.display = 'inline';
-            loadAll.style.display = 'inline';
-        } else {
-            loadMore.style.display = 'none';
-            loadAll.style.display = 'none';
-        } 
         this.BlobURLs.forEach(blob => URL.revokeObjectURL(blob));
         this.BlobURLs = [];
         let data = this.data;
@@ -296,6 +291,14 @@ class FileData {
             container.appendChild(header);
         });  
         this.currentlyShown = container.children.length;
+        if (this.hasMore()) {
+            loadMore.style.display = 'inline';
+            loadAll.style.display = 'inline';
+        } else {
+            loadMore.style.display = 'none';
+            loadAll.style.display = 'none';
+        } 
+
         loading.a = false;
     }
 
