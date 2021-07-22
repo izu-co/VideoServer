@@ -1,9 +1,9 @@
 import { loadCookie, fetchBackend } from './generalFunctions';
 import { UserAccountInfo } from '../../interfaces';
-
+declare let ___PREFIX_URL___: string;
 const container = document.getElementById('container');
 
-const url = new URL(window.location.origin + '/api/getUsers/');
+const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getUsers/`);
 url.search = new URLSearchParams({
     'token': loadCookie('token')
 }).toString();
@@ -78,7 +78,7 @@ fetchBackend(url.toString(), {
         checkavtive.checked = user['active'];
 
         checkavtive.addEventListener('change', function() {
-            fetchBackend('/api/changeActive/', {
+            fetchBackend(`${___PREFIX_URL___}/api/changeActive/`, {
                 headers: {
                     'content-type' : 'application/json; charset=UTF-8'
                 },
@@ -121,7 +121,7 @@ fetchBackend(url.toString(), {
 
         token.addEventListener('click', function() {
             if (confirm('Wirklick löschen?')) {
-                fetchBackend('/api/deleteToken/', {
+                fetchBackend(`${___PREFIX_URL___}/api/deleteToken/`, {
                     headers: {
                         'content-type' : 'application/json; charset=UTF-8'
                     },
@@ -162,7 +162,7 @@ document.getElementById('submit').addEventListener('click', function() {
         return alert('Please confirm the password!');
     else if (pass !== passCon)
         return alert('The passwords are not the same!');
-    fetchBackend('/api/addUser/', {
+    fetchBackend(`${___PREFIX_URL___}/api/addUser/`, {
         headers: {
             'content-type' : 'application/json; charset=UTF-8'
         },

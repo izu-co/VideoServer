@@ -1,6 +1,6 @@
 {
   "name": "videoplayer",
-  "version": "3.4.3",
+  "version": "3.5.0",
   "description": "A Video Player",
   "main": "index.js",
   "databaseVersion": 2,
@@ -12,6 +12,7 @@
     "express": "^4.17.1",
     "express-slow-down": "^1.4.0",
     "fluent-ffmpeg": "^2.1.2",
+    "html-webpack-plugin": "^5.3.2",
     "jimp": "^0.16.1",
     "node-fetch": "^2.6.1",
     "progress-stream": "^2.0.0",

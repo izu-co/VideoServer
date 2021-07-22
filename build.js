@@ -8,6 +8,11 @@ const argv = yargs
         boolean: true,
         default: false,
         describe: 'If set to true, the programm will build a test env'
+    })
+    .option('prefixURL', {
+        string: true,
+        default: '',
+        describe: 'Used to set the prefix URL for proxies'
     }).argv;
 
 const buildOptions = {
@@ -16,6 +21,7 @@ const buildOptions = {
         'temp',
         'data',
         '*.ts',
+        '*.html',
         '*.log',
         '.github',
         '.git',
@@ -44,7 +50,7 @@ tsc.on('error', (err) => console.log(`[Typescript] ${err}`));
 tsc.on('message', (msg) => console.log(`[Typescript] ${msg}`));
 
 tsc.on('close', () => {
-    const webpack = child_process.exec(`npx webpack ${!argv.test ? '--mode production' : ''}`);
+    const webpack = child_process.exec(`npx webpack --env PREFIX_URL=${argv.prefixURL} ${!argv.test ? '--mode production' : ''}`);
     webpack.on('close', (code) => console.log(`[Webpack] Finished with code ${code}`));
     webpack.on('error', (err) => console.log(`[Webpack] ${err}`));
     webpack.on('message', (msg) => console.log(`[Webpack] ${msg}`));

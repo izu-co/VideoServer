@@ -1,11 +1,12 @@
 import { fetchBackend, loadCookie } from './generalFunctions';
+declare let ___PREFIX_URL___: string;
 
-const url = new URL(window.location.origin + '/api/getWatchers/');
+const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getWatchers/`);
 url.search = new URLSearchParams({
     'token': loadCookie('token')
 }).toString();
 
-fetchBackend('/api/checkToken/', {
+fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
     headers: {
         'content-type' : 'application/json; charset=UTF-8'
     },

@@ -1,6 +1,7 @@
 import { fetchBackend, loadCookie } from './generalFunctions';
+declare let ___PREFIX_URL___: string;
 
-fetchBackend('/api/checkToken/', {
+fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
     headers: {
         'content-type' : 'application/json; charset=UTF-8'
     },
@@ -11,7 +12,7 @@ fetchBackend('/api/checkToken/', {
 }, undefined, true, false);
 
 
-fetchBackend('/api/checkToken/', {
+fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
     headers: {
         'content-type' : 'application/json; charset=UTF-8'
     },
@@ -20,7 +21,7 @@ fetchBackend('/api/checkToken/', {
     }),
     method: 'POST'
 }, user => {
-    const url = new URL(window.location.origin + '/api/getUserData/');
+    const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getUserData/`);
     url.search = new URLSearchParams({
         'token': loadCookie('token')
     }).toString();
@@ -52,7 +53,7 @@ function updateData(data) {
     sendButton.addEventListener('click', function() {
         if (oldPass.value !== '' && newPass.value !== '' && newPassConfirm.value !== '') {
             if (newPass.value === newPassConfirm.value) {
-                fetchBackend('/api/changePass/', {
+                fetchBackend(`${___PREFIX_URL___}/api/changePass/`, {
                     headers: {
                         'content-type' : 'application/json; charset=UTF-8'
                     },
@@ -82,7 +83,7 @@ function updateData(data) {
 }
 
 function sendData(volume: number) {
-    fetchBackend('/api/setUserData/', {
+    fetchBackend(`${___PREFIX_URL___}/api/setUserData/`, {
         headers: {
             'content-type' : 'application/json; charset=UTF-8'
         },

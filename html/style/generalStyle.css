@@ -1,12 +1,7 @@
-@font-face {
-    font-family: Axis;
-    src: url(/fonts/AXIS_Extra_Bold_800.otf);;
-    font-weight: bold;
-    font-display: swap;
-}
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@600&display=swap');
 
 * {
-    font-family: Axis;
+    font-family: Barlow;
 }
 
 

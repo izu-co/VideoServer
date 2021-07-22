@@ -1,7 +1,8 @@
 import { fetchBackend, loadCookie, setCookie, fetchBackendAsPromise,  b64toBlob } from './generalFunctions';
 import { FileData as FileDataType, GetFilesResponse, SortTypes } from '../../interfaces';
+declare let ___PREFIX_URL___: string;
 
-fetchBackend('/api/checkToken/', {
+fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
     headers: {
         'content-type': 'application/json; charset=UTF-8'
     },
@@ -26,7 +27,7 @@ let filter = '';
 
 
 document.getElementById('admin').addEventListener('click', () => {
-    location.href = '/admin';
+    location.href = `${___PREFIX_URL___}/admin`;
 });
 
 const loading = {
@@ -105,7 +106,7 @@ class FileData {
         if (resetShowAmount)
             this.showAmount = this.defaultShowAmount;
         this.currentlyShown = 0;
-        const amountURL = new URL(window.location.origin + '/api/getFileAmount');
+        const amountURL = new URL(window.location.origin + `${___PREFIX_URL___}/api/getFileAmount`);
         amountURL.search = new URLSearchParams({
             'token': loadCookie('token'),
             'path': path,
@@ -117,11 +118,11 @@ class FileData {
             if (!isNaN(parseInt(amountRes))) {
                 this.maxFiles = parseInt(amountRes);
             }
-        } else if (typeof amountRes === "number") [
+        } else if (typeof amountRes === 'number') [
             this.maxFiles = amountRes
-        ]
+        ];
 
-        const url = new URL(window.location.origin + '/api/getFiles/');
+        const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getFiles/`);
         url.search = new URLSearchParams({
             'token': loadCookie('token'),
             'path': path,
@@ -184,7 +185,7 @@ class FileData {
             add.classList.add('watchList');
             add.classList.add(file['watchList'] ? 'already' : 'add');
             add.addEventListener('click', () => {
-                const pathToFetch = '/api/' + (add.classList.contains('already') ? 'removeWatchList' : 'addWatchList/');
+                const pathToFetch = `${___PREFIX_URL___}/api/` + (add.classList.contains('already') ? 'removeWatchList' : 'addWatchList/');
                 fetchBackend(pathToFetch, {
                     headers: {
                         'content-type': 'application/json; charset=UTF-8'
@@ -223,7 +224,7 @@ class FileData {
                 });
 
                 singleStar.addEventListener('click', () => {
-                    fetchBackend('/api/setStars', {
+                    fetchBackend(`${___PREFIX_URL___}/api/setStars`, {
                         headers: {
                             'content-type': 'application/json; charset=UTF-8'
                         },
@@ -281,7 +282,7 @@ class FileData {
                     location.href = location.pathname + '?' + urlParams.toString();
                 } else {
                     urlParams.set('path', file['Path']);
-                    location.href = location.origin + '/player?' + urlParams.toString();
+                    location.href = location.origin + `${___PREFIX_URL___}/player/?` + urlParams.toString();
                 }
             });
 
@@ -314,7 +315,7 @@ fileData.loadData(urlParams.get('path')).then(() => fileData.showData()).catch((
 loadMore.addEventListener('click', () => fileData.loadMore());
 loadAll.addEventListener('click', () => fileData.loadAll());
 
-const url = new URL(window.location.origin + '/api/getSortTypes/');
+const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getSortTypes/`);
 url.search = new URLSearchParams({
     'token': loadCookie('token')
 }).toString();
@@ -353,7 +354,7 @@ window.addEventListener('scroll', () => {
 
 const logoutButton = document.getElementById('logout');
 logoutButton.addEventListener('click', () => {
-    fetch('/api/logout', {
+    fetch(`${___PREFIX_URL___}/api/logout`, {
         headers: {
             'content-type': 'application/json; charset=UTF-8'
         },
@@ -364,7 +365,7 @@ logoutButton.addEventListener('click', () => {
     }).then(data => data.json())
         .then(res => {
             if (res['status'] === true)
-                document.location.href = '/';
+                document.location.href = ___PREFIX_URL___ + '/';
             else
                 alert('Something went wrong');
         });
@@ -372,11 +373,11 @@ logoutButton.addEventListener('click', () => {
 });
 
 document.getElementById('settings').addEventListener('click', () => {
-    location.href = '/settings';
+    location.href = `${___PREFIX_URL___}/settings/`;
 });
 
 document.getElementById('server').addEventListener('click', () => {
-    location.href = '/server';
+    location.href = `${___PREFIX_URL___}/server/`;
 });
 
 function setScroll() {
