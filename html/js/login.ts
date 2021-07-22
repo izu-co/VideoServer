@@ -61,7 +61,7 @@ async function login() {
                 wrongPass.innerHTML = 'Erfolgreich eingeloggt!';
                 wrongPass.style.opacity = '1';
                 canlogin = false;
-                setTimeout(() => { document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelecto/?path=`; }, 2000);
+                setTimeout(() => { document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelector/?path=`; }, 2000);
             } else {
                 wrongPassText.innerHTML = data.body ? await data.text() : 'Login failed';
                 wrongPassText.className = 'vis';
