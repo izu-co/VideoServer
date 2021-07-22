@@ -1,3 +1,5 @@
+declare var ___PREFIX_URL___
+
 function loadCookie(name: string) : null|string {
     const nameEQ = name + '=';
     const ca = document.cookie.split(';');
@@ -19,7 +21,7 @@ function fetchBackendAsPromise(url: string, options: RequestInit, sendBack = fal
         if (!data.ok) {
             console.log('[Request Error] ' + data.bodyUsed ? await data.text() : '');
             if (sendBack)
-                document.location.href = '/';
+                document.location.href = ___PREFIX_URL___ + '/';
             else if (!canFail) {
                 document.getElementById('offline').classList.remove('false');
                 return undefined;
@@ -45,7 +47,7 @@ function fetchBackend(url: string, options: RequestInit, callback?: ((data: any)
         if (!data.ok) {
             console.log('[Request Error] ' + data.bodyUsed ? await data.text() : '');
             if (sendBack)
-                document.location.href = '/';
+                document.location.href = ___PREFIX_URL___ + '/';
             else if (!canFail)
                 document.getElementById('offline').classList.remove('false');
         } else {
