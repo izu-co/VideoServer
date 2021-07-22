@@ -2,15 +2,16 @@
 <html>
   <head>
      <title>Loginformular</title>
-     <link rel="stylesheet" href="/style/generalStyle.css" type="text/css">
-     <link rel="stylesheet" href="/style/index.css" type="text/css">
+     <link rel="stylesheet" href="<%= PREFIX_URL %>/style/generalStyle.css" type="text/css">
+     <link rel="icon" type="image/x-icon" href="<%= PREFIX_URL %>/favicon.ico"/>
+     <link rel="stylesheet" href="<%= PREFIX_URL %>/style/index.css" type="text/css">
      <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-     <link rel="manifest" href="/manifest">
+     <link rel="manifest" href="<%= PREFIX_URL %>/manifest">
   </head>
   <body>
     <div class="container">
       <div id="header">
-        <img src="/icon" id="favIco" alt="Website Logo">
+        <img src="<%= PREFIX_URL %>/icon" id="favIco" alt="Website Logo">
         <h1>Login</h1>
       </div>
       <input type="text" id="username" name="user" placeholder="Benutzername"><br>
@@ -26,8 +27,8 @@
           })
         }
       </script>
-      <script src="/js/generalFunctions.js" defer></script>
-      <script type="module" src="/js/login.js" defer></script>
+      <script src="<%= PREFIX_URL %>/js/generalFunctions.js" defer></script>
+      <script type="module" src="<%= PREFIX_URL %>/js/login.js" defer></script>
     </div>
   </body>
   <div id="offline" class="false">

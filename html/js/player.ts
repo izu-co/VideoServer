@@ -1,6 +1,7 @@
 import io from 'socket.io-client';
 import { fetchBackend, loadCookie } from './generalFunctions';
 import { SkipData } from '../../interfaces';
+declare let ___PREFIX_URL___: string;
 
 const video = document.querySelector('video');
 const container = document.getElementById('c-video');
@@ -23,7 +24,9 @@ let skiped = false;
 let timer: NodeJS.Timeout;
 const WaitToHideTime = 1000;
 let infoProgress: HTMLParagraphElement;
-const socket = io();
+const socket = io({
+    path: ___PREFIX_URL___ + '/socket.io'
+});
 
 document.body.onmousedown = function() { 
     mouseDown = true;
@@ -33,7 +36,7 @@ document.body.onmouseup = function() {
     mouseDown = false;
 };
 
-fetchBackend('/api/checkToken/', {
+fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
     headers: {
         'content-type' : 'application/json; charset=UTF-8'
     },
@@ -47,7 +50,7 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
 if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
-    video.src = '/video/' + urlParams.get('path') + '.mp4';
+    video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path') + '.mp4';
     socket.on(urlParams.get('path') + '.mp4', (data) => {
         switch (data.type) {
         case 'error':
@@ -63,7 +66,7 @@ if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
             break;
         case 'finish':
             if (!video.src)
-                video.src = '/video/' + urlParams.get('path') + '.mp4';
+                video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path') + '.mp4';
         }
     });
 
@@ -74,7 +77,7 @@ if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
             showError();
             break;
         case 'ready':
-            video.src = '/video/' + urlParams.get('path') + '.mp4';
+            video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path') + '.mp4';
             break;
         case 'notFound':
             socket.emit('startTranscoding', urlParams.get('path') + '.mp4');
@@ -82,10 +85,10 @@ if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
         }
     });
 } else {
-    video.src = '/video/' + urlParams.get('path');
+    video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path');
 }
 
-const fileDataURL = new URL(window.location.origin + '/api/FileData/');
+const fileDataURL = new URL(window.location.origin + `${___PREFIX_URL___}/api/FileData`);
 fileDataURL.search = new URLSearchParams({
     'token' : loadCookie('token'),
     'path':  urlParams.get('path')
@@ -121,7 +124,7 @@ function loadData(res: SkipData) {
     if (res.next) {
         next.style.opacity = '1';
         next.addEventListener('click', function() {
-            const nextURL = new URL(document.location.href);
+            const nextURL = new URL(window.location.origin + `${___PREFIX_URL___}` + document.location.href);
             nextURL.search = new URLSearchParams({
                 path: res.next
             }).toString();
@@ -157,7 +160,7 @@ function togglePlayPause() {
     }
 }
 
-const url = new URL(window.location.origin + '/api/getUserData/');
+const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getUserData/`);
 url.search = new URLSearchParams({
     'token': loadCookie('token')
 }).toString();
@@ -261,7 +264,7 @@ video.addEventListener('timeupdate', function() {
     const timePer = Math.floor(video.currentTime / video.duration * 100) / 100;
     if (timePer !== last) {
         last = timePer;
-        fetchBackend('/api/setTime/', {
+        fetchBackend(`${___PREFIX_URL___}/api/setTime/`, {
             headers: {
                 'content-type' : 'application/json; charset=UTF-8'
             },
@@ -318,7 +321,7 @@ document.addEventListener('fullscreenchange', function() {
 video.addEventListener('loadeddata', function () {
     info.style.display = 'none';
     if (!skiped) {
-        const url = new URL(window.location.origin + '/api/getTime/');
+        const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getTime/`);
         url.search = new URLSearchParams({
             'token': loadCookie('token'),
             'path': urlParams.get('path')

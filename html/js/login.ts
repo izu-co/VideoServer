@@ -23,8 +23,10 @@ password.addEventListener('keyup', function(e) {
     }
 });
 
+declare let ___PREFIX_URL___: string;
+
 if (loadCookie('token')) {
-    fetchBackend('/api/checkToken/', {
+    fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
         headers: {
             'content-type' : 'application/json; charset=UTF-8'
         },
@@ -37,13 +39,13 @@ if (loadCookie('token')) {
         wrongPass.innerHTML = 'Token geladen, Login nicht notwendig!';
         wrongPass.style.opacity = '1';
         canlogin = false;
-        setTimeout(() => { document.location.href = '/videoSelector?path='; }, 2000);
+        setTimeout(() => { document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelector/?path=`; }, 2000);
     }, false, true);
 }
 
 async function login() {
     if (username.value && password.value) {
-        fetch('/api/login/', {
+        fetch(`${___PREFIX_URL___}/api/login/`, {
             headers: {
                 'content-type' : 'application/json; charset=UTF-8'
             },
@@ -59,7 +61,7 @@ async function login() {
                 wrongPass.innerHTML = 'Erfolgreich eingeloggt!';
                 wrongPass.style.opacity = '1';
                 canlogin = false;
-                setTimeout(() => { document.location.href = '/videoSelector?path='; }, 2000);
+                setTimeout(() => { document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelecto/?path=`; }, 2000);
             } else {
                 wrongPassText.innerHTML = data.body ? await data.text() : 'Login failed';
                 wrongPassText.className = 'vis';
