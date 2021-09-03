@@ -69,6 +69,6 @@
   "exclude": [
     "test.ts",
     "test/**/*",
-    "html/js/*"
+    "html/**/*.ts"
   ]
 }

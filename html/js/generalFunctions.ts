@@ -16,18 +16,13 @@ function setCookie(name: string, cookie: string, expires: Date, path = '/') : vo
     document.cookie = name + '=' + cookie + ';' + (expires ? 'expires=' + expires.toUTCString() + ';' : '') + 'path=' + path;
 }
 
-function fetchBackendAsPromise(url: string, options: RequestInit, sendBack = false, canFail = false) : Promise<undefined|object|string> {
+async function fetchBackendAsPromise(url: string, options: RequestInit, sendBack = false, canFail = false) : Promise<undefined|object|string> {
     return fetch(url, options).then(async data => {
         if (!data.ok) {
             console.log('[Request Error] ' + data.bodyUsed ? await data.text() : '');
             if (sendBack)
                 document.location.href = ___PREFIX_URL___ + '/';
-            else if (!canFail) {
-                document.getElementById('offline').classList.remove('false');
-                return undefined;
-            }
         } else {
-            document.getElementById('offline').classList.add('false');
             const text = await data.text();
             try {
                 return JSON.parse(text);
@@ -48,10 +43,7 @@ function fetchBackend(url: string, options: RequestInit, callback?: ((data: any)
             console.log('[Request Error] ' + data.bodyUsed ? await data.text() : '');
             if (sendBack)
                 document.location.href = ___PREFIX_URL___ + '/';
-            else if (!canFail)
-                document.getElementById('offline').classList.remove('false');
         } else {
-            document.getElementById('offline').classList.add('false');
             const text = await data.text();
             if (callback)
                 try {
@@ -87,4 +79,19 @@ const b64toBlob = (b64Data:string, contentType='', sliceSize=512) : Blob => {
     return blob;
 };
 
-export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob };
+const openIDBDatabase = async (name: string) : Promise<IDBDatabase> => {
+    const res: IDBOpenDBRequest|undefined = await new Promise<IDBOpenDBRequest>((resolve, reject) => {
+        let promise = indexedDB.open(name);
+        promise.addEventListener("error", () => reject());
+        promise.addEventListener("success", () => resolve(promise))
+
+    }).catch(() => undefined);
+
+    if (res === undefined)
+        return undefined;
+    else 
+        return res.result;
+
+}
+
+export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob, openIDBDatabase };

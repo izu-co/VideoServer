@@ -43,6 +43,7 @@
     "chai": "^4.3.4",
     "chai-http": "^4.3.0",
     "eslint": "^7.27.0",
+    "filemanager-webpack-plugin": "^6.1.5",
     "mocha": "^8.3.2",
     "ts-loader": "^9.2.2",
     "ts-node": "^9.1.1",
@@ -54,7 +55,7 @@
     "eslint": "npx eslint . --fix",
     "build": "node build.js",
     "prestart": "node build.js --test",
-    "start": "cd build && node index.js --vd Z:\\Videos --sync --httpPort 3000 --httpsPort 3001 --disableUpdate",
+    "start": "cd build && node index.js --vd ..\\test\\videos --sync --httpPort 3000 --httpsPort 3001 --disableUpdate",
     "pretest": "npm run prestart",
     "test": "npx mocha --require ts-node/register test/run.ts --exit --timeout 10000 --no-warnings"
   },
