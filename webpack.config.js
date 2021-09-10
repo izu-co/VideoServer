@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin')
 const webpack = require("webpack")
+const WorkerPlugin = require("worker-plugin")
 
 module.exports = (env, argv) => {
     if (!env)
@@ -40,10 +41,12 @@ module.exports = (env, argv) => {
                 dependOn: 'generalFunctions',
                 import: './html/js/videoSelector',
             },
+            /*
             worker: {
                 dependOn: 'generalFunctions',
                 import: './html/worker'
             }
+            */
         },
         output: {
             path: path.resolve(__dirname, 'build'),
@@ -66,11 +69,12 @@ module.exports = (env, argv) => {
                 events: {
                     onEnd: {
                         move: [ 
-                            { source: 'build/html/js/worker.js', destination: 'build/html/worker.js' }
+                            //{ source: 'build/html/js/worker.js', destination: 'build/html/worker.js' }
                         ]
                     }
                 }
-            })
+            }),
+            new WorkerPlugin()
         ]
     }
 

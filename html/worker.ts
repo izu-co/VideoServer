@@ -2,12 +2,45 @@
 /// <reference lib="ES2015" />
 /// <reference lib="webworker" />
 
-import { openIDBDatabase } from "./js/generalFunctions";
+import type Dexiee from "dexie";
 
+self.importScripts('dexie.js')
+
+declare const Dexie;
 declare const self: ServiceWorkerGlobalScope
 
 const cacheName = 'Serv_ Player Cache'
 const videoFiles = 'Serv_ Player VideoData'
+
+class DataBase extends Dexie {
+    videos: Dexiee.Table<IVideos, number>;
+    metaData: Dexiee.Table<IMetaData, number>;
+
+    constructor (databaseName) {
+        super(databaseName, { autoOpen: true });
+        this.version(1).stores({
+            videos: '&path',
+            metaData: '&path, name, type'
+        });
+        this.videos = this.table('videos');
+        this.metaData = this.table('metaData');
+    }
+}
+
+type IVideos = {
+    path: string,
+    data: string
+}
+
+type IMetaData = {
+    path: string,
+    name: string,
+    type: string,
+    image: string
+}
+
+const database = new DataBase(videoFiles);
+
 
 const assetsToCache = [
     '/icon',
@@ -30,40 +63,41 @@ const assetsToCache = [
 ];
 
 const allowedAPIRequests = [
-    
+    '/api/getSortTypes/'
 ]
 
 const reloadPage = () => console.log('reload');
 
 self.addEventListener('install', (event) => {
+    console.log("install", event)
     event.waitUntil(  
-        caches.open(cacheName).then((cache) => {
-            assetsToCache.forEach(asset => {
-                console.log('Started chaching', asset);
-                cache.add(asset).catch(er => {
-                    console.log(asset, er);
-                }).then(() => {
-                    console.log('Cached', asset);
+        Promise.all([
+            caches.open(cacheName).then((cache) => {
+                let chacheData = [];
+                assetsToCache.map(async asset => {
+                    await cache.add(asset).catch(er => {
+                        chacheData.push({
+                            path: asset,
+                            has: false,
+                            error: er
+                        })
+                    }).then(() => {
+                        chacheData.push({
+                            path: asset,
+                            has: true,
+                            error: undefined
+                        })
+                    });
                 });
-            });
-        }).catch((er) => {
-            console.error('Cant open cache', er, event);
-        })
+                console.table(chacheData);
+            }).catch((er) => {
+                console.error('Cant open cache', er, event);
+            }),
+            database.open()
+        ])
     );
-    event.waitUntil(async () => {
-        const db = await openIDBDatabase(videoFiles);
-        console.log(db);
-        const videos = db.createObjectStore('videos');
-        videos.createIndex('path', 'path', { unique: true });
-        videos.createIndex('data', 'data');
-        const metaData = db.createObjectStore('metaData');
-        metaData.createIndex('path', 'path', { unique: true });
-        metaData.createIndex('image', 'image');
-        metaData.createIndex('name', 'name');
-        metaData.createIndex('type', 'type');
-        metaData.add({ path: '/test.mp4', image: 'binary', 'name': 'test', 'type': 'type' })
-    })
 });
+
 
 self.addEventListener('fetch', (ev) => fetchHandler(ev))
 
@@ -72,7 +106,6 @@ const fetchHandler = async (ev: FetchEvent): Promise<Response> => {
     console.log(url.toString());
     let isAPIEndpoint = url.pathname.startsWith('/api/');
     let item = await caches.match(ev.request);
-    console.log(!item && (!isAPIEndpoint || allowedAPIRequests.includes(url.pathname)), item,  !isAPIEndpoint, allowedAPIRequests.includes(url.pathname));
     if (!item && (!isAPIEndpoint || allowedAPIRequests.includes(url.pathname))) {
         let res = await fetch(ev.request);
         if (res.status === 200) {
@@ -95,6 +128,3 @@ self.addEventListener("message", (ev) => {
 self.addEventListener('activate', (ev) => {
     ev.waitUntil(self.clients.claim())
 })
-
-export { videoFiles };
-export default null;

@@ -1,6 +1,5 @@
 import { fetchBackend, loadCookie, setCookie, fetchBackendAsPromise,  b64toBlob } from './generalFunctions';
 import { FileData as FileDataType, GetFilesResponse, SortTypes } from '../../interfaces';
-import { videoFiles } from "../worker";
 declare let ___PREFIX_URL___: string;
 
 fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
@@ -155,14 +154,8 @@ class FileData {
             this.pathSep = parsedData.pathSep;
             loading.a = false;
         } else {
-            const dbPromise = new Promise((resolve, reject) => {
-                let promise = indexedDB.open(videoFiles);
-                promise.addEventListener("error", reject);
-                promise.addEventListener("success", resolve)
-            }).catch(er => alert('Database error'));
-
-            
-
+         
+            console.log("Local")
             
         }
     }

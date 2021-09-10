@@ -28,8 +28,6 @@
             console.log('Service Worker failed. Reason:', er);
           })
         }
-
-        navigator.serviceWorker.controller.postMessage("Hello from page")
       </script>
       <script src="<%= PREFIX_URL %>/js/generalFunctions.js" defer></script>
       <script type="module" src="<%= PREFIX_URL %>/js/login.js" defer></script>

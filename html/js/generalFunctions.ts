@@ -1,3 +1,5 @@
+import Dexie from "dexie";
+
 declare var ___PREFIX_URL___
 
 function loadCookie(name: string) : null|string {
@@ -79,19 +81,5 @@ const b64toBlob = (b64Data:string, contentType='', sliceSize=512) : Blob => {
     return blob;
 };
 
-const openIDBDatabase = async (name: string) : Promise<IDBDatabase> => {
-    const res: IDBOpenDBRequest|undefined = await new Promise<IDBOpenDBRequest>((resolve, reject) => {
-        let promise = indexedDB.open(name);
-        promise.addEventListener("error", () => reject());
-        promise.addEventListener("success", () => resolve(promise))
 
-    }).catch(() => undefined);
-
-    if (res === undefined)
-        return undefined;
-    else 
-        return res.result;
-
-}
-
-export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob, openIDBDatabase };
+export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob };
