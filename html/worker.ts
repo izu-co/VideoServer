@@ -9,6 +9,7 @@ self.importScripts('dexie.js');
 declare const Dexie;
 declare const self: ServiceWorkerGlobalScope;
 
+const ___PREFIX_URL___ = self.registration.scope.substring(0, -1);
 const cacheName = 'Serv_ Player Cache';
 const videoFiles = 'Serv_ Player VideoData';
 
@@ -20,7 +21,7 @@ class DataBase extends Dexie {
         super(databaseName, { autoOpen: true });
         this.version(1).stores({
             videos: '&path',
-            metaData: '&path, name, type',
+            metaData: '&path, name, type, watchList, stars',
             apiCache: '&name'
         });
         this.videos = this.table('videos');
@@ -28,23 +29,31 @@ class DataBase extends Dexie {
     }
 }
 
-type IVideos = {
+export type IVideos = {
     path: string,
     data: string
 }
 
-type IMetaData = {
+export type IMetaData = {
     path: string,
     name: string,
     type: string,
-    image: string
+    image: string,
+    watchList: boolean,
+    stars: number,
+    timestemp?: number
 }
 
-type IMessageType = 'download';
+export type IMessageType = 'download' | 'metaData' | 'all' | 'videoItem';
 
-type IMessageData = {
+export type IMessageData<T> = {
     type: IMessageType,
-    data: any
+    data: T
+}
+
+export type IMessageDownload = {
+    token: string,
+    path: string
 }
 
 const database = new DataBase(videoFiles);
@@ -52,7 +61,6 @@ const database = new DataBase(videoFiles);
 
 const assetsToCache = [
     '/icon',
-    '.',
     '/',
     '/index.html',
     '/js/generalFunctions.js',
@@ -67,8 +75,10 @@ const assetsToCache = [
     '/style/player.css',
     '/style/videoSelector.css',
     '/style/videoSelectorFooter.css',
-    'https://kit-free.fontawesome.com/releases/latest/css/free.min.css'
-];
+    'https://kit-free.fontawesome.com/releases/latest/css/free.min.css',
+    '/manifest',
+    '/favicon.ico'
+].map(a => ___PREFIX_URL___ + a);
 
 const allowedAPIRequests = [
     '/api/getSortTypes/',
@@ -96,22 +106,8 @@ self.addEventListener('install', (event) => {
     event.waitUntil(  
         Promise.all([
             caches.open(cacheName).then((cache) => {
-                const chacheData = [];
-                assetsToCache.map(async asset => {
-                    await cache.add(asset).catch(er => {
-                        chacheData.push({
-                            path: asset,
-                            has: false,
-                            error: er
-                        });
-                    }).then(() => {
-                        chacheData.push({
-                            path: asset,
-                            has: true,
-                            error: undefined
-                        });
-                    });
-                });
+                if (navigator.onLine)
+                    cache.addAll(assetsToCache).catch(er => console.error(er));
             }).catch((er) => {
                 console.error('Cant open cache', er, event);
             }),
@@ -121,7 +117,7 @@ self.addEventListener('install', (event) => {
 });
     
     
-self.addEventListener('fetch', (ev) => fetchHandler(ev));
+self.addEventListener('fetch', (ev) => ev.respondWith(fetchHandler(ev)));
     
 const fetchHandler = async (ev: FetchEvent): Promise<Response> => {
     const url = new URL(ev.request.url);
@@ -162,13 +158,36 @@ self.addEventListener('online', reloadPage);
     
 self.addEventListener('message', async (ev) => {
     const port = ev.ports[0];
-    const data = ev.data as IMessageData;
+    const data = ev.data as IMessageData<any>;
     switch (data.type) {
     case 'download':
+        const downloadData = ev.data as IMessageData<IMessageDownload>
+        const url = new URL(self.location.origin + `${___PREFIX_URL___}/api/getMetaData`)
+        url.searchParams.set('path', downloadData.data.path)
+        url.searchParams.set('token', downloadData.data.token)
+        const metaRequest = await (await fetch(url.toString())).json()
+        await database.metaData.put({
+            path: metaRequest.Path,
+            image: metaRequest.image,
+            name: metaRequest.name,
+            type: metaRequest.type,
+            stars: metaRequest.stars,
+            watchList: metaRequest.watchList,
+            timestemp: metaRequest.timeStemp
+        })
         await database.videos.put({
-            data: await requestToBase64(data.data, { credentials: 'same-origin' }, port),
-            path: data.data
+            data: await requestToBase64(`/video/${downloadData.data.path}`, { credentials: 'same-origin' }, port),
+            path: downloadData.data.path
         });
+    case 'metaData':
+        const metaDataRes = await database.metaData.where('path').equals(data.data).first();
+        port.postMessage(metaDataRes);
+    case 'all':
+        const allMetaData = await database.metaData.toArray();
+        port.postMessage(allMetaData);
+    case 'videoItem':
+        const videoData = await database.videos.where('path').equals(data.data).first();
+        port.postMessage(videoData);
     }
 });
     

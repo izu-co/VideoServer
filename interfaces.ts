@@ -74,12 +74,14 @@ export type FileData = {
     'type': 'folder',
     'image': string,
     'watchList': boolean,
+    'stars': number
 } | {
     'name': string,
     'Path': string,
     'type': 'video',
     'image': string,
-    'watchList': boolean
+    'watchList': boolean,
+    'stars': number,
     'timeStemp'?: number
 }
 

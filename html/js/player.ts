@@ -320,7 +320,10 @@ video.addEventListener('loadeddata', async () => {
     info.style.display = 'none';
     const res = multipleResponseMessageToWorker({
         type: "download",
-        data: video.src
+        data: {
+            path: urlParams.get('path'),
+            token: loadCookie('token')
+        }
     });
 
     res.addEventListener("message", (data) => {

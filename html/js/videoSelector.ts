@@ -23,6 +23,7 @@ const container = document.getElementById('container');
 const loadMore = document.getElementById('loadMore');
 const loadAll = document.getElementById('loadAll');
 const sort = <HTMLSelectElement> document.getElementById('sort');
+const webWorker = navigator.serviceWorker;
 let filter = '';
 
 
@@ -154,7 +155,7 @@ class FileData {
             this.pathSep = parsedData.pathSep;
             loading.a = false;
         } else {
-         
+            
             
             
         }
@@ -314,7 +315,6 @@ class FileData {
 const fileData = new FileData();
 
 fileData.loadData(urlParams.get('path')).then(() => fileData.showData()).catch((er) => {
-    document.getElementById('offline').classList.remove('false');
     console.log(er);
 });
 
