@@ -20,7 +20,7 @@ export function init() : void {
     app.use((_, res, next) => {
         res.setHeader('Service-Worker-Allowed', '/');
         next();
-    })
+    });
     app.use('/favicon.ico', express.static(path.join(argv['Working Directory'], 'icons', 'favicon.ico')));
     app.use('/icon', express.static(path.join(argv['Working Directory'], 'icons', 'Icon.png')));
     app.use('/manifest', express.static(path.join(argv['Working Directory'], 'pwa.webmanifest')));

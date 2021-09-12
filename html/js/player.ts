@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import { fetchBackend, loadCookie } from './generalFunctions';
+import { fetchBackend, loadCookie, multipleResponseMessageToWorker, sendMessageToWorker } from './generalFunctions';
 import { SkipData } from '../../interfaces';
 declare let ___PREFIX_URL___: string;
 
@@ -18,7 +18,6 @@ const skipButton = document.getElementById('SkipButton');
 const next = <HTMLButtonElement> document.getElementById('next');
 const controls = document.getElementById('controls');
 const info = document.getElementById('info');
-
 let mouseDown = false;
 let skiped = false;
 let timer: NodeJS.Timeout;
@@ -35,7 +34,6 @@ document.body.onmousedown = function() {
 document.body.onmouseup = function() {
     mouseDown = false;
 };
-
 fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
     headers: {
         'content-type' : 'application/json; charset=UTF-8'
@@ -318,8 +316,18 @@ document.addEventListener('fullscreenchange', function() {
         fullScreenButton.className = 'is';
 });
 
-video.addEventListener('loadeddata', function () {
+video.addEventListener('loadeddata', async () => {
     info.style.display = 'none';
+    const res = multipleResponseMessageToWorker({
+        type: "download",
+        data: video.src
+    });
+
+    res.addEventListener("message", (data) => {
+        const msg = data as CustomEvent;
+        console.log(`${msg.detail.received}/${msg.detail.total} (${msg.detail.percent})`);
+    })
+
     if (!skiped) {
         const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getTime/`);
         url.search = new URLSearchParams({

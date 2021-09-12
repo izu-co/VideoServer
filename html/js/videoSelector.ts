@@ -12,9 +12,9 @@ fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
     method: 'POST'
 }, res => {
     if (res['perm'] === 'Admin')
-    document.getElementById('admin').className = '';
+        document.getElementById('admin').className = '';
     else
-    document.getElementById('sortDiv').style.right = '120px';
+        document.getElementById('sortDiv').style.right = '120px';
 }, true, false);
 
 let queryString = window.location.search;
@@ -36,7 +36,7 @@ const loading = {
     set a(val) {
         this.aInternal = val;
         if (this.aListener)
-        this.aListener(val);
+            this.aListener(val);
     },
     get a() {
         return this.aInternal;
@@ -67,9 +67,9 @@ class FileData {
     
     public hasMore() : boolean {
         if (!this.data)
-        return false;
+            return false;
         if (this.maxFiles === -1)
-        return false;
+            return false;
         return this.maxFiles > this.showAmount;
     }
     
@@ -87,7 +87,7 @@ class FileData {
     
     public loadAll() : void {
         while (this.hasMore()) 
-        this.showAmount+=this.addShowAmount;
+            this.showAmount+=this.addShowAmount;
         this.loadData(urlParams.get('path'), undefined, undefined, false).then(() => this.showData());
         loadMore.style.display = 'none';
         loadAll.style.display = 'none';
@@ -105,7 +105,7 @@ class FileData {
         if (window.navigator.onLine) {
             loading.a = true;
             if (resetShowAmount)
-            this.showAmount = this.defaultShowAmount;
+                this.showAmount = this.defaultShowAmount;
             this.currentlyShown = 0;
             const amountURL = new URL(window.location.origin + `${___PREFIX_URL___}/api/getFileAmount`);
             amountURL.search = new URLSearchParams({
@@ -147,15 +147,15 @@ class FileData {
             const parsedData : GetFilesResponse = response as GetFilesResponse;
             
             if (type === SortTypes.File)
-            this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
+                this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
             else
-            this.data = parsedData.files;
+                this.data = parsedData.files;
             
             this.pathSep = parsedData.pathSep;
             loading.a = false;
         } else {
          
-            console.log("Local")
+            
             
         }
     }
@@ -163,7 +163,7 @@ class FileData {
     public showData() : void {  
         loading.a = true;
         while (container.children.length > this.currentlyShown)
-        container.removeChild(container.lastChild);
+            container.removeChild(container.lastChild);
         this.BlobURLs.forEach(blob => URL.revokeObjectURL(blob));
         this.BlobURLs = [];
         let data = this.data;
@@ -185,7 +185,7 @@ class FileData {
             tub.src = blobURL;
             this.BlobURLs.push(blobURL);
             if (index === data.length - 1)
-            tub.addEventListener('load', () => setScroll());
+                tub.addEventListener('load', () => setScroll());
             
             const add = document.createElement('button');
             add.classList.add('watchList');
@@ -221,12 +221,12 @@ class FileData {
             for (let i = 0; i < singleStars.length; i++) {
                 const singleStar = singleStars.item(i);
                 if (i < file['stars'])
-                singleStar.classList.add('starSelected');
+                    singleStar.classList.add('starSelected');
                 else 
-                singleStar.classList.add('notSelected');
+                    singleStar.classList.add('notSelected');
                 singleStar.addEventListener('mouseenter', () => {
                     for (let a = 0; a < singleStars.length; a++)
-                    singleStars.item(a).classList.add(a <= i ? 'tempSelected' : 'tempNotSelected');
+                        singleStars.item(a).classList.add(a <= i ? 'tempSelected' : 'tempNotSelected');
                 });
                 
                 singleStar.addEventListener('click', () => {
@@ -250,7 +250,7 @@ class FileData {
                 
                 singleStar.addEventListener('mouseleave', () => {
                     for (let a = 0; a < singleStars.length ; a++)
-                    singleStars.item(a).classList.remove('tempSelected', 'tempNotSelected');
+                        singleStars.item(a).classList.remove('tempSelected', 'tempNotSelected');
                 });
             }
             
@@ -332,7 +332,7 @@ fetchBackend(url.toString(), {
     method: 'GET'
 }, res => {
     while (sort.lastChild != null)
-    sort.removeChild(sort.lastChild);
+        sort.removeChild(sort.lastChild);
     res.forEach(a => {
         const option = document.createElement('option');
         option.value = a;
@@ -381,7 +381,7 @@ document.getElementById('server').addEventListener('click', () => {
 });
 
 if (!window.navigator.onLine) {
-    ['settings', 'admin', 'server'].forEach(a => document.getElementById(a).remove())
+    ['settings', 'admin', 'server'].forEach(a => document.getElementById(a).remove());
 }
 
 function setScroll() {
@@ -425,6 +425,6 @@ function buildStarSVG() : SVGElement {
 function getNode(n: string, v: object) : SVGElement {
     const f = document.createElementNS('http://www.w3.org/2000/svg', n);
     for (const p in v)
-    f.setAttributeNS(null, p, v[p]);
+        f.setAttributeNS(null, p, v[p]);
     return f;
 }

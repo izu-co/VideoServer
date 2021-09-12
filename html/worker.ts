@@ -2,25 +2,26 @@
 /// <reference lib="ES2015" />
 /// <reference lib="webworker" />
 
-import type Dexiee from "dexie";
+import type Dexiee from 'dexie';
 
-self.importScripts('dexie.js')
+self.importScripts('dexie.js');
 
 declare const Dexie;
-declare const self: ServiceWorkerGlobalScope
+declare const self: ServiceWorkerGlobalScope;
 
-const cacheName = 'Serv_ Player Cache'
-const videoFiles = 'Serv_ Player VideoData'
+const cacheName = 'Serv_ Player Cache';
+const videoFiles = 'Serv_ Player VideoData';
 
 class DataBase extends Dexie {
     videos: Dexiee.Table<IVideos, number>;
     metaData: Dexiee.Table<IMetaData, number>;
-
+    
     constructor (databaseName) {
         super(databaseName, { autoOpen: true });
         this.version(1).stores({
             videos: '&path',
-            metaData: '&path, name, type'
+            metaData: '&path, name, type',
+            apiCache: '&name'
         });
         this.videos = this.table('videos');
         this.metaData = this.table('metaData');
@@ -37,6 +38,13 @@ type IMetaData = {
     name: string,
     type: string,
     image: string
+}
+
+type IMessageType = 'download';
+
+type IMessageData = {
+    type: IMessageType,
+    data: any
 }
 
 const database = new DataBase(videoFiles);
@@ -63,33 +71,47 @@ const assetsToCache = [
 ];
 
 const allowedAPIRequests = [
-    '/api/getSortTypes/'
+    '/api/getSortTypes/',
+];
+
+const customAPIResponse = [
+    {
+        name: '/api/checkToken',
+        res: new Response(JSON.stringify({
+            active: false,
+            perm: "Admin",
+            username: "Admin"
+        }), {
+            status: 200,
+            statusText: 'allowsSinceOffline',
+        }),
+        test: () => !navigator.onLine
+    }
 ]
 
 const reloadPage = () => console.log('reload');
 
 self.addEventListener('install', (event) => {
-    console.log("install", event)
+    self.skipWaiting();
     event.waitUntil(  
         Promise.all([
             caches.open(cacheName).then((cache) => {
-                let chacheData = [];
+                const chacheData = [];
                 assetsToCache.map(async asset => {
                     await cache.add(asset).catch(er => {
                         chacheData.push({
                             path: asset,
                             has: false,
                             error: er
-                        })
+                        });
                     }).then(() => {
                         chacheData.push({
                             path: asset,
                             has: true,
                             error: undefined
-                        })
+                        });
                     });
                 });
-                console.table(chacheData);
             }).catch((er) => {
                 console.error('Cant open cache', er, event);
             }),
@@ -97,34 +119,105 @@ self.addEventListener('install', (event) => {
         ])
     );
 });
-
-
-self.addEventListener('fetch', (ev) => fetchHandler(ev))
-
+    
+    
+self.addEventListener('fetch', (ev) => fetchHandler(ev));
+    
 const fetchHandler = async (ev: FetchEvent): Promise<Response> => {
     const url = new URL(ev.request.url);
-    console.log(url.toString());
-    let isAPIEndpoint = url.pathname.startsWith('/api/');
-    let item = await caches.match(ev.request);
+    url.searchParams.delete('token');
+    const request = new Request(url.toString(), {
+        method: ev.request.method
+    });
+    
+    if (request.method !== 'GET')
+        return fetch(ev.request);
+            
+    if (url.pathname.startsWith('/video/') && !url.pathname.endsWith('.jpg'))
+        return fetch(ev.request);
+            
+    const isAPIEndpoint = url.pathname.startsWith('/api/') || url.pathname.startsWith('/socket.io/');
+
+    if (isAPIEndpoint && customAPIResponse.some(a => a.name === url.pathname)) {
+        const customAPI = customAPIResponse.find(a => a.name === url.pathname);
+        if (customAPI.test())
+            return customAPI.res;
+    }
+
+    const item = await caches.match(request);
     if (!item && (!isAPIEndpoint || allowedAPIRequests.includes(url.pathname))) {
-        let res = await fetch(ev.request);
+        const res = await fetch(ev.request, { credentials: 'same-origin' });
         if (res.status === 200) {
-            (await caches.open(cacheName)).put(ev.request, res.clone());
-            console.log('Cached', url)
+            (await caches.open(cacheName)).put(request, res.clone());
+            console.log('Cached', url);
         }
         return res;
     } else {
         return item || fetch(ev.request);
     }
-}
+};
 
-self.addEventListener("offline", reloadPage);
-self.addEventListener("online", reloadPage);
-
-self.addEventListener("message", (ev) => {
-    console.log(ev.data);
-})
-
+self.addEventListener('offline', reloadPage);
+self.addEventListener('online', reloadPage);
+    
+self.addEventListener('message', async (ev) => {
+    const port = ev.ports[0];
+    const data = ev.data as IMessageData;
+    switch (data.type) {
+    case 'download':
+        await database.videos.put({
+            data: await requestToBase64(data.data, { credentials: 'same-origin' }, port),
+            path: data.data
+        });
+    }
+});
+    
 self.addEventListener('activate', (ev) => {
-    ev.waitUntil(self.clients.claim())
-})
+    ev.waitUntil(self.clients.claim());
+});
+    
+const requestToBase64 = (url: string, options?: RequestInit, port?: MessagePort) => {
+    return fetch(url, options)
+        .then(async response => {
+            const reader = response.body.getReader();
+            const contentLength = +response.headers.get('Content-Length');
+            let receivedLength = 0;
+            const chunks = [];
+            while(true) {
+                const {done, value} = await reader.read();
+
+                if (done) {
+                    break;
+                }
+                chunks.push(value);
+                receivedLength += value.length;
+                port.postMessage({
+                    finished: false,
+                    percent: receivedLength / contentLength,
+                    received: receivedLength,
+                    total: contentLength
+                });
+            }
+
+            port.postMessage({
+                finished: true,
+                percent: 1,
+                received: receivedLength,
+                total: contentLength
+            });
+
+            return new Blob(chunks);
+        }).then( blob => new Promise<string>(callback =>{
+            const reader = new FileReader() ;
+            reader.onload = function(){ callback(this.result as string); } ;
+            reader.readAsDataURL(blob) ;
+        }));
+};
+
+self.addEventListener('unhandledrejection', (er) => {
+    console.trace(er.reason);
+});
+
+self.addEventListener('error', (er) => {
+    console.trace(er);
+});

@@ -1,6 +1,4 @@
-import Dexie from "dexie";
-
-declare var ___PREFIX_URL___
+declare let ___PREFIX_URL___;
 
 function loadCookie(name: string) : null|string {
     const nameEQ = name + '=';
@@ -81,5 +79,34 @@ const b64toBlob = (b64Data:string, contentType='', sliceSize=512) : Blob => {
     return blob;
 };
 
+const sendMessageToWorker = (message: any) => {
+    return new Promise((resolve, reject) => {
+        var messageChannel = new MessageChannel();
+        messageChannel.port1.onmessage = (ev) => {
+            if (ev.data.error) {
+                reject(ev.data.error);
+            } else {
+                resolve(ev.data);
+            }
+        };
+        navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
+    })
+}
 
-export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob };
+const multipleResponseMessageToWorker = (message: any) => {
+    const target = new EventTarget();
+
+    const messageChannel = new MessageChannel();
+    messageChannel.port1.onmessage = (ev) => {
+        target.dispatchEvent(new CustomEvent("message", {
+            cancelable: false,
+            detail: ev.data
+        }))
+    }
+
+    navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
+
+    return target;
+}
+
+export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob, sendMessageToWorker, multipleResponseMessageToWorker };

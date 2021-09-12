@@ -20,6 +20,7 @@
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "no-async-promise-executor": "off",
+        "no-constant-condition": "off",
         "indent": [
             "error",
             4
