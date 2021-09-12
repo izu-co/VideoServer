@@ -1,5 +1,6 @@
-import { fetchBackend, loadCookie, setCookie, fetchBackendAsPromise,  b64toBlob } from './generalFunctions';
+import { fetchBackend, loadCookie, setCookie, fetchBackendAsPromise, b64toBlob, sendMessageToWorker } from './generalFunctions';
 import { FileData as FileDataType, GetFilesResponse, SortTypes } from '../../interfaces';
+import type { IMetaData, IVideos } from "../worker";
 declare let ___PREFIX_URL___: string;
 
 fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
@@ -103,10 +104,10 @@ class FileData {
     }
     
     public async loadData(path: string, type: null|SortTypes = null, length:number = this.showAmount, resetShowAmount = true) : Promise<void> {
+        loading.a = true;
+        if (resetShowAmount)
+            this.showAmount = this.defaultShowAmount;
         if (window.navigator.onLine) {
-            loading.a = true;
-            if (resetShowAmount)
-                this.showAmount = this.defaultShowAmount;
             this.currentlyShown = 0;
             const amountURL = new URL(window.location.origin + `${___PREFIX_URL___}/api/getFileAmount`);
             amountURL.search = new URLSearchParams({
@@ -153,12 +154,41 @@ class FileData {
                 this.data = parsedData.files;
             
             this.pathSep = parsedData.pathSep;
-            loading.a = false;
         } else {
+            const videos = await sendMessageToWorker({
+                type: 'all',
+                data: ''
+            }) as IVideos[]
+
+            let joinedData = (await Promise.all(videos.map(async item => {
+                return {
+                    ...item,
+                    ...await sendMessageToWorker({
+                        type: 'metaData',
+                        data: item.path
+                    }) as IMetaData
+                }
+            })))
+
+            this.maxFiles = joinedData.length;
+            switch(type) {
+                case SortTypes.Created:
+                case SortTypes.File:
+                    joinedData.sort((a,b) =>  a.path.localeCompare(b.path))
+                    break;
+                case SortTypes.WatchList:
+                    joinedData = joinedData.filter((a) => a.watchList)
+            }
+
+            this.data = joinedData.map(a => ({
+                ...a,
+                Path: a.path,
+                type: (a.type as "video"|"folder")
+            }));
             
-            
-            
+            this.pathSep = "\\";
         }
+        loading.a = false;
     }
     
     public showData() : void {  
@@ -214,49 +244,50 @@ class FileData {
                 }, false, true);
             });
             
-            const stars = buildStarSVG();
-            stars.classList.add('rating');
+            if (navigator.onLine) {
+                const stars = buildStarSVG();
+                stars.classList.add('rating');
             
-            const singleStars = stars.getElementsByTagNameNS('http://www.w3.org/2000/svg', 'path');
-            
-            for (let i = 0; i < singleStars.length; i++) {
-                const singleStar = singleStars.item(i);
-                if (i < file['stars'])
-                    singleStar.classList.add('starSelected');
-                else 
-                    singleStar.classList.add('notSelected');
-                singleStar.addEventListener('mouseenter', () => {
-                    for (let a = 0; a < singleStars.length; a++)
-                        singleStars.item(a).classList.add(a <= i ? 'tempSelected' : 'tempNotSelected');
-                });
+                const singleStars = stars.getElementsByTagNameNS('http://www.w3.org/2000/svg', 'path');
                 
-                singleStar.addEventListener('click', () => {
-                    fetchBackend(`${___PREFIX_URL___}/api/setStars`, {
-                        headers: {
-                            'content-type': 'application/json; charset=UTF-8'
-                        },
-                        body: JSON.stringify({
-                            'token': loadCookie('token'),
-                            'path': file['Path'],
-                            'stars': (i+1)
-                        }),
-                        method: 'PUT'
-                    }, (data) => {
-                        for (let k = 0; k < singleStars.length; k++) {
-                            singleStars.item(k).classList.forEach(a => singleStars.item(k).classList.remove(a));
-                            singleStars.item(k).classList.add(k < data ? 'starSelected' : 'notSelected');
-                        }
-                    }, false, true);
-                });
-                
-                singleStar.addEventListener('mouseleave', () => {
-                    for (let a = 0; a < singleStars.length ; a++)
-                        singleStars.item(a).classList.remove('tempSelected', 'tempNotSelected');
-                });
+                for (let i = 0; i < singleStars.length; i++) {
+                    const singleStar = singleStars.item(i);
+                    if (i < file['stars'])
+                        singleStar.classList.add('starSelected');
+                    else 
+                        singleStar.classList.add('notSelected');
+                    singleStar.addEventListener('mouseenter', () => {
+                        for (let a = 0; a < singleStars.length; a++)
+                            singleStars.item(a).classList.add(a <= i ? 'tempSelected' : 'tempNotSelected');
+                    });
+                    
+                    singleStar.addEventListener('click', () => {
+                        fetchBackend(`${___PREFIX_URL___}/api/setStars`, {
+                            headers: {
+                                'content-type': 'application/json; charset=UTF-8'
+                            },
+                            body: JSON.stringify({
+                                'token': loadCookie('token'),
+                                'path': file['Path'],
+                                'stars': (i+1)
+                            }),
+                            method: 'PUT'
+                        }, (data) => {
+                            for (let k = 0; k < singleStars.length; k++) {
+                                singleStars.item(k).classList.forEach(a => singleStars.item(k).classList.remove(a));
+                                singleStars.item(k).classList.add(k < data ? 'starSelected' : 'notSelected');
+                            }
+                        }, false, true);
+                    });
+                    
+                    singleStar.addEventListener('mouseleave', () => {
+                        for (let a = 0; a < singleStars.length ; a++)
+                            singleStars.item(a).classList.remove('tempSelected', 'tempNotSelected');
+                    });
+                }
+                tubDiv.appendChild(stars);
             }
-            
             tubDiv.style.position = 'relative';
-            tubDiv.appendChild(stars);
             tubDiv.appendChild(tub);
             tubDiv.appendChild(add);
             div.appendChild(tubDiv);
@@ -381,7 +412,7 @@ document.getElementById('server').addEventListener('click', () => {
 });
 
 if (!window.navigator.onLine) {
-    ['settings', 'admin', 'server'].forEach(a => document.getElementById(a).remove());
+    ['settings', 'admin', 'server', 'logout'].forEach(a => document.getElementById(a).remove());
 }
 
 function setScroll() {

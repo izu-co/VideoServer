@@ -266,12 +266,13 @@ const getMetaData = async (file: string, token: string, ip: string) : Promise<Ba
         return;      
     const name = path.substring(path.lastIndexOf(Path.sep));
     const stars = getStars(token, ip, path);
+    const watchlist = IsOnWatchList(user.value, path.replace(index.argv['Video Directory'], ''));
     const ret = {
         'name' : name,
         'Path' : path.replace(index.argv['Video Directory'], ''),
         'type' : (fs.lstatSync(path).isDirectory() ? 'folder' : 'video') as 'folder'|'video',
         'image' : (await fs.promises.readFile(path + '.jpg')).toString('base64'),
-        'watchList': true,
+        'watchList': watchlist.isOk ? true : false,
         'stars': stars.isOk ? stars.value : 0
     };
     if (ret['type'] === 'video') {

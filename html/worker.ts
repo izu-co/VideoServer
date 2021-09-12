@@ -21,8 +21,7 @@ class DataBase extends Dexie {
         super(databaseName, { autoOpen: true });
         this.version(1).stores({
             videos: '&path',
-            metaData: '&path, name, type, watchList, stars',
-            apiCache: '&name'
+            metaData: '&path, name, type, watchList, stars'
         });
         this.videos = this.table('videos');
         this.metaData = this.table('metaData');
@@ -31,7 +30,7 @@ class DataBase extends Dexie {
 
 export type IVideos = {
     path: string,
-    data: string
+    data: string|ArrayBuffer
 }
 
 export type IMetaData = {
@@ -57,7 +56,6 @@ export type IMessageDownload = {
 }
 
 const database = new DataBase(videoFiles);
-
 
 const assetsToCache = [
     '/icon',
@@ -86,7 +84,7 @@ const allowedAPIRequests = [
 
 const customAPIResponse = [
     {
-        name: '/api/checkToken',
+        name: '/api/checkToken/',
         res: new Response(JSON.stringify({
             active: false,
             perm: "Admin",
@@ -126,12 +124,6 @@ const fetchHandler = async (ev: FetchEvent): Promise<Response> => {
         method: ev.request.method
     });
     
-    if (request.method !== 'GET')
-        return fetch(ev.request);
-            
-    if (url.pathname.startsWith('/video/') && !url.pathname.endsWith('.jpg'))
-        return fetch(ev.request);
-            
     const isAPIEndpoint = url.pathname.startsWith('/api/') || url.pathname.startsWith('/socket.io/');
 
     if (isAPIEndpoint && customAPIResponse.some(a => a.name === url.pathname)) {
@@ -140,6 +132,12 @@ const fetchHandler = async (ev: FetchEvent): Promise<Response> => {
             return customAPI.res;
     }
 
+    if (request.method !== 'GET')
+        return fetch(ev.request);
+            
+    if (url.pathname.startsWith('/video/') && !url.pathname.endsWith('.jpg'))
+        return fetch(ev.request);
+            
     const item = await caches.match(request);
     if (!item && (!isAPIEndpoint || allowedAPIRequests.includes(url.pathname))) {
         const res = await fetch(ev.request, { credentials: 'same-origin' });
@@ -179,15 +177,25 @@ self.addEventListener('message', async (ev) => {
             data: await requestToBase64(`/video/${downloadData.data.path}`, { credentials: 'same-origin' }, port),
             path: downloadData.data.path
         });
+        break;
     case 'metaData':
-        const metaDataRes = await database.metaData.where('path').equals(data.data).first();
-        port.postMessage(metaDataRes);
+        const metaDataRes = database.metaData.where('path').equals(data.data);
+        if (await  metaDataRes.count() > 0)
+            port.postMessage(await metaDataRes.first());
+        else 
+            port.postMessage([]);
+        break;
     case 'all':
-        const allMetaData = await database.metaData.toArray();
+        const allMetaData = await database.metaData.where('path').startsWith(data.data).toArray();
         port.postMessage(allMetaData);
+        break;
     case 'videoItem':
-        const videoData = await database.videos.where('path').equals(data.data).first();
-        port.postMessage(videoData);
+        const videoData = database.videos.where('path').equals(data.data);
+        if (await videoData.count() > 0)
+            port.postMessage(await videoData.first());
+        else 
+            port.postMessage(null);
+        break;
     }
 });
     
@@ -226,9 +234,9 @@ const requestToBase64 = (url: string, options?: RequestInit, port?: MessagePort)
             });
 
             return new Blob(chunks);
-        }).then( blob => new Promise<string>(callback =>{
+        }).then( blob => new Promise<string|ArrayBuffer>(callback =>{
             const reader = new FileReader() ;
-            reader.onload = function(){ callback(this.result as string); } ;
+            reader.onload = function(){ callback(this.result); } ;
             reader.readAsDataURL(blob) ;
         }));
 };

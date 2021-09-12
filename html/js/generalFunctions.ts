@@ -31,7 +31,6 @@ async function fetchBackendAsPromise(url: string, options: RequestInit, sendBack
             } 
         }
     }).catch(er => {
-        document.getElementById('offline').classList.remove('false');
         console.log(er);
         return undefined;
     });
@@ -54,7 +53,6 @@ function fetchBackend(url: string, options: RequestInit, callback?: ((data: any)
         }
     })
         .catch(error => {
-            document.getElementById('offline').classList.remove('false');
             console.log(error);
         });
 }

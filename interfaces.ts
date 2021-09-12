@@ -2,6 +2,8 @@ import {
     PathLike
 } from 'fs';
 
+export type OptionalExtra = { [key: string]: any }
+
 export type Permission = 'Admin' | 'User'
 
 export interface IntroSkipInterface {
@@ -68,7 +70,7 @@ export type UserAccountInfo = {
     'active': boolean
 }
 
-export type FileData = {
+export type FileData = ({
     'name': string,
     'Path': string,
     'type': 'folder',
@@ -83,7 +85,7 @@ export type FileData = {
     'watchList': boolean,
     'stars': number,
     'timeStemp'?: number
-}
+}) & OptionalExtra
 
 export interface SkipData {
     'startTime': number,
