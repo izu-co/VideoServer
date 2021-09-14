@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import { fetchBackend, loadCookie, multipleResponseMessageToWorker, sendMessageToWorker, b64toBlob } from './generalFunctions';
+import { fetchBackend, loadCookie, multipleResponseMessageToWorker, sendMessageToWorker, b64toBlob, testMobile } from './generalFunctions';
 import { SkipData } from '../../interfaces';
 import type { IVideos } from '../worker';
 declare let ___PREFIX_URL___: string;
@@ -19,6 +19,22 @@ const skipButton = document.getElementById('SkipButton');
 const next = <HTMLButtonElement> document.getElementById('next');
 const controls = document.getElementById('controls');
 const info = document.getElementById('info');
+const downloadButton = document.getElementById('download')
+downloadButton.classList.add("loading");
+const downloadDiv = document.getElementById('downloadDiv')
+const progressRing = document.getElementById('progressRing') as unknown as SVGCircleElement
+
+const radius = progressRing.r.baseVal.value;
+const circumference = radius * 2 * Math.PI;
+
+progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+progressRing.style.strokeDashoffset = `${circumference}`;
+
+const setProgress = (percent: number) => {
+    const offset = circumference - percent / 100 * circumference;
+    progressRing.style.strokeDashoffset = `${offset}`;
+}
+
 let mouseDown = false;
 let skiped = false;
 let timer: NodeJS.Timeout;
@@ -162,10 +178,10 @@ document.body.onkeyup = function(e){
     } else if (e.keyCode == 122) {
         togglefullScreen();
     } else if (e.keyCode === 39) {
-        Move();
+        move();
         video.currentTime = (video.currentTime + 10 > video.duration) ? video.duration : video.currentTime + 10;
     } else if (e.keyCode == 37) {
-        Move();
+        move();
         video.currentTime = (video.currentTime - 10 < 0) ? 0 : video.currentTime - 10;
     }
 };
@@ -303,24 +319,29 @@ video.addEventListener('timeupdate', function() {
 
 
 const timeout = function () {
+    downloadButton.classList.add("hide");
     controls.className = 'hide';
     controls.style.cursor = 'none';
     video.style.cursor = 'none';
 };
 
-timer = setTimeout(timeout, WaitToHideTime);
-
-function Move() {
+const move = () => {
     clearTimeout(timer);
+    if (testMobile())
+        return;
     timer = setTimeout(timeout, WaitToHideTime);
+    downloadButton.classList.remove("hide")
     controls.className = 'show';
     controls.style.cursor = 'auto';
     video.style.cursor = 'auto';
 }
 
-container.onmousemove = Move;
-container.onclick = Move;
+if (!testMobile()) {
+    timer = setTimeout(timeout, WaitToHideTime);
 
+    container.onmousemove = move;
+    container.onclick = move;
+}
 
 fullScreenButton.addEventListener('click', function() {
     togglefullScreen();    
@@ -329,8 +350,16 @@ fullScreenButton.addEventListener('click', function() {
 function togglefullScreen() {
     if (document.fullscreen) 
         document.exitFullscreen();
-    else 
-        container.requestFullscreen();
+    else {
+        if (!testMobile()) {
+            container.requestFullscreen();
+        } else {
+            if (video['requestFullscreen'])
+                video['requestFullscreen']()
+            else 
+                video['webkitRequestFullScreen']()
+        }
+    }
 }
 
 document.addEventListener('fullscreenchange', function() {
@@ -342,20 +371,7 @@ document.addEventListener('fullscreenchange', function() {
 
 video.addEventListener('loadeddata', async () => {
     info.style.display = 'none';
-    if (navigator.onLine) {
-        const res = multipleResponseMessageToWorker({
-            type: "download",
-            data: {
-                path: urlParams.get('path'),
-                token: loadCookie('token')
-            }
-        });
-    
-        res.addEventListener("message", (data) => {
-            const msg = data as CustomEvent;
-            console.log(`${msg.detail.received}/${msg.detail.total} (${msg.detail.percent})`);
-        })
-    }
+    downloadButton.classList.remove("loading")
 
     if (!skiped && navigator.onLine) {
         const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getTime/`);
@@ -403,3 +419,61 @@ function showError(message = undefined) {
     info.appendChild(title);
     info.appendChild(msg);
 }
+
+const checkDownloadExists = async () => {
+    const res = await sendMessageToWorker({
+        type: 'videoItem',
+        data: decodeURIComponent(urlParams.get('path'))
+    })
+    return !!res;
+}
+
+const updateButtonState = async () => {
+    if (await checkDownloadExists()) {
+        downloadButton.classList.add("already")
+    }
+};
+
+
+document.addEventListener("load", updateButtonState);
+
+downloadButton.addEventListener("click", async () => {
+    if (await checkDownloadExists()) {
+        if (window.confirm("Do you want to delete the video?")) {
+            console.log(await sendMessageToWorker({
+                type: 'delete',
+                data: decodeURIComponent(urlParams.get('path'))
+            }))
+            await updateButtonState()
+        } else {
+            return;
+        }
+    } else {
+        if (navigator.onLine) {
+            downloadDiv.className = "downloadProgress"
+            
+            const res = multipleResponseMessageToWorker({
+                type: "download",
+                data: {
+                    path: urlParams.get('path'),
+                    token: loadCookie('token')
+                }
+            });
+        
+            res.addEventListener("message", async (data) => {
+                const msg = data as CustomEvent;
+
+                console.log(`${msg.detail.received}/${msg.detail.total} (${msg.detail.percent})`);
+
+                setProgress(msg.detail.percent * 100);
+
+                if (msg.detail.finished) {
+                    downloadDiv.className = "download"
+                    await updateButtonState();
+                }
+            })
+        } else {
+            alert("No internet connection found")
+        }
+    }
+})

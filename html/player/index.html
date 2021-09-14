@@ -11,6 +11,25 @@
     </head>
     <body>
         <div class="container"> 
+            <div id="downloadDiv" class="download">
+                <button id="download"></button>
+                <svg
+                    id="downloadProgress"
+                    viewBox="0 0 64 64"
+                    width="200%"
+                    height="200%"
+                >
+                    <circle
+                        id="progressRing"
+                        stroke-width="3"
+                        fill="transparent"
+                        stroke="orangered"
+                        r="30"
+                        cx="32"
+                        cy="32"
+                    />
+                </svg>
+            </div>
             <div id="c-video">
                 <video class="video" id="video" autoplay></video>
                 <div class="skip">
@@ -22,7 +41,7 @@
                     If the video format is not supported by your browser the video will get transcoded which takes time.<br>
                     On that note, in order to deliver the video as fast as possible the quality may be reduced.
                 </div>
-                <div id="controls">
+                <div id="controls" class="show">
                     <div class="orange-bar" id ="orange-bar">
                         <div class="TimeBar" id="TimeBar">
                             <div class="orange-juice" id="orange-juice"></div>

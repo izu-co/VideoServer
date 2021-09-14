@@ -1,3 +1,5 @@
+import type { IMessageData, IMessageDownload } from "../worker";
+
 declare let ___PREFIX_URL___;
 
 function loadCookie(name: string) : null|string {
@@ -77,11 +79,11 @@ const b64toBlob = (b64Data:string, contentType='', sliceSize=512) : Blob => {
     return blob;
 };
 
-const sendMessageToWorker = (message: any) => {
+const sendMessageToWorker = (message: IMessageData<any>) => {
     return new Promise((resolve, reject) => {
         var messageChannel = new MessageChannel();
         messageChannel.port1.onmessage = (ev) => {
-            if (ev.data.error) {
+            if (ev.data?.error) {
                 reject(ev.data.error);
             } else {
                 resolve(ev.data);
@@ -91,7 +93,7 @@ const sendMessageToWorker = (message: any) => {
     })
 }
 
-const multipleResponseMessageToWorker = (message: any) => {
+const multipleResponseMessageToWorker = (message: IMessageData<any>) => {
     const target = new EventTarget();
 
     const messageChannel = new MessageChannel();
@@ -107,4 +109,23 @@ const multipleResponseMessageToWorker = (message: any) => {
     return target;
 }
 
-export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob, sendMessageToWorker, multipleResponseMessageToWorker };
+const testMobile = () => {
+    const toMatch = [
+        /Android/i,
+        /webOS/i,
+        /iPhone/i,
+        /iPad/i,
+        /iPod/i,
+        /BlackBerry/i,
+        /Windows Phone/i
+    ];
+    if (toMatch.some(a => a.test(navigator.userAgent))) {
+        return true;
+    } else {
+        return navigator.maxTouchPoints &&
+            navigator.maxTouchPoints > 2 &&
+            /MacIntel/.test(navigator.platform);
+    }      
+}
+
+export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob, sendMessageToWorker, multipleResponseMessageToWorker, testMobile };

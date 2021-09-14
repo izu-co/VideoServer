@@ -43,7 +43,7 @@ export type IMetaData = {
     timestemp?: number
 }
 
-export type IMessageType = 'download' | 'metaData' | 'all' | 'videoItem';
+export type IMessageType = 'download' | 'metaData' | 'all' | 'videoItem' | 'delete';
 
 export type IMessageData<T> = {
     type: IMessageType,
@@ -195,6 +195,10 @@ self.addEventListener('message', async (ev) => {
             port.postMessage(await videoData.first());
         else 
             port.postMessage(null);
+        break;
+    case 'delete':
+        const deleteRes = await database.videos.where('path').equals(data.data).delete();
+        port.postMessage(deleteRes);
         break;
     }
 });
