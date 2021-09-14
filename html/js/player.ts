@@ -425,12 +425,15 @@ const checkDownloadExists = async () => {
         type: 'videoItem',
         data: decodeURIComponent(urlParams.get('path'))
     })
-    return !!res;
+    
+    return res == null ;
 }
 
 const updateButtonState = async () => {
     if (await checkDownloadExists()) {
-        downloadButton.classList.add("already")
+        
+    } else {
+        downloadButton.classList.remove('already');
     }
 };
 
@@ -459,11 +462,13 @@ downloadButton.addEventListener("click", async () => {
                     token: loadCookie('token')
                 }
             });
-        
+            let last: number;
             res.addEventListener("message", async (data) => {
                 const msg = data as CustomEvent;
-
-                console.log(`${msg.detail.received}/${msg.detail.total} (${msg.detail.percent})`);
+                if (last > +(msg.detail.percent as number).toFixed(2)) {
+                    last = +(msg.detail.percent as number).toFixed(2);
+                    console.log(`${msg.detail.received}/${msg.detail.total} (${msg.detail.percent})`);
+                }
 
                 setProgress(msg.detail.percent * 100);
 
