@@ -198,6 +198,7 @@ self.addEventListener('message', async (ev) => {
         break;
     case 'delete':
         const deleteRes = await database.videos.where('path').equals(data.data).delete();
+        await database.metaData.where('path').equals(data.data).delete();
         port.postMessage(deleteRes);
         break;
     }
