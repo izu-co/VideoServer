@@ -24,7 +24,6 @@ const container = document.getElementById('container');
 const loadMore = document.getElementById('loadMore');
 const loadAll = document.getElementById('loadAll');
 const sort = <HTMLSelectElement> document.getElementById('sort');
-const webWorker = navigator.serviceWorker;
 let filter = '';
 
 
@@ -59,6 +58,7 @@ loading.registerListener(function (val) {
 class FileData {
     private data: Array<FileDataType>;
     private pathSep: string; 
+    private lastType: SortTypes;
     public defaultShowAmount = 20;
     public addShowAmount = 20;
     public maxFiles = -1;
@@ -78,7 +78,7 @@ class FileData {
     public loadMore() : void {
         if (this.hasMore()) {
             this.showAmount+=this.addShowAmount;
-            this.loadData(urlParams.get('path'), undefined, undefined, false).then(() => this.showData());        
+            this.loadData(urlParams.get('path'), this.lastType, undefined, false).then(() => this.showData());        
         }
         
         if (!this.hasMore()) {
@@ -90,7 +90,7 @@ class FileData {
     public loadAll() : void {
         while (this.hasMore()) 
             this.showAmount+=this.addShowAmount;
-        this.loadData(urlParams.get('path'), undefined, undefined, false).then(() => this.showData());
+        this.loadData(urlParams.get('path'), this.lastType, undefined, false).then(() => this.showData());
         loadMore.style.display = 'none';
         loadAll.style.display = 'none';
     }
@@ -105,6 +105,7 @@ class FileData {
     
     public async loadData(path: string, type: null|SortTypes = null, length:number = this.showAmount, resetShowAmount = true) : Promise<void> {
         loading.a = true;
+        this.lastType = type;
         if (resetShowAmount)
             this.showAmount = this.defaultShowAmount;
         if (window.navigator.onLine) {
