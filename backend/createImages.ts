@@ -252,7 +252,6 @@ const generateImage = async (path: string) : Promise<boolean> => {
 
 const extractImage = async (path: string, percent: number) : Promise<ImageAnswer> => {
     return new Promise<ImageAnswer>(async (resolve, reject) => {
-        const start = Date.now();
         const data = await ffprobePromise(ffmpeg(path)).catch(er => console.log(er));
         if (!data) 
             return resolve();
@@ -281,7 +280,6 @@ const extractImage = async (path: string, percent: number) : Promise<ImageAnswer
             })
             .pipe(passThrough);
         passThrough.on('end', () => {
-            console.log(`Extraction took ${Date.now() - start}`);
             const buffer = Buffer.concat(buffers);
             resolve({
                 hasMore: hasMore,
