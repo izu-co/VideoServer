@@ -74,7 +74,7 @@ const getFileAmount = async (path:string, token:string, ip:string, type:null|str
     if (pathCheck.isOk === false)
         return pathCheck;
     path = pathCheck.value;
-    if(!fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) return {
+    if(!(fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) && searchType !== SortTypes.WatchList) return {
         isOk: false,
         statusCode: 404,
         message: 'The given path does not exists'
@@ -87,6 +87,7 @@ const getFileAmount = async (path:string, token:string, ip:string, type:null|str
         const pathCheck = checkPath(path);
         if (pathCheck.isOk === false)
             return false;
+        path = pathCheck.value;
         if (!fs.existsSync(path))
             return false;
         if (fs.lstatSync(path).isFile())
@@ -250,8 +251,45 @@ async function getFileFromCreated(path:string, token:string, ip:string, length:n
     };
 }
 
+const getMetaData = async (file: string, token: string, ip: string) : Promise<BackendRequest<FileData>> => {
+    const user = getUserFromToken(token, ip);
+
+    if (user.isOk === false) return user;
+    const pathCheck = checkPath(file);
+    if (pathCheck.isOk === false) return pathCheck;
+
+    const path = pathCheck.value;
+    if (!fs.existsSync(path)) return { isOk: false, statusCode: 404 };
+    if (fs.lstatSync(path).isFile())
+        if (!index.VideoNameExtensions.includes(path.split('.')[path.split('.').length - 1]))
+            return;
+    if (!fs.existsSync(path + '.jpg'))
+        return;      
+    const name = path.substring(path.lastIndexOf(Path.sep));
+    const stars = getStars(token, ip, path);
+    const watchlist = IsOnWatchList(user.value, path.replace(index.argv['Video Directory'], ''));
+    const ret = {
+        'name' : name,
+        'Path' : path.replace(index.argv['Video Directory'], ''),
+        'type' : (fs.lstatSync(path).isDirectory() ? 'folder' : 'video') as 'folder'|'video',
+        'image' : (await fs.promises.readFile(path + '.jpg')).toString('base64'),
+        'watchList': watchlist.isOk ? true : false,
+        'stars': stars.isOk ? stars.value : 0
+    };
+    if (ret['type'] === 'video') {
+        const time = loadTime(pathCheck.value, token, ip, user);
+        ret['timeStemp'] = time.isOk ? time.value : 0;          
+    }    
+
+    return {
+        isOk: true,
+        value: ret
+    };
+
+};  
+
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
 }
 
-export { getFiles, getFileAmount };
+export { getFiles, getFileAmount, getMetaData };

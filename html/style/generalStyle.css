@@ -4,35 +4,6 @@
     font-family: Barlow;
 }
 
-
-#offline {
-    display: flex;
-    position: fixed;
-    z-index: 99;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 20%;
-    max-height: 50px;
-    background-color: gray;
-    justify-content: center;
-    align-self: center;
-}
-
-#offline div {
-    color: cyan;
-    background-color: gray;
-    text-align: center;
-}
-
-#offline b {
-    background-color: gray;
-}
-
-#offline.false {
-    display: none;
-}
-
 .important {
     color: yellow !important;
 }

@@ -1,4 +1,6 @@
-declare var ___PREFIX_URL___
+import type { IMessageData, IMessageDownload } from '../worker';
+
+declare let ___PREFIX_URL___;
 
 function loadCookie(name: string) : null|string {
     const nameEQ = name + '=';
@@ -16,18 +18,13 @@ function setCookie(name: string, cookie: string, expires: Date, path = '/') : vo
     document.cookie = name + '=' + cookie + ';' + (expires ? 'expires=' + expires.toUTCString() + ';' : '') + 'path=' + path;
 }
 
-function fetchBackendAsPromise(url: string, options: RequestInit, sendBack = false, canFail = false) : Promise<undefined|object|string> {
+async function fetchBackendAsPromise(url: string, options: RequestInit, sendBack = false, canFail = false) : Promise<undefined|object|string> {
     return fetch(url, options).then(async data => {
         if (!data.ok) {
             console.log('[Request Error] ' + data.bodyUsed ? await data.text() : '');
             if (sendBack)
                 document.location.href = ___PREFIX_URL___ + '/';
-            else if (!canFail) {
-                document.getElementById('offline').classList.remove('false');
-                return undefined;
-            }
         } else {
-            document.getElementById('offline').classList.add('false');
             const text = await data.text();
             try {
                 return JSON.parse(text);
@@ -36,7 +33,6 @@ function fetchBackendAsPromise(url: string, options: RequestInit, sendBack = fal
             } 
         }
     }).catch(er => {
-        document.getElementById('offline').classList.remove('false');
         console.log(er);
         return undefined;
     });
@@ -48,10 +44,7 @@ function fetchBackend(url: string, options: RequestInit, callback?: ((data: any)
             console.log('[Request Error] ' + data.bodyUsed ? await data.text() : '');
             if (sendBack)
                 document.location.href = ___PREFIX_URL___ + '/';
-            else if (!canFail)
-                document.getElementById('offline').classList.remove('false');
         } else {
-            document.getElementById('offline').classList.add('false');
             const text = await data.text();
             if (callback)
                 try {
@@ -62,7 +55,6 @@ function fetchBackend(url: string, options: RequestInit, callback?: ((data: any)
         }
     })
         .catch(error => {
-            document.getElementById('offline').classList.remove('false');
             console.log(error);
         });
 }
@@ -87,4 +79,53 @@ const b64toBlob = (b64Data:string, contentType='', sliceSize=512) : Blob => {
     return blob;
 };
 
-export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob };
+const sendMessageToWorker = (message: IMessageData<any>) => {
+    return new Promise((resolve, reject) => {
+        const messageChannel = new MessageChannel();
+        messageChannel.port1.onmessage = (ev) => {
+            if (ev.data?.error) {
+                reject(ev.data.error);
+            } else {
+                resolve(ev.data);
+            }
+        };
+        navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
+    });
+};
+
+const multipleResponseMessageToWorker = (message: IMessageData<any>) => {
+    const target = new EventTarget();
+
+    const messageChannel = new MessageChannel();
+    messageChannel.port1.onmessage = (ev) => {
+        target.dispatchEvent(new CustomEvent('message', {
+            cancelable: false,
+            detail: ev.data
+        }));
+    };
+
+    navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
+
+    return target;
+};
+
+const testMobile = () => {
+    const toMatch = [
+        /Android/i,
+        /webOS/i,
+        /iPhone/i,
+        /iPad/i,
+        /iPod/i,
+        /BlackBerry/i,
+        /Windows Phone/i
+    ];
+    if (toMatch.some(a => a.test(navigator.userAgent))) {
+        return true;
+    } else {
+        return navigator.maxTouchPoints &&
+            navigator.maxTouchPoints > 2 &&
+            /MacIntel/.test(navigator.platform);
+    }      
+};
+
+export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob, sendMessageToWorker, multipleResponseMessageToWorker, testMobile };

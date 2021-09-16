@@ -8,7 +8,6 @@ import {
 import {
     join
 } from 'path';
-import * as chok from 'chokidar';
 
 if (!fs.existsSync(path.join(__dirname, '..', 'data')))
     fs.mkdirSync(path.join(__dirname, '..', 'data'));
@@ -43,50 +42,6 @@ const checkFiles = (files: string[]) : void => {
 
 getAllFiles(argv['Video Directory']).forEach(file => {
     fileIndex.prepare('INSERT INTO files VALUES(?,?,?)').run(file, fs.statSync(file).mtimeMs, fs.statSync(file).isDirectory() ? 1 : 0);
-});
-
-chok.watch(argv['Video Directory'], {
-    alwaysStat: true,
-    persistent: false,
-    ignored: null,
-    atomic: 100
-}).on('add', (path, stats) => {
-    if (path.substring(path.lastIndexOf('.') + 1) == 'jpg' && fs.existsSync(path.substring(0, path.lastIndexOf('.')))) {
-        if (fileIndex.prepare('SELECT * FROM files WHERE path=?').get(path.substring(0, path.lastIndexOf('.'))) == null) {
-            fileIndex.prepare('INSERT INTO files VALUES(?,?,?)').run(path.substring(0, path.lastIndexOf('.')), fs.lstatSync(path.substring(0, path.lastIndexOf('.'))).mtimeMs, fs.lstatSync(path.substring(0, path.lastIndexOf('.'))).isDirectory() ? 1 : 0);
-        }
-    } else {
-        if (VideoNameExtensions.includes(path.substring(path.lastIndexOf('.') + 1)) &&
-			fs.existsSync(path + '.jpg')) {
-            if (fileIndex.prepare('SELECT * FROM files WHERE path=?').get(path) == null) {
-                fileIndex.prepare('INSERT INTO files VALUES(?,?,?)').run(path, stats ? stats.mtimeMs : 0, 0);
-            }
-        }
-    }
-}).on('unlink', (path) => {
-    if (path.substring(path.lastIndexOf('.') + 1) == 'jpg') {
-        if (fileIndex.prepare('SELECT * FROM files WHERE path=?').get(path.substring(0, path.lastIndexOf('.'))) != null) {
-            fileIndex.prepare('DELETE FROM files WHERE path=?').run(path.substring(0, path.lastIndexOf('.')));
-        }
-    } else {
-        if (VideoNameExtensions.includes(path.substring(path.lastIndexOf('.') + 1))) {
-            if (fileIndex.prepare('SELECT * FROM files WHERE path=?').get(path) != null) {
-                fileIndex.prepare('DELETE FROM files WHERE path=?').run(path);
-            }
-        }
-    }
-}).on('addDir', (path, stats) => {
-    if (fs.existsSync(path + '.jpg')) {
-        if (fileIndex.prepare('SELECT * FROM files WHERE path=?').get(path) == null) {
-            fileIndex.prepare('INSERT INTO files VALUES(?,?,?)').run(path, stats ? stats.mtimeMs : 0, 1);
-        }
-    }
-}).on('unlinkDir', (path) => {
-    if (fileIndex.prepare('SELECT * FROM files WHERE path=?').get(path) != null)
-        fileIndex.prepare('DELETE FROM files WHERE path=?').run(path);
-}).on('change', (path, stats) => {
-    if (stats && fileIndex.prepare('SELECT * FROM files WHERE path=?').get(path) != null)
-        fileIndex.prepare('UPDATE files SET created=? WHERE path=?').run(stats.mtimeMs, path);
 });
 
 console.log('[INFO] Finished indexing!');

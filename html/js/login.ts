@@ -35,12 +35,12 @@ if (loadCookie('token')) {
         }),
         method: 'POST'
     }, () => {
-        wrongPass.style.color = 'greenyellow';
-        wrongPass.innerHTML = 'Token geladen, Login nicht notwendig!';
-        wrongPass.style.opacity = '1';
-        canlogin = false;
-        setTimeout(() => { document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelector/?path=`; }, 2000);
+        document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelector/?path=`;
     }, false, true);
+}
+
+if (!navigator.onLine) {
+    document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelector/?path=`;
 }
 
 async function login() {

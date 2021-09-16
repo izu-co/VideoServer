@@ -11,10 +11,76 @@ body {
     background: #ccc;
     justify-content: center;
     align-items: center;
+    max-height: 100vh;
 }
 
 .video {
     width: 100%;
+}
+
+#download.loading {
+    display: none !important;
+}
+
+#downloadDiv.download #download {
+    display: inline;
+}
+
+#downloadDiv.download #downloadProgress {
+    display: none;
+}
+ 
+#downloadDiv.downloadProgress #download {
+    display: none;
+}
+
+#downloadDiv.downloadProgress #downloadProgress {
+    display: inline;
+}
+
+#downloadProgress {
+    transition: stroke-dashoffset 0.2s;
+    position: absolute;
+    left: 0;
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+#downloadDiv {
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    z-index: 1;
+    width: 32px;
+    height: 32px;
+}
+
+#download {
+    opacity: 1;
+    transition: opacity 0.4s;
+    border: none;
+    background: none;
+}
+
+#download.already::before {
+    content: '\f7c2' !important;
+}
+
+#download::before {
+    content: '\f019';
+    font-family: 'Font Awesome 5 Free';
+    width: 15px;
+    height: 15px;
+    font-weight: 900;
+    display: inline-block;
+    font-size: 22px;
+    color: orangered;
+    -webkit-font-smoothing: antialiased;
+}
+
+#download.hide {
+    opacity: 0;
 }
 
 #c-video {
@@ -23,6 +89,7 @@ body {
     height: fit-content;
     position: relative;
     overflow: hidden;
+    max-height: 100%;
 }
 
 #controls.show {

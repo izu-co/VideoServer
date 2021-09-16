@@ -23,7 +23,9 @@
       <script>
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register("worker.js", {
-            scope: '/'
+            scope: '<%= PREFIX_URL %>/'
+          }).catch(er => {
+            console.log('Service Worker failed. Reason:', er);
           })
         }
       </script>
@@ -31,14 +33,4 @@
       <script type="module" src="<%= PREFIX_URL %>/js/login.js" defer></script>
     </div>
   </body>
-  <div id="offline" class="false">
-    <b>
-        <div>
-            You are currently
-        </div>
-        <div class="important">
-            OFFLINE
-        </div>
-    </b>
-  </div>
 </html>

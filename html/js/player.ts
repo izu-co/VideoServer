@@ -1,6 +1,7 @@
 import io from 'socket.io-client';
-import { fetchBackend, loadCookie } from './generalFunctions';
+import { fetchBackend, loadCookie, multipleResponseMessageToWorker, sendMessageToWorker, b64toBlob, testMobile } from './generalFunctions';
 import { SkipData } from '../../interfaces';
+import type { IVideos } from '../worker';
 declare let ___PREFIX_URL___: string;
 
 const video = document.querySelector('video');
@@ -18,15 +19,27 @@ const skipButton = document.getElementById('SkipButton');
 const next = <HTMLButtonElement> document.getElementById('next');
 const controls = document.getElementById('controls');
 const info = document.getElementById('info');
+const downloadButton = document.getElementById('download');
+downloadButton.classList.add('loading');
+const downloadDiv = document.getElementById('downloadDiv');
+const progressRing = document.getElementById('progressRing') as unknown as SVGCircleElement;
+
+const radius = progressRing.r.baseVal.value;
+const circumference = radius * 2 * Math.PI;
+
+progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+progressRing.style.strokeDashoffset = `${circumference}`;
+
+const setProgress = (percent: number) => {
+    const offset = circumference - percent / 100 * circumference;
+    progressRing.style.strokeDashoffset = `${offset}`;
+};
 
 let mouseDown = false;
 let skiped = false;
 let timer: NodeJS.Timeout;
 const WaitToHideTime = 1000;
 let infoProgress: HTMLParagraphElement;
-const socket = io({
-    path: ___PREFIX_URL___ + '/socket.io'
-});
 
 document.body.onmousedown = function() { 
     mouseDown = true;
@@ -35,7 +48,6 @@ document.body.onmousedown = function() {
 document.body.onmouseup = function() {
     mouseDown = false;
 };
-
 fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
     headers: {
         'content-type' : 'application/json; charset=UTF-8'
@@ -49,44 +61,69 @@ fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
-if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
-    video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path') + '.mp4';
-    socket.on(urlParams.get('path') + '.mp4', (data) => {
-        switch (data.type) {
-        case 'error':
-            console.error(data.data);
-            showError();
-            break;
-        case 'progress':
-            if (!infoProgress) {
-                infoProgress = document.createElement('p');
-                info.appendChild(infoProgress);
-            }
-            infoProgress.innerHTML = Math.ceil(data.data * 100) / 100 + '%';
-            break;
-        case 'finish':
-            if (!video.src)
-                video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path') + '.mp4';
-        }
-    });
-
-    socket.emit('transcodeStatus', encodeURIComponent(urlParams.get('path')) + '.mp4', (res) => {
-        console.log(res.type);
-        switch (res.type) {
-        case 'error':
-            showError();
-            break;
-        case 'ready':
+(async () => {
+    if (navigator.onLine) {
+        const socket = io({
+            path: ___PREFIX_URL___ + '/socket.io'
+        });
+        if (!video.canPlayType(getVideoType(urlParams.get('path').split('.').pop()))) {
             video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path') + '.mp4';
-            break;
-        case 'notFound':
-            socket.emit('startTranscoding', urlParams.get('path') + '.mp4');
-            break;
+            socket.on(urlParams.get('path') + '.mp4', (data) => {
+                switch (data.type) {
+                case 'error':
+                    console.error(data.data);
+                    showError();
+                    break;
+                case 'progress':
+                    if (!infoProgress) {
+                        infoProgress = document.createElement('p');
+                        info.appendChild(infoProgress);
+                    }
+                    infoProgress.innerHTML = Math.ceil(data.data * 100) / 100 + '%';
+                    break;
+                case 'finish':
+                    if (!video.src)
+                        video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path') + '.mp4';
+                }
+            });
+        
+            socket.emit('transcodeStatus', encodeURIComponent(urlParams.get('path')) + '.mp4', (res) => {
+                console.log(res.type);
+                switch (res.type) {
+                case 'error':
+                    showError();
+                    break;
+                case 'ready':
+                    video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path') + '.mp4';
+                    break;
+                case 'notFound':
+                    socket.emit('startTranscoding', urlParams.get('path') + '.mp4');
+                    break;
+                }
+            });
+        } else {
+            video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path');
         }
-    });
-} else {
-    video.src = `${___PREFIX_URL___}/video/` + urlParams.get('path');
-}
+    } else {
+        const res = await sendMessageToWorker({
+            type: 'videoItem',
+            data: decodeURIComponent(urlParams.get('path'))
+        });
+        if (res) {
+            const videoRes = res as IVideos;
+            if (videoRes.data instanceof ArrayBuffer) {
+                video.src = URL.createObjectURL(new Blob([videoRes.data]));
+                return;
+            }
+            const parts = videoRes.data.split(',');
+            video.src = URL.createObjectURL(b64toBlob(parts[1], parts[0].substring(5)));
+            
+        } else {
+            alert('Video not found. Playing is not an option while offline!');
+        }
+    }
+})();
+
 
 const fileDataURL = new URL(window.location.origin + `${___PREFIX_URL___}/api/FileData`);
 fileDataURL.search = new URLSearchParams({
@@ -94,16 +131,16 @@ fileDataURL.search = new URLSearchParams({
     'path':  urlParams.get('path')
 }).toString();
 
-fetchBackend(fileDataURL.toString(), {
-    headers: {
-        'content-type' : 'application/json; charset=UTF-8'
-    },
-    method: 'GET'
-}, res => loadData(res), false, false);
+if (navigator.onLine)
+    fetchBackend(fileDataURL.toString(), {
+        headers: {
+            'content-type' : 'application/json; charset=UTF-8'
+        },
+        method: 'GET'
+    }, res => loadData(res), false, false);
 
 function loadData(res: SkipData) {
     document.title = res['current'].split(res['pathSep']).pop();
-
 
     if (res['skip']['startTime'] !== -1 && res['skip']['startTime'] !== -1) {
         skipButton.addEventListener('click', function() {
@@ -141,10 +178,10 @@ document.body.onkeyup = function(e){
     } else if (e.keyCode == 122) {
         togglefullScreen();
     } else if (e.keyCode === 39) {
-        Move();
+        move();
         video.currentTime = (video.currentTime + 10 > video.duration) ? video.duration : video.currentTime + 10;
     } else if (e.keyCode == 37) {
-        Move();
+        move();
         video.currentTime = (video.currentTime - 10 < 0) ? 0 : video.currentTime - 10;
     }
 };
@@ -165,15 +202,16 @@ url.search = new URLSearchParams({
     'token': loadCookie('token')
 }).toString();
 
-fetchBackend(url.toString(), {
-    headers: {
-        'content-type' : 'application/json; charset=UTF-8'
-    },
-    method: 'GET'
-}, res => {
-    video.volume = res['volume'] / 100;
-    soundbar.value = res['volume'];
-}, true, false);
+if (navigator.onLine)
+    fetchBackend(url.toString(), {
+        headers: {
+            'content-type' : 'application/json; charset=UTF-8'
+        },
+        method: 'GET'
+    }, res => {
+        video.volume = res['volume'] / 100;
+        soundbar.value = res['volume'];
+    }, true, false);
 
 soundbar.onchange = function() {
     video.volume = parseFloat(soundbar.value) / 100;
@@ -262,7 +300,7 @@ video.addEventListener('timeupdate', function() {
 
     time.innerHTML = mincur + ':' + seccur + ' / ' + min + ':' + sec;
     const timePer = Math.floor(video.currentTime / video.duration * 100) / 100;
-    if (timePer !== last) {
+    if (timePer !== last && navigator.onLine) {
         last = timePer;
         fetchBackend(`${___PREFIX_URL___}/api/setTime/`, {
             headers: {
@@ -281,24 +319,29 @@ video.addEventListener('timeupdate', function() {
 
 
 const timeout = function () {
+    downloadButton.classList.add('hide');
     controls.className = 'hide';
     controls.style.cursor = 'none';
     video.style.cursor = 'none';
 };
 
-timer = setTimeout(timeout, WaitToHideTime);
-
-function Move() {
+const move = () => {
     clearTimeout(timer);
+    if (testMobile())
+        return;
     timer = setTimeout(timeout, WaitToHideTime);
+    downloadButton.classList.remove('hide');
     controls.className = 'show';
     controls.style.cursor = 'auto';
     video.style.cursor = 'auto';
+};
+
+if (!testMobile()) {
+    timer = setTimeout(timeout, WaitToHideTime);
+
+    container.onmousemove = move;
+    container.onclick = move;
 }
-
-container.onmousemove = Move;
-container.onclick = Move;
-
 
 fullScreenButton.addEventListener('click', function() {
     togglefullScreen();    
@@ -307,8 +350,16 @@ fullScreenButton.addEventListener('click', function() {
 function togglefullScreen() {
     if (document.fullscreen) 
         document.exitFullscreen();
-    else 
-        container.requestFullscreen();
+    else {
+        if (!testMobile()) {
+            container.requestFullscreen();
+        } else {
+            if (video['requestFullscreen'])
+                video['requestFullscreen']();
+            else 
+                video['webkitRequestFullScreen']();
+        }
+    }
 }
 
 document.addEventListener('fullscreenchange', function() {
@@ -318,9 +369,11 @@ document.addEventListener('fullscreenchange', function() {
         fullScreenButton.className = 'is';
 });
 
-video.addEventListener('loadeddata', function () {
+video.addEventListener('loadeddata', async () => {
     info.style.display = 'none';
-    if (!skiped) {
+    downloadButton.classList.remove('loading');
+
+    if (!skiped && navigator.onLine) {
         const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getTime/`);
         url.search = new URLSearchParams({
             'token': loadCookie('token'),
@@ -366,3 +419,66 @@ function showError(message = undefined) {
     info.appendChild(title);
     info.appendChild(msg);
 }
+
+const checkDownloadExists = async () => {
+    const res = await sendMessageToWorker({
+        type: 'videoItem',
+        data: decodeURIComponent(urlParams.get('path'))
+    });
+    
+    return res == null ;
+};
+
+const updateButtonState = async () => {
+    if (await checkDownloadExists()) {
+        downloadButton.classList.add('already');
+    } else {
+        downloadButton.classList.remove('already');
+    }
+};
+
+
+document.addEventListener('load', updateButtonState);
+
+downloadButton.addEventListener('click', async () => {
+    if (await checkDownloadExists()) {
+        if (window.confirm('Do you want to delete the video?')) {
+            console.log(await sendMessageToWorker({
+                type: 'delete',
+                data: decodeURIComponent(urlParams.get('path'))
+            }));
+            await updateButtonState();
+        } else {
+            return;
+        }
+    } else {
+        if (navigator.onLine) {
+            downloadDiv.className = 'downloadProgress';
+            
+            const res = multipleResponseMessageToWorker({
+                type: 'download',
+                data: {
+                    path: urlParams.get('path'),
+                    token: loadCookie('token')
+                }
+            });
+            let last: number;
+            res.addEventListener('message', async (data) => {
+                const msg = data as CustomEvent;
+                if (last > +(msg.detail.percent as number).toFixed(2)) {
+                    last = +(msg.detail.percent as number).toFixed(2);
+                    console.log(`${msg.detail.received}/${msg.detail.total} (${msg.detail.percent})`);
+                }
+
+                setProgress(msg.detail.percent * 100);
+
+                if (msg.detail.finished) {
+                    downloadDiv.className = 'download';
+                    await updateButtonState();
+                }
+            });
+        } else {
+            alert('No internet connection found');
+        }
+    }
+});

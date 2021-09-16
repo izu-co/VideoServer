@@ -1,5 +1,6 @@
-import { fetchBackend, loadCookie, setCookie, fetchBackendAsPromise,  b64toBlob } from './generalFunctions';
+import { fetchBackend, loadCookie, setCookie, fetchBackendAsPromise, b64toBlob, sendMessageToWorker } from './generalFunctions';
 import { FileData as FileDataType, GetFilesResponse, SortTypes } from '../../interfaces';
+import type { IMetaData, IVideos } from '../worker';
 declare let ___PREFIX_URL___: string;
 
 fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
@@ -23,6 +24,7 @@ const container = document.getElementById('container');
 const loadMore = document.getElementById('loadMore');
 const loadAll = document.getElementById('loadAll');
 const sort = <HTMLSelectElement> document.getElementById('sort');
+const webWorker = navigator.serviceWorker;
 let filter = '';
 
 
@@ -49,7 +51,7 @@ const loading = {
 loading.registerListener(function (val) {
     const curr = val ? 'invis' : 'vis';
     const toset = val ? 'vis' : 'invis';
-
+    
     document.getElementById('running').classList.remove(curr);
     document.getElementById('running').classList.add(toset);
 });
@@ -60,11 +62,11 @@ class FileData {
     public defaultShowAmount = 20;
     public addShowAmount = 20;
     public maxFiles = -1;
-
+    
     public showAmount = this.defaultShowAmount;
     public currentlyShown = 0;
     public BlobURLs = []
-
+    
     public hasMore() : boolean {
         if (!this.data)
             return false;
@@ -72,19 +74,19 @@ class FileData {
             return false;
         return this.maxFiles > this.showAmount;
     }
-
+    
     public loadMore() : void {
         if (this.hasMore()) {
             this.showAmount+=this.addShowAmount;
             this.loadData(urlParams.get('path'), undefined, undefined, false).then(() => this.showData());        
         }
-
+        
         if (!this.hasMore()) {
             loadMore.style.display = 'none';
             loadAll.style.display = 'none';
         }
     }
-
+    
     public loadAll() : void {
         while (this.hasMore()) 
             this.showAmount+=this.addShowAmount;
@@ -92,7 +94,7 @@ class FileData {
         loadMore.style.display = 'none';
         loadAll.style.display = 'none';
     }
-
+    
     public reload(keepShowAmount = false) : void {
         if (!keepShowAmount) {
             this.showAmount = this.defaultShowAmount;
@@ -100,60 +102,95 @@ class FileData {
         }
         this.showData();
     }
-
+    
     public async loadData(path: string, type: null|SortTypes = null, length:number = this.showAmount, resetShowAmount = true) : Promise<void> {
         loading.a = true;
         if (resetShowAmount)
             this.showAmount = this.defaultShowAmount;
-        this.currentlyShown = 0;
-        const amountURL = new URL(window.location.origin + `${___PREFIX_URL___}/api/getFileAmount`);
-        amountURL.search = new URLSearchParams({
-            'token': loadCookie('token'),
-            'path': path,
-            'type': type
-        }).toString();
-
-        const amountRes = await fetchBackendAsPromise(amountURL.toString(), {});
-        if (typeof amountRes === 'string') {
-            if (!isNaN(parseInt(amountRes))) {
-                this.maxFiles = parseInt(amountRes);
+        if (window.navigator.onLine) {
+            this.currentlyShown = 0;
+            const amountURL = new URL(window.location.origin + `${___PREFIX_URL___}/api/getFileAmount`);
+            amountURL.search = new URLSearchParams({
+                'token': loadCookie('token'),
+                'path': path,
+                'type': type
+            }).toString();
+            
+            const amountRes = await fetchBackendAsPromise(amountURL.toString(), {});
+            if (typeof amountRes === 'string') {
+                if (!isNaN(parseInt(amountRes))) {
+                    this.maxFiles = parseInt(amountRes);
+                }
+            } else if (typeof amountRes === 'number') [
+                this.maxFiles = amountRes
+            ];
+            
+            const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getFiles/`);
+            url.search = new URLSearchParams({
+                'token': loadCookie('token'),
+                'path': path,
+                'type': type,
+                'length': length.toString()
+            }).toString();
+            const response = await fetchBackendAsPromise(url.toString(), {
+                headers: {
+                    'content-type': 'application/json; charset=UTF-8'
+                },
+                method: 'GET'
+            });
+            if (!response) {
+                loading.a = false;
+                return;
             }
-        } else if (typeof amountRes === 'number') [
-            this.maxFiles = amountRes
-        ];
+            if (typeof response !== 'object') {
+                loading.a = false;
+                return;
+            }
+            const parsedData : GetFilesResponse = response as GetFilesResponse;
+            
+            if (type === SortTypes.File)
+                this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
+            else
+                this.data = parsedData.files;
+            
+            this.pathSep = parsedData.pathSep;
+        } else {
+            const videos = await sendMessageToWorker({
+                type: 'all',
+                data: ''
+            }) as IVideos[];
 
-        const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getFiles/`);
-        url.search = new URLSearchParams({
-            'token': loadCookie('token'),
-            'path': path,
-            'type': type,
-            'length': length.toString()
-        }).toString();
-        const response = await fetchBackendAsPromise(url.toString(), {
-            headers: {
-                'content-type': 'application/json; charset=UTF-8'
-            },
-            method: 'GET'
-        });
-        if (!response) {
-            loading.a = false;
-            return;
+            let joinedData = (await Promise.all(videos.map(async item => {
+                return {
+                    ...item,
+                    ...await sendMessageToWorker({
+                        type: 'metaData',
+                        data: item.path
+                    }) as IMetaData
+                };
+            })));
+
+            this.maxFiles = joinedData.length;
+            switch(type) {
+            case SortTypes.Created:
+            case SortTypes.File:
+                joinedData.sort((a,b) =>  a.path.localeCompare(b.path));
+                break;
+            case SortTypes.WatchList:
+                joinedData = joinedData.filter((a) => a.watchList);
+            }
+
+            this.data = joinedData.map(a => ({
+                ...a,
+                Path: a.path,
+                type: (a.type as 'video'|'folder')
+            }));
+            
+            this.pathSep = '\\';
         }
-        if (typeof response !== 'object') {
-            loading.a = false;
-            return;
-        }
-        const parsedData : GetFilesResponse = response as GetFilesResponse;
-
-        if (type === SortTypes.File)
-            this.data = parsedData.files.sort((a,b) =>  a.Path.localeCompare(b.Path));
-        else
-            this.data = parsedData.files;
-
-        this.pathSep = parsedData.pathSep;
         loading.a = false;
     }
-
+    
     public showData() : void {  
         loading.a = true;
         while (container.children.length > this.currentlyShown)
@@ -163,15 +200,15 @@ class FileData {
         let data = this.data;
         data = data.filter(a => a['name'].toLowerCase().includes(filter.toLowerCase()));
         data = data.filter((_, i) => this.currentlyShown <= i  && i < this.showAmount);
-
+        
         data.forEach((file, index) => {
             const header = document.createElement('div');
             const div = document.createElement('div');
-
+            
             div.className = 'Item';
-
+            
             const tubDiv = document.createElement('div');
-
+            
             const tub = document.createElement('img');
             tub.className = 'tumb';
             tub.alt = 'Thumbnail';
@@ -180,7 +217,7 @@ class FileData {
             this.BlobURLs.push(blobURL);
             if (index === data.length - 1)
                 tub.addEventListener('load', () => setScroll());
-
+            
             const add = document.createElement('button');
             add.classList.add('watchList');
             add.classList.add(file['watchList'] ? 'already' : 'add');
@@ -206,77 +243,78 @@ class FileData {
                     }
                 }, false, true);
             });
-
-            const stars = buildStarSVG();
-            stars.classList.add('rating');
-
-            const singleStars = stars.getElementsByTagNameNS('http://www.w3.org/2000/svg', 'path');
-
-            for (let i = 0; i < singleStars.length; i++) {
-                const singleStar = singleStars.item(i);
-                if (i < file['stars'])
-                    singleStar.classList.add('starSelected');
-                else 
-                    singleStar.classList.add('notSelected');
-                singleStar.addEventListener('mouseenter', () => {
-                    for (let a = 0; a < singleStars.length; a++)
-                        singleStars.item(a).classList.add(a <= i ? 'tempSelected' : 'tempNotSelected');
-                });
-
-                singleStar.addEventListener('click', () => {
-                    fetchBackend(`${___PREFIX_URL___}/api/setStars`, {
-                        headers: {
-                            'content-type': 'application/json; charset=UTF-8'
-                        },
-                        body: JSON.stringify({
-                            'token': loadCookie('token'),
-                            'path': file['Path'],
-                            'stars': (i+1)
-                        }),
-                        method: 'PUT'
-                    }, (data) => {
-                        for (let k = 0; k < singleStars.length; k++) {
-                            singleStars.item(k).classList.forEach(a => singleStars.item(k).classList.remove(a));
-                            singleStars.item(k).classList.add(k < data ? 'starSelected' : 'notSelected');
-                        }
-                    }, false, true);
-                });
-
-                singleStar.addEventListener('mouseleave', () => {
-                    for (let a = 0; a < singleStars.length ; a++)
-                        singleStars.item(a).classList.remove('tempSelected', 'tempNotSelected');
-                });
+            
+            if (navigator.onLine) {
+                const stars = buildStarSVG();
+                stars.classList.add('rating');
+            
+                const singleStars = stars.getElementsByTagNameNS('http://www.w3.org/2000/svg', 'path');
+                
+                for (let i = 0; i < singleStars.length; i++) {
+                    const singleStar = singleStars.item(i);
+                    if (i < file['stars'])
+                        singleStar.classList.add('starSelected');
+                    else 
+                        singleStar.classList.add('notSelected');
+                    singleStar.addEventListener('mouseenter', () => {
+                        for (let a = 0; a < singleStars.length; a++)
+                            singleStars.item(a).classList.add(a <= i ? 'tempSelected' : 'tempNotSelected');
+                    });
+                    
+                    singleStar.addEventListener('click', () => {
+                        fetchBackend(`${___PREFIX_URL___}/api/setStars`, {
+                            headers: {
+                                'content-type': 'application/json; charset=UTF-8'
+                            },
+                            body: JSON.stringify({
+                                'token': loadCookie('token'),
+                                'path': file['Path'],
+                                'stars': (i+1)
+                            }),
+                            method: 'PUT'
+                        }, (data) => {
+                            for (let k = 0; k < singleStars.length; k++) {
+                                singleStars.item(k).classList.forEach(a => singleStars.item(k).classList.remove(a));
+                                singleStars.item(k).classList.add(k < data ? 'starSelected' : 'notSelected');
+                            }
+                        }, false, true);
+                    });
+                    
+                    singleStar.addEventListener('mouseleave', () => {
+                        for (let a = 0; a < singleStars.length ; a++)
+                            singleStars.item(a).classList.remove('tempSelected', 'tempNotSelected');
+                    });
+                }
+                tubDiv.appendChild(stars);
             }
-
             tubDiv.style.position = 'relative';
-            tubDiv.appendChild(stars);
             tubDiv.appendChild(tub);
             tubDiv.appendChild(add);
             div.appendChild(tubDiv);
-
+            
             if (file.type === 'video') {
                 const fortschritt = document.createElement('div');
                 fortschritt.className = 'fortschritt';
                 fortschritt.style.width = (file.timeStemp * 100) + '%';
                 div.appendChild(fortschritt);
             }
-
+            
             const text = document.createElement('b');
-
+            
             text.className = 'text';
             
             let textToDisplay = file['name'];
             if (textToDisplay.startsWith(this.pathSep)) textToDisplay = textToDisplay.substring(this.pathSep.length);
-
+            
             textToDisplay = textToDisplay.substring(textToDisplay.lastIndexOf(this.pathSep) + 1);
-
+            
             text.innerText = textToDisplay;
-
+            
             div.addEventListener('click', function (e) {
                 if (!(e.target === this || e.target === tub || e.target === text)) {
                     return;
                 }
-
+                
                 if (file['type'] === 'folder') {
                     urlParams.set('path', file['Path']);
                     location.href = location.pathname + '?' + urlParams.toString();
@@ -285,7 +323,7 @@ class FileData {
                     location.href = location.origin + `${___PREFIX_URL___}/player/?` + urlParams.toString();
                 }
             });
-
+            
             div.appendChild(text);
             header.appendChild(div);
             header.className = 'showItem';
@@ -299,16 +337,15 @@ class FileData {
             loadMore.style.display = 'none';
             loadAll.style.display = 'none';
         } 
-
+        
         loading.a = false;
     }
-
+    
 }
 
 const fileData = new FileData();
 
 fileData.loadData(urlParams.get('path')).then(() => fileData.showData()).catch((er) => {
-    document.getElementById('offline').classList.remove('false');
     console.log(er);
 });
 
@@ -354,7 +391,7 @@ window.addEventListener('scroll', () => {
 
 const logoutButton = document.getElementById('logout');
 logoutButton.addEventListener('click', () => {
-    fetch(`${___PREFIX_URL___}/api/logout`, {
+    fetchBackendAsPromise(`${___PREFIX_URL___}/api/logout`, {
         headers: {
             'content-type': 'application/json; charset=UTF-8'
         },
@@ -362,13 +399,7 @@ logoutButton.addEventListener('click', () => {
             'token': loadCookie('token')
         }),
         method: 'POST'
-    }).then(data => data.json())
-        .then(res => {
-            if (res['status'] === true)
-                document.location.href = ___PREFIX_URL___ + '/';
-            else
-                alert('Something went wrong');
-        });
+    }, true, false).then(() => document.location.href = ___PREFIX_URL___ + '/' );
     setCookie('token', '', new Date(0));
 });
 
@@ -380,6 +411,10 @@ document.getElementById('server').addEventListener('click', () => {
     location.href = `${___PREFIX_URL___}/server/`;
 });
 
+if (!window.navigator.onLine) {
+    ['settings', 'admin', 'server', 'logout'].forEach(a => document.getElementById(a).remove());
+}
+
 function setScroll() {
     const cookie = loadCookie('scroll:' + location.search.slice('?path='.length));
     window.scrollTo({
@@ -389,7 +424,7 @@ function setScroll() {
 
 document.getElementById('search').addEventListener('input', (e) => {
     filter = (<HTMLInputElement> e.target).value;
-
+    
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString);
     fileData.reload();
@@ -398,7 +433,7 @@ document.getElementById('search').addEventListener('input', (e) => {
 document.getElementById('searchForm').addEventListener('submit', (e) => {
     e.preventDefault();
     filter = new FormData(<HTMLFormElement> e.target).get('search').toString();
-
+    
     queryString = window.location.search;
     urlParams = new URLSearchParams(queryString);
     fileData.reload();
