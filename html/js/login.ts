@@ -35,12 +35,12 @@ if (loadCookie('token')) {
         }),
         method: 'POST'
     }, () => {
-       document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelector/?path=`;
+        document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelector/?path=`;
     }, false, true);
 }
 
 if (!navigator.onLine) {
-    document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelector/?path=`
+    document.location.href = window.location.origin + `${___PREFIX_URL___}/videoSelector/?path=`;
 }
 
 async function login() {

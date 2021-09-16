@@ -1,6 +1,6 @@
 import { fetchBackend, loadCookie, setCookie, fetchBackendAsPromise, b64toBlob, sendMessageToWorker } from './generalFunctions';
 import { FileData as FileDataType, GetFilesResponse, SortTypes } from '../../interfaces';
-import type { IMetaData, IVideos } from "../worker";
+import type { IMetaData, IVideos } from '../worker';
 declare let ___PREFIX_URL___: string;
 
 fetchBackend(`${___PREFIX_URL___}/api/checkToken/`, {
@@ -158,7 +158,7 @@ class FileData {
             const videos = await sendMessageToWorker({
                 type: 'all',
                 data: ''
-            }) as IVideos[]
+            }) as IVideos[];
 
             let joinedData = (await Promise.all(videos.map(async item => {
                 return {
@@ -167,26 +167,26 @@ class FileData {
                         type: 'metaData',
                         data: item.path
                     }) as IMetaData
-                }
-            })))
+                };
+            })));
 
             this.maxFiles = joinedData.length;
             switch(type) {
-                case SortTypes.Created:
-                case SortTypes.File:
-                    joinedData.sort((a,b) =>  a.path.localeCompare(b.path))
-                    break;
-                case SortTypes.WatchList:
-                    joinedData = joinedData.filter((a) => a.watchList)
+            case SortTypes.Created:
+            case SortTypes.File:
+                joinedData.sort((a,b) =>  a.path.localeCompare(b.path));
+                break;
+            case SortTypes.WatchList:
+                joinedData = joinedData.filter((a) => a.watchList);
             }
 
             this.data = joinedData.map(a => ({
                 ...a,
                 Path: a.path,
-                type: (a.type as "video"|"folder")
+                type: (a.type as 'video'|'folder')
             }));
             
-            this.pathSep = "\\";
+            this.pathSep = '\\';
         }
         loading.a = false;
     }

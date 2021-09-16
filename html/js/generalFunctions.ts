@@ -1,4 +1,4 @@
-import type { IMessageData, IMessageDownload } from "../worker";
+import type { IMessageData, IMessageDownload } from '../worker';
 
 declare let ___PREFIX_URL___;
 
@@ -81,7 +81,7 @@ const b64toBlob = (b64Data:string, contentType='', sliceSize=512) : Blob => {
 
 const sendMessageToWorker = (message: IMessageData<any>) => {
     return new Promise((resolve, reject) => {
-        var messageChannel = new MessageChannel();
+        const messageChannel = new MessageChannel();
         messageChannel.port1.onmessage = (ev) => {
             if (ev.data?.error) {
                 reject(ev.data.error);
@@ -90,24 +90,24 @@ const sendMessageToWorker = (message: IMessageData<any>) => {
             }
         };
         navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
-    })
-}
+    });
+};
 
 const multipleResponseMessageToWorker = (message: IMessageData<any>) => {
     const target = new EventTarget();
 
     const messageChannel = new MessageChannel();
     messageChannel.port1.onmessage = (ev) => {
-        target.dispatchEvent(new CustomEvent("message", {
+        target.dispatchEvent(new CustomEvent('message', {
             cancelable: false,
             detail: ev.data
-        }))
-    }
+        }));
+    };
 
     navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
 
     return target;
-}
+};
 
 const testMobile = () => {
     const toMatch = [
@@ -126,6 +126,6 @@ const testMobile = () => {
             navigator.maxTouchPoints > 2 &&
             /MacIntel/.test(navigator.platform);
     }      
-}
+};
 
 export { fetchBackend, fetchBackendAsPromise, loadCookie, setCookie, b64toBlob, sendMessageToWorker, multipleResponseMessageToWorker, testMobile };

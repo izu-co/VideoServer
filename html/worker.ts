@@ -87,15 +87,15 @@ const customAPIResponse = [
         name: '/api/checkToken/',
         res: new Response(JSON.stringify({
             active: false,
-            perm: "Admin",
-            username: "Admin"
+            perm: 'Admin',
+            username: 'Admin'
         }), {
             status: 200,
             statusText: 'allowsSinceOffline',
         }),
         test: () => !navigator.onLine
     }
-]
+];
 
 const reloadPage = () => console.log('reload');
 
@@ -159,11 +159,11 @@ self.addEventListener('message', async (ev) => {
     const data = ev.data as IMessageData<any>;
     switch (data.type) {
     case 'download':
-        const downloadData = ev.data as IMessageData<IMessageDownload>
-        const url = new URL(self.location.origin + `${___PREFIX_URL___}/api/getMetaData`)
-        url.searchParams.set('path', downloadData.data.path)
-        url.searchParams.set('token', downloadData.data.token)
-        const metaRequest = await (await fetch(url.toString())).json()
+        const downloadData = ev.data as IMessageData<IMessageDownload>;
+        const url = new URL(self.location.origin + `${___PREFIX_URL___}/api/getMetaData`);
+        url.searchParams.set('path', downloadData.data.path);
+        url.searchParams.set('token', downloadData.data.token);
+        const metaRequest = await (await fetch(url.toString())).json();
         await database.metaData.put({
             path: metaRequest.Path,
             image: metaRequest.image,
@@ -172,7 +172,7 @@ self.addEventListener('message', async (ev) => {
             stars: metaRequest.stars,
             watchList: metaRequest.watchList,
             timestemp: metaRequest.timeStemp
-        })
+        });
         await database.videos.put({
             data: await requestToBase64(`/video/${downloadData.data.path}`, { credentials: 'same-origin' }, port),
             path: downloadData.data.path

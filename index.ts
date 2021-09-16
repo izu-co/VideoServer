@@ -1,6 +1,6 @@
-process.addListener("unhandledRejection", (er) => {
+process.addListener('unhandledRejection', (er) => {
     console.error(er);
-})
+});
 
 import {
     argv

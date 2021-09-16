@@ -19,10 +19,10 @@ const skipButton = document.getElementById('SkipButton');
 const next = <HTMLButtonElement> document.getElementById('next');
 const controls = document.getElementById('controls');
 const info = document.getElementById('info');
-const downloadButton = document.getElementById('download')
-downloadButton.classList.add("loading");
-const downloadDiv = document.getElementById('downloadDiv')
-const progressRing = document.getElementById('progressRing') as unknown as SVGCircleElement
+const downloadButton = document.getElementById('download');
+downloadButton.classList.add('loading');
+const downloadDiv = document.getElementById('downloadDiv');
+const progressRing = document.getElementById('progressRing') as unknown as SVGCircleElement;
 
 const radius = progressRing.r.baseVal.value;
 const circumference = radius * 2 * Math.PI;
@@ -33,7 +33,7 @@ progressRing.style.strokeDashoffset = `${circumference}`;
 const setProgress = (percent: number) => {
     const offset = circumference - percent / 100 * circumference;
     progressRing.style.strokeDashoffset = `${offset}`;
-}
+};
 
 let mouseDown = false;
 let skiped = false;
@@ -108,18 +108,18 @@ const urlParams = new URLSearchParams(queryString);
         const res = await sendMessageToWorker({
             type: 'videoItem',
             data: decodeURIComponent(urlParams.get('path'))
-        })
+        });
         if (res) {
             const videoRes = res as IVideos;
             if (videoRes.data instanceof ArrayBuffer) {
-                video.src = URL.createObjectURL(new Blob([videoRes.data]))
+                video.src = URL.createObjectURL(new Blob([videoRes.data]));
                 return;
             }
             const parts = videoRes.data.split(',');
-            video.src = URL.createObjectURL(b64toBlob(parts[1], parts[0].substring(5)))
+            video.src = URL.createObjectURL(b64toBlob(parts[1], parts[0].substring(5)));
             
         } else {
-            alert("Video not found. Playing is not an option while offline!")
+            alert('Video not found. Playing is not an option while offline!');
         }
     }
 })();
@@ -319,7 +319,7 @@ video.addEventListener('timeupdate', function() {
 
 
 const timeout = function () {
-    downloadButton.classList.add("hide");
+    downloadButton.classList.add('hide');
     controls.className = 'hide';
     controls.style.cursor = 'none';
     video.style.cursor = 'none';
@@ -330,11 +330,11 @@ const move = () => {
     if (testMobile())
         return;
     timer = setTimeout(timeout, WaitToHideTime);
-    downloadButton.classList.remove("hide")
+    downloadButton.classList.remove('hide');
     controls.className = 'show';
     controls.style.cursor = 'auto';
     video.style.cursor = 'auto';
-}
+};
 
 if (!testMobile()) {
     timer = setTimeout(timeout, WaitToHideTime);
@@ -355,9 +355,9 @@ function togglefullScreen() {
             container.requestFullscreen();
         } else {
             if (video['requestFullscreen'])
-                video['requestFullscreen']()
+                video['requestFullscreen']();
             else 
-                video['webkitRequestFullScreen']()
+                video['webkitRequestFullScreen']();
         }
     }
 }
@@ -371,7 +371,7 @@ document.addEventListener('fullscreenchange', function() {
 
 video.addEventListener('loadeddata', async () => {
     info.style.display = 'none';
-    downloadButton.classList.remove("loading")
+    downloadButton.classList.remove('loading');
 
     if (!skiped && navigator.onLine) {
         const url = new URL(window.location.origin + `${___PREFIX_URL___}/api/getTime/`);
@@ -424,46 +424,46 @@ const checkDownloadExists = async () => {
     const res = await sendMessageToWorker({
         type: 'videoItem',
         data: decodeURIComponent(urlParams.get('path'))
-    })
+    });
     
     return res == null ;
-}
+};
 
 const updateButtonState = async () => {
     if (await checkDownloadExists()) {
-        
+        downloadButton.classList.add('already');
     } else {
         downloadButton.classList.remove('already');
     }
 };
 
 
-document.addEventListener("load", updateButtonState);
+document.addEventListener('load', updateButtonState);
 
-downloadButton.addEventListener("click", async () => {
+downloadButton.addEventListener('click', async () => {
     if (await checkDownloadExists()) {
-        if (window.confirm("Do you want to delete the video?")) {
+        if (window.confirm('Do you want to delete the video?')) {
             console.log(await sendMessageToWorker({
                 type: 'delete',
                 data: decodeURIComponent(urlParams.get('path'))
-            }))
-            await updateButtonState()
+            }));
+            await updateButtonState();
         } else {
             return;
         }
     } else {
         if (navigator.onLine) {
-            downloadDiv.className = "downloadProgress"
+            downloadDiv.className = 'downloadProgress';
             
             const res = multipleResponseMessageToWorker({
-                type: "download",
+                type: 'download',
                 data: {
                     path: urlParams.get('path'),
                     token: loadCookie('token')
                 }
             });
             let last: number;
-            res.addEventListener("message", async (data) => {
+            res.addEventListener('message', async (data) => {
                 const msg = data as CustomEvent;
                 if (last > +(msg.detail.percent as number).toFixed(2)) {
                     last = +(msg.detail.percent as number).toFixed(2);
@@ -473,12 +473,12 @@ downloadButton.addEventListener("click", async () => {
                 setProgress(msg.detail.percent * 100);
 
                 if (msg.detail.finished) {
-                    downloadDiv.className = "download"
+                    downloadDiv.className = 'download';
                     await updateButtonState();
                 }
-            })
+            });
         } else {
-            alert("No internet connection found")
+            alert('No internet connection found');
         }
     }
-})
+});

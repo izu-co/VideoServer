@@ -14,7 +14,7 @@ import { PassThrough } from 'stream';
  */
 async function createImages(path:string, override:boolean, verbose = false, maxConcurrent = 25): Promise<BackendRequest<FileData[]>> {
     console.log('[INFO] Started Image generation');
-    let t = Date.now();
+    const t = Date.now();
     const paths = (await getAllFiles(path)).filter(file => VideoNameExtensions.includes(file.path.split('.').pop()) || file.stats.isDirectory());
 
     const createdImages = [];
@@ -37,7 +37,7 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
     while (files.length > 0) {
         for (let i = 0; i < Math.min(files.length, maxConcurrent); i++) {
             filesPromises.push(new Promise(async (resolve) => {
-                let start = Date.now();
+                const start = Date.now();
                 const file = files[i];
                 const exists = await new Promise(resolve => {
                     fs.promises.access(file.path + '.jpg', fs.constants.F_OK)
@@ -69,7 +69,7 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
     while (folders.length > 0) {
         for (let i = 0; i < Math.min(folders.length, maxConcurrent); i++) {
             folderPromises.push(new Promise(async (resolve) => {
-                let start = Date.now();
+                const start = Date.now();
                 const file = folders[i];
                 const exists = await new Promise(resolve => {
                     fs.promises.access(file.path + '.jpg', fs.constants.F_OK)
@@ -252,7 +252,7 @@ const generateImage = async (path: string) : Promise<boolean> => {
 
 const extractImage = async (path: string, percent: number) : Promise<ImageAnswer> => {
     return new Promise<ImageAnswer>(async (resolve, reject) => {
-        let start = Date.now();
+        const start = Date.now();
         const data = await ffprobePromise(ffmpeg(path)).catch(er => console.log(er));
         if (!data) 
             return resolve();
@@ -281,7 +281,7 @@ const extractImage = async (path: string, percent: number) : Promise<ImageAnswer
             })
             .pipe(passThrough);
         passThrough.on('end', () => {
-            console.log(`Extraction took ${Date.now() - start}`)
+            console.log(`Extraction took ${Date.now() - start}`);
             const buffer = Buffer.concat(buffers);
             resolve({
                 hasMore: hasMore,
@@ -394,7 +394,7 @@ const saveImage = async (jimp: jimp, path: string) => {
     const buffer = await jimp.getBufferAsync(jimp.getMIME());
     await fs.promises.writeFile(path, buffer);
     return true;
-}
+};
 
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
