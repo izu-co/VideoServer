@@ -74,7 +74,7 @@ const getFileAmount = async (path:string, token:string, ip:string, type:null|str
     if (pathCheck.isOk === false)
         return pathCheck;
     path = pathCheck.value;
-    if(!fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) return {
+    if(!(fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) && searchType !== SortTypes.WatchList) return {
         isOk: false,
         statusCode: 404,
         message: 'The given path does not exists'
@@ -87,6 +87,7 @@ const getFileAmount = async (path:string, token:string, ip:string, type:null|str
         const pathCheck = checkPath(path);
         if (pathCheck.isOk === false)
             return false;
+        path = pathCheck.value;
         if (!fs.existsSync(path))
             return false;
         if (fs.lstatSync(path).isFile())

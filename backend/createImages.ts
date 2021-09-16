@@ -14,6 +14,7 @@ import { PassThrough } from 'stream';
  */
 async function createImages(path:string, override:boolean, verbose = false, maxConcurrent = 25): Promise<BackendRequest<FileData[]>> {
     console.log('[INFO] Started Image generation');
+    let t = Date.now();
     const paths = (await getAllFiles(path)).filter(file => VideoNameExtensions.includes(file.path.split('.').pop()) || file.stats.isDirectory());
 
     const createdImages = [];
@@ -36,9 +37,8 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
     while (files.length > 0) {
         for (let i = 0; i < Math.min(files.length, maxConcurrent); i++) {
             filesPromises.push(new Promise(async (resolve) => {
+                let start = Date.now();
                 const file = files[i];
-                if (verbose)
-                    console.log(`[INFO] Started ${file.path}`);
                 const exists = await new Promise(resolve => {
                     fs.promises.access(file.path + '.jpg', fs.constants.F_OK)
                         .then(() => resolve(true))
@@ -47,7 +47,7 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
                 if (!exists || override) {
                     const ok = await generateImage(file.path);
                     if (ok && verbose)
-                        console.log(`[INFO] Finished ${file.path}.jpg`);
+                        console.log(`[INFO] Finished ${file.path}.jpg (${(Date.now() - start) / 1000})`);
                     else if (!ok)
                         console.log(`[ERROR] Unable to create image ${file.path}.jpg`);
                     if (ok)
@@ -69,9 +69,8 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
     while (folders.length > 0) {
         for (let i = 0; i < Math.min(folders.length, maxConcurrent); i++) {
             folderPromises.push(new Promise(async (resolve) => {
+                let start = Date.now();
                 const file = folders[i];
-                if (verbose)
-                    console.log(`[INFO] Started ${file.path}`);
                 const exists = await new Promise(resolve => {
                     fs.promises.access(file.path + '.jpg', fs.constants.F_OK)
                         .then(() => resolve(true))
@@ -80,7 +79,7 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
                 if (!exists || override) {
                     generateFolderImage(file.path).then(ok => {
                         if (ok && verbose)
-                            console.log(`[INFO] Finished ${file.path}.jpg`);
+                            console.log(`[INFO] Finished ${file.path}.jpg (${(Date.now() - start) / 1000})`);
                         else if (!ok)
                             console.log(`[ERROR] Unable to create image ${file.path}.jpg`);
                         if (ok)
@@ -102,6 +101,7 @@ async function createImages(path:string, override:boolean, verbose = false, maxC
     console.log('[INFO] Image generation done');
     appEvents.emit('finished', 'image generation');
     clearInterval(updateIntervall);
+    console.log(Date.now() - t);
     return {
         isOk: true,
         value: createdImages
@@ -121,13 +121,13 @@ const generateFolderImage = async (path:string): Promise<boolean> => {
         await fs.promises.copyFile(filteredFiles[0].path, path + '.jpg');
         return true;
     case 2:
-        await (await combine2(filteredFiles[0].path, filteredFiles[1].path)).writeAsync(path + '.jpg');
+        await saveImage(await combine2(filteredFiles[0].path, filteredFiles[1].path), path + '.jpg');
         return true;
     case 3:
-        await (await combine3(filteredFiles[0].path, filteredFiles[1].path, filteredFiles[2].path)).writeAsync(path + '.jpg');
+        await saveImage(await combine3(filteredFiles[0].path, filteredFiles[1].path, filteredFiles[2].path), path + '.jpg');
         return true;
     default:
-        await (await combine4(...filteredFiles.map(a => a.path))).writeAsync(path + '.jpg');
+        await saveImage(await combine4(...filteredFiles.map(a => a.path)), path + '.jpg');
         return true;
     }
 };
@@ -208,13 +208,13 @@ const generateImage = async (path: string) : Promise<boolean> => {
             if (!lastImage) 
                 return false;
             
-            await lastImage.writeAsync(path + '.jpg');
+            await saveImage(lastImage, path + '.jpg');
             return true;
         } else {
             if (!img.hasMore) {
                 if (!lastImage) 
                     return false;
-                await lastImage.writeAsync(path + '.jpg');
+                await saveImage(lastImage, path + '.jpg');
                 return true;
             } else if (img.imageData.length > 0) {
                 lastImage = await readImage(img.imageData);
@@ -234,13 +234,13 @@ const generateImage = async (path: string) : Promise<boolean> => {
                     }
                 }
                 if ((blackPixel / pixelAmount) <= 0.8 && (whitePixel / pixelAmount) <= 0.8) {
-                    await lastImage.writeAsync(path + '.jpg');
+                    await saveImage(lastImage, path + '.jpg');
                     return true;
                 }
             } else {
                 if (!lastImage) 
                     return false;
-                await lastImage.writeAsync(path + '.jpg');
+                await saveImage(lastImage, path + '.jpg');
                 return true;
             }
         }
@@ -252,6 +252,7 @@ const generateImage = async (path: string) : Promise<boolean> => {
 
 const extractImage = async (path: string, percent: number) : Promise<ImageAnswer> => {
     return new Promise<ImageAnswer>(async (resolve, reject) => {
+        let start = Date.now();
         const data = await ffprobePromise(ffmpeg(path)).catch(er => console.log(er));
         if (!data) 
             return resolve();
@@ -270,6 +271,7 @@ const extractImage = async (path: string, percent: number) : Promise<ImageAnswer
             .addOption('-frames:v 1')
             .format('mjpeg')
             .seekInput(time)
+            .addOption('-skip_frame nokey')
             .on('error', (er, stdout, stderr) => {
                 if (er.message === 'Output stream closed' )
                     return;
@@ -279,6 +281,7 @@ const extractImage = async (path: string, percent: number) : Promise<ImageAnswer
             })
             .pipe(passThrough);
         passThrough.on('end', () => {
+            console.log(`Extraction took ${Date.now() - start}`)
             const buffer = Buffer.concat(buffers);
             resolve({
                 hasMore: hasMore,
@@ -386,6 +389,12 @@ const readImageFromFile = (data: string) => {
         });
     });
 };
+
+const saveImage = async (jimp: jimp, path: string) => {
+    const buffer = await jimp.getBufferAsync(jimp.getMIME());
+    await fs.promises.writeFile(path, buffer);
+    return true;
+}
 
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
