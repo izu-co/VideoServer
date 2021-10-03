@@ -1,9 +1,0 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@600&display=swap');
-
-* {
-    font-family: Barlow;
-}
-
-.important {
-    color: yellow !important;
-}
