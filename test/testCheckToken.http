@@ -1,0 +1,17 @@
+@username = Admin
+@password = pass
+@baseUrl = http://localhost:3000
+# @name login
+
+GET {{baseUrl}}/api/login/
+  ?username={{username}}
+  &password={{password}} 
+
+###
+
+@authToken = {{login.response.body.*}}
+
+
+POST {{baseUrl}}/api/checkToken/ HTTP/1.1
+content-type: application/json
+Authorization: Token {{authToken}}

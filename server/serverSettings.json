@@ -1,0 +1,13 @@
+{
+  "mySQL": {
+    "host": "localhost",
+    "username": "root",
+    "database": "test2"
+  },
+  "server": {
+    "httpPort": 3000,
+    "httpsPort": null,
+    "sslKeyPath": null,
+    "sslCertPath": null
+  }
+}

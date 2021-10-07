@@ -5,11 +5,11 @@ import { MonoText } from "./StyledText";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import normalize from "../constants/FontSize";
 import { FontAwesome } from "@expo/vector-icons";
-import Axios from "axios";
 import axios from "axios";
 
 export type TToken = {
-  token: string
+  token: string,
+  tokenFailed: () => void
 }
 
 export type TInputData = {
@@ -18,10 +18,23 @@ export type TInputData = {
   websiteBase?: string
 }
 
+export type TTextColors = {
+  'error': string,
+  'warning': string,
+  'ok': string
+} 
+
+const TextColors: TTextColors = {
+  'error': 'red',
+  'warning': 'yellow',
+  'ok': 'green'
+}
+
 export type TModalState = {
   text?: {
     title: string,
-    body: string
+    body: string,
+    type: keyof TTextColors
   },
   visable: boolean,
   timer?: NodeJS.Timeout
@@ -29,8 +42,9 @@ export type TModalState = {
 
 const loginContext = React.createContext<undefined|TToken>(undefined);
 
-const LoginHandler: React.FC = () => {
+const LoginHandler: React.FC = ({ children }) => {
 
+  const [token, setToken] = React.useState<TToken>();
   const [modalState, _setModalState] = React.useState<TModalState>({ visable: false });
   const setModalState = (state: TModalState) => {
     if (modalState.timer) 
@@ -60,24 +74,51 @@ const LoginHandler: React.FC = () => {
     })
   }
 
+  const checkToken = async () => {
+
+  }
+
   const login = async () => {
     if (Object.keys(inputData).length !== 3 || inputData.password?.length === 0 || inputData.username?.length === 0 || inputData.websiteBase?.length === 0 ) {
-      setModalState({
+      return setModalState({
         visable: true,
         text: {
-          title: 'More info',
-          body: 'Please enter all three fields!'
+          title: 'More information required',
+          body: 'Please enter all three fields!',
+          type: 'error'
         }
       })
     }
+    const res = await axios({
+      method: 'POST',
+      url: `${inputData.websiteBase}/api/login`,
+      data: {
+        username: inputData.username,
+        password: inputData.password
+      },
+      responseType: 'text'
+    })
+    if (res.status !== 200) {
+      return setModalState({
+        visable: true,
+        text: {
+          type: 'error',
+          body: res.data,
+          title: 'Unable to login'
+        }
+      })
+    }
+    setToken({
+      token: res.data,
+      tokenFailed: checkToken
+    })
   }
 
-  console.log(inputData);
-
-  return (
+  return token === undefined ? (
     <View style={LoginStyles.view}>
       {modalState.visable && <View style={[LoginStyles.modal]}>
-        <MonoText>{modalState.text.title}</MonoText>
+        <MonoText style={[LoginStyles.modalHeader, { color: TextColors[modalState.text.type] }]}>{modalState.text.title}</MonoText>
+        <MonoText style={{ color: TextColors[modalState.text.type] }}>{modalState.text.body}</MonoText> 
       </View>}
       <View style={LoginStyles.container}>
         <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "center", alignItems: 'center', paddingBottom: 25 }}>
@@ -108,7 +149,9 @@ const LoginHandler: React.FC = () => {
         </TouchableOpacity>
       </View>
     </View>
-  );
+  ) : (<loginContext.Provider value={token}>
+    {children}
+  </loginContext.Provider>);
 }
 
 const LoginStyles = StyleSheet.create({
@@ -118,13 +161,18 @@ const LoginStyles = StyleSheet.create({
     top: 10,
     width: '60%',
     height: '30%',
-    backgroundColor: 'rgba(255, 255, 255, 0.01)',
     maxWidth: 400,
     maxHeight: 200,
-    display: 'flex'
+    display: 'flex',
+    alignItems: 'center'
   },
   modalHeader: {
-
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: normalize(20),
+    fontFamily: 'Barlow_600SemiBold',
+    color: 'white',
+    paddingBottom: 30
   },
   view: {
     backgroundColor: '#262626',
