@@ -5,10 +5,12 @@ import { MonoText } from "./StyledText";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import normalize from "../constants/FontSize";
 import { FontAwesome } from "@expo/vector-icons";
-import axios from "axios";
+import axios, { Axios, AxiosRequestConfig, AxiosResponse } from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type TToken = {
   token: string,
+  axios: <T,>(options: AxiosRequestConfig) => Promise<AxiosResponse<T>|void>,
   tokenFailed: () => void
 }
 
@@ -16,6 +18,12 @@ export type TInputData = {
   username?: string,
   password?: string,
   websiteBase?: string
+}
+
+export type TSavedData = {
+  username?: string,
+  websiteBase?: string,
+  token?: string
 }
 
 export type TTextColors = {
@@ -59,6 +67,41 @@ const LoginHandler: React.FC = ({ children }) => {
     _setModalState(state);
   }
 
+  React.useEffect(() => {
+    (async () => {
+      const dataString = await AsyncStorage.getItem('savedData')
+      if (dataString !== null) {
+        const data: TSavedData = JSON.parse(dataString);
+        if (data.token && data.websiteBase) {
+          const res = await checkTokenString(data.token, data.websiteBase);
+          if (res) {
+            setToken({
+              axios: makeRequest,
+              tokenFailed: checkToken,
+              token: data.token
+            })
+          }
+        }
+        delete data.token;
+        setInputData({
+          ...data
+        })
+      }
+    })();
+  }, [])
+
+  const defaultAxios = new Axios({
+    headers: {
+      'Authorization': `Token ${token?.token}`
+    },
+    timeout: 1000 * 10
+  });
+
+  const makeRequest = <T,>(options: AxiosRequestConfig) : Promise<AxiosResponse<T>|void> => {
+    return defaultAxios.request<T>(options).catch((er) => {
+      console.error(er);
+    })
+  }
 
   const [inputData, setInputData] = React.useState<TInputData>({
     ...(global["window"] ? {
@@ -67,7 +110,6 @@ const LoginHandler: React.FC = ({ children }) => {
   })
 
   const handleChange = (text: string, type: keyof TInputData) => {
-    console.log(text);
     setInputData({
       ...inputData,
       [type]: text
@@ -75,7 +117,26 @@ const LoginHandler: React.FC = ({ children }) => {
   }
 
   const checkToken = async () => {
+    if (!token) 
+      return;
+    const res = await token.axios({
+      method: 'POST'
+    })
 
+    if (!res || res.status !== 200) {
+      setToken(undefined);
+    }
+  }
+
+  const checkTokenString = async (token: string, base: string) : Promise<boolean> => {
+    const res = await defaultAxios.request({
+      url: `${base}/api/checkToken`,
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${token}`
+      }
+    }).catch(console.error)
+    return res && res.status === 200;
   }
 
   const login = async () => {
@@ -90,9 +151,9 @@ const LoginHandler: React.FC = ({ children }) => {
       })
     }
     const res = await axios({
-      method: 'POST',
+      method: 'GET',
       url: `${inputData.websiteBase}/api/login`,
-      data: {
+      params: {
         username: inputData.username,
         password: inputData.password
       },
@@ -108,10 +169,18 @@ const LoginHandler: React.FC = ({ children }) => {
         }
       })
     }
+
     setToken({
       token: res.data,
-      tokenFailed: checkToken
+      tokenFailed: checkToken,
+      axios: makeRequest
     })
+
+    await AsyncStorage.setItem('savedData', JSON.stringify({
+      token: res.data,
+      username: inputData.username,
+      websiteBase: inputData.websiteBase
+    } as TSavedData))
   }
 
   return token === undefined ? (

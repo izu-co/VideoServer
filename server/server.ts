@@ -3,6 +3,8 @@ import fs  from "fs";
 import { Server as HTTPServer, createServer as createHTTPServer } from "http";
 import { Server as HTTPSServer, createServer as createHTTPSServer } from "https";
 import path from "path";
+import { json } from "body-parser";
+import cors from "cors";
 
 export type TServerSettings = {
   httpPort: number,
@@ -85,6 +87,8 @@ export default class Server {
   private async buildApp() : Promise<express.Express> {
     const app = express();
 
+    app.use(cors());
+    app.use(json());
     app.use(express.static(path.resolve(__dirname, 'public')))
 
     let apiEndPoints = getAllFiles(path.resolve(__dirname, 'api'));
