@@ -1,6 +1,7 @@
 @username = Admin
 @password = pass
 @baseUrl = http://localhost:3000
+@videoTestPath = A3!%2F[Funimation] A3! - 01 [1080p].mp4
 # @name login
 
 GET {{baseUrl}}/api/login/
@@ -14,4 +15,15 @@ GET {{baseUrl}}/api/login/
 
 POST {{baseUrl}}/api/checkToken/ HTTP/1.1
 content-type: application/json
+Authorization: Token {{authToken}}
+
+###
+
+GET {{baseUrl}}/videos/{{videoTestPath}}
+Authorization: Token {{authToken}}
+
+###
+
+GET {{baseUrl}}/api/getFiles/
+  ?sortType=watchList
 Authorization: Token {{authToken}}

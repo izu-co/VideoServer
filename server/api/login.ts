@@ -7,7 +7,7 @@ import { makeToken, Token } from "../models/Token";
 const router = express.Router();
 
 export default {
-  router: router.get('/login/', checkParam([
+  router: () => router.get('/login/', checkParam([
     { name: 'username' },
     { name: 'password' }
   ]), async (req, res) => {
@@ -16,6 +16,11 @@ export default {
     if (!user) {
       return res.status(401).end('Username or Password incorrect')
     }
+
+    if (await Token.count({ where: { user: user } }) > 5) {
+      await (await Token.findOne({ where: { user: user } }))?.remove()
+    }
+
     const token = await makeToken(20);
     Token.insert({ 
       token,

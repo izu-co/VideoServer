@@ -5,6 +5,8 @@ import { Server as HTTPSServer, createServer as createHTTPSServer } from "https"
 import path from "path";
 import { json } from "body-parser";
 import cors from "cors";
+import { URL } from "url";
+import checkToken from "./middleware/checkToken";
 
 export type TServerSettings = {
   httpPort: number,
@@ -14,7 +16,7 @@ export type TServerSettings = {
 }
 
 export type TAPIExport = {
-  router: express.Router,
+  router: (videoPath: string) => express.Router,
 }
 
 export default class Server {
@@ -27,7 +29,9 @@ export default class Server {
     https: HTTPSServer|undefined
   }
 
-  constructor(settings: TServerSettings) {
+  public static videoExtension = Object.freeze([ 'mp4' ]);
+
+  constructor(settings: TServerSettings, private videoPath: string) {
     if (settings.httpsPort && settings.sslCertPath && settings.sslKeyPath) {
       this.key = fs.readFileSync(settings.sslKeyPath);
       this.cert = fs.readFileSync(settings.sslCertPath);      
@@ -102,9 +106,25 @@ export default class Server {
       }
     }))
 
-    importData.forEach(a => {
-      console.log(a);
-      app.use(`/api`, a.importData.router)
+    importData.forEach(a => app.use(`/api`, a.importData.router(this.videoPath)))
+
+
+    app.get('/videos/:path', checkToken(), async (req, res, next) => {
+      const videoPath = req.params.path;
+
+      const resolved = path.resolve(this.videoPath, videoPath);
+      if (!resolved.startsWith(this.videoPath))
+        return res.status(404).end();
+      
+      const extension = resolved.substring(resolved.lastIndexOf('.') + 1);
+
+      if (!Server.videoExtension.includes(extension) && extension !== "jpg")
+        return res.status(404).end();
+
+      if (!fs.existsSync(resolved))
+        return res.status(404).end();
+
+      res.status(200).sendFile(resolved);
     })
 
     return app;

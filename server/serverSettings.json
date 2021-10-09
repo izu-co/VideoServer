@@ -9,5 +9,6 @@
     "httpsPort": null,
     "sslKeyPath": null,
     "sslCertPath": null
-  }
+  },
+  "videoFolder": "Z:\\Videos"
 }

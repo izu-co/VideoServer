@@ -1,5 +1,6 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Token } from "./Token";
+import { WatchList } from "./WatchList";
 
 export enum Permissions {
   USER = "user", ADMIN = "admin"
@@ -24,6 +25,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Token, (to) => to.ID)
   tokens: Token[]
+
+  @OneToMany(() => WatchList, (to) => to.user)
+  watchListItems: WatchList[]
 }
 
 const generatePassword = (length: number) => {

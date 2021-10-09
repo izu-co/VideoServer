@@ -5,7 +5,7 @@ import checkToken from "../middleware/checkToken";
 const router = express.Router();
 
 export default {
-  router: router.post('/checkToken/', checkToken(),  async (_, res) => {
+  router: () => router.post('/checkToken/', checkToken(),  async (_, res) => {
     res.status(200).end();
   })
 } as TAPIExport

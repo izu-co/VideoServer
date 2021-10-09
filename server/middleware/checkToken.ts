@@ -35,8 +35,6 @@ export default (requireAdminPermission = false): Handler => {
       relations: [ 'user' ]
     })
 
-    console.log(tokenRequest, tokenRequest?.until.getTime());
-
     if (!tokenRequest) {
       return res.status(401).json({
         error: 'Invalid token'
